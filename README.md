@@ -40,31 +40,22 @@ They use different build dirs (`.next` vs `.next-admin`) so both can run at once
 
 ## Deploy on Railway
 
-### Option A: One service (recommended)
+The app is deployed on Railway using the **native Railpack build** (no Docker), same approach as micro-ui. Railway detects Next.js, runs `npm install`, `npm run build`, and `next start`; it sets `PORT` automatically. Use **railway.toml** as-is (builder = RAILPACK, healthcheck `/`).
 
-One Railway service runs the root **Dockerfile** (Next.js standalone). That single deployment serves both customer and admin on the same URL, e.g.:
+One deployment serves both customer and admin on the same URL, e.g.:
 
 - `https://neo-ui.up.railway.app/` → customer
 - `https://neo-ui.up.railway.app/admin` → admin
 
-Use **railway.toml** as-is (Dockerfile at root, healthcheck `/`). Railway sets `PORT`; the app listens on that port.
-
 **Env:**
 
-| Variable | Description |
-| -------- | ----------- |
+| Variable              | Description                                                                                       |
+| --------------------- | ------------------------------------------------------------------------------------------------- |
 | `NEXT_PUBLIC_API_URL` | API base URL (e.g. `https://neo-api.up.railway.app`). Set in Railway so the UI talks to your API. |
 
-### Option B: Two services (customer + admin on different URLs)
+**Optional Docker:** The repo includes **Dockerfile** and **Dockerfile.admin** for local Docker runs or other platforms (e.g. if you prefer to build an image yourself). Railway does not use them when `railway.toml` is set to `builder = "RAILPACK"`. For a second admin-only service on Railway you would add another service and set its Dockerfile path to `Dockerfile.admin`.
 
-If you want separate URLs or scaling (e.g. `app.neo.et` and `admin.neo.et`):
-
-1. **Customer**: One Railway service, root **Dockerfile** (same as Option A).
-2. **Admin**: Second Railway service, set **Dockerfile path** to **`Dockerfile.admin`** in that service’s build settings. It builds with `ADMIN_DEV=1` and runs the admin app; Railway’s `PORT` is used.
-
-Each service gets its own domain and `NEXT_PUBLIC_API_URL` if needed.
-
-**Before first push:** Ensure **src/** and all app code are committed. Add a public domain per service if you need HTTPS. See `.env.example` for local reference.
+**Before first push:** Ensure **src/** and all app code are committed. Add a public domain if you need HTTPS. See `.env.example` for local reference.
 
 ## Deploy on Vercel
 

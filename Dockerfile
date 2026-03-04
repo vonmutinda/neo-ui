@@ -1,5 +1,5 @@
-# neo-ui (Next.js 16) — Dockerfile for Railway / production.
-# Builds one app that serves both customer UI (/, /dashboard, …) and admin UI (/admin) on one port.
+# neo-ui (Next.js 16) — Optional Dockerfile for local Docker or other platforms.
+# Railway uses Railpack (no Docker). Builds one app: customer UI (/, /dashboard, …) and admin UI (/admin) on one port.
 # Uses standalone output; build context must be repo root so src/ is included.
 
 FROM node:20-alpine AS base

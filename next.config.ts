@@ -1,14 +1,19 @@
 import type { NextConfig } from "next";
 import bundleAnalyzer from "@next/bundle-analyzer";
 
-const withBundleAnalyzer = bundleAnalyzer({ enabled: process.env.ANALYZE === "true" });
+const withBundleAnalyzer = bundleAnalyzer({
+  enabled: process.env.ANALYZE === "true",
+});
 
 const securityHeaders = [
   { key: "X-Content-Type-Options", value: "nosniff" },
   { key: "X-Frame-Options", value: "DENY" },
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
   { key: "X-DNS-Prefetch-Control", value: "on" },
-  { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains; preload" },
+  {
+    key: "Strict-Transport-Security",
+    value: "max-age=63072000; includeSubDomains; preload",
+  },
   {
     key: "Content-Security-Policy",
     value: [
@@ -25,14 +30,12 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   distDir: process.env.ADMIN_DEV ? ".next-admin" : ".next",
-  output: process.env.ADMIN_DEV ? undefined : "standalone",
   env: {
-    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080",
+    NEXT_PUBLIC_API_URL:
+      process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080",
   },
   images: {
-    remotePatterns: [
-      { protocol: "https", hostname: "**.telegram.org" },
-    ],
+    remotePatterns: [{ protocol: "https", hostname: "**.telegram.org" }],
   },
   async headers() {
     return [

@@ -1,9 +1,8 @@
 # Railway config for neo-ui (Next.js).
-# Build uses root Dockerfile so context includes src/.
+# Build uses Railpack (no Docker); same approach as micro-ui.
 
 [build]
-builder = "DOCKERFILE"
-dockerfilePath = "Dockerfile"
+builder = "RAILPACK"
 
 [deploy]
 healthcheckPath = "/"
