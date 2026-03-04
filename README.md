@@ -29,6 +29,23 @@ To learn more about Next.js, take a look at the following resources:
 
 You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
+## Deploy on Railway
+
+The repo includes a root **Dockerfile** (Next.js standalone) and **railway.toml**. Connect the repo to a Railway service; the build will use the Dockerfile and bind to `PORT` automatically.
+
+**Before first push:**
+
+- Ensure **src/** and all app code are committed (nothing critical in `.gitignore` that would exclude `src/`).
+- Add a **public domain** in the service if you need HTTPS.
+
+**Environment variable:**
+
+| Variable | Description |
+| -------- | ----------- |
+| `NEXT_PUBLIC_API_URL` | API base URL (e.g. `https://neo-api.up.railway.app`). Set this in Railway so the UI talks to your deployed API. |
+
+See `.env.example` for local reference.
+
 ## Deploy on Vercel
 
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.

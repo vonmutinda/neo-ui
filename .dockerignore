@@ -1,0 +1,22 @@
+# Dependencies and build output (rebuilt in image)
+node_modules
+.next
+.next-admin
+out
+build
+
+# Git and env
+.git
+.gitignore
+.env*
+!.env.example
+
+# Misc
+*.md
+.husky
+coverage
+*.tsbuildinfo
+next-env.d.ts
+.vercel
+.DS_Store
+docs

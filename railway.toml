@@ -1,0 +1,10 @@
+# Railway config for neo-ui (Next.js).
+# Build uses root Dockerfile so context includes src/.
+
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "Dockerfile"
+
+[deploy]
+healthcheckPath = "/"
+healthcheckTimeout = 60

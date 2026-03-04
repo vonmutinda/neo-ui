@@ -1,0 +1,68 @@
+"use client";
+
+import { motion } from "framer-motion";
+import { ArrowLeft, Fingerprint, KeyRound, Smartphone } from "lucide-react";
+import Link from "next/link";
+import { Badge } from "@/components/ui/badge";
+
+interface SecurityRowProps {
+  icon: React.ElementType;
+  label: string;
+  description: string;
+}
+
+function SecurityRow({ icon: Icon, label, description }: SecurityRowProps) {
+  return (
+    <div className="flex items-center justify-between px-4 py-4">
+      <div className="flex items-center gap-3">
+        <Icon className="h-5 w-5 text-muted-foreground" />
+        <div>
+          <p className="text-sm font-medium">{label}</p>
+          <p className="text-xs text-muted-foreground">{description}</p>
+        </div>
+      </div>
+      <Badge variant="secondary" className="text-[10px]">
+        Coming soon
+      </Badge>
+    </div>
+  );
+}
+
+export default function SecurityPage() {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+      className="space-y-6"
+    >
+      <div className="flex items-center gap-3">
+        <Link
+          href="/profile"
+          className="flex h-10 w-10 items-center justify-center rounded-full transition-colors active:bg-muted"
+        >
+          <ArrowLeft className="h-5 w-5" />
+        </Link>
+        <h1 className="text-xl font-semibold">Security</h1>
+      </div>
+
+      <div className="divide-y rounded-2xl border bg-card">
+        <SecurityRow
+          icon={KeyRound}
+          label="Change PIN"
+          description="Update your transaction PIN"
+        />
+        <SecurityRow
+          icon={Fingerprint}
+          label="Biometric Login"
+          description="Use fingerprint or face to sign in"
+        />
+        <SecurityRow
+          icon={Smartphone}
+          label="Two-Factor Authentication"
+          description="Add an extra layer of security"
+        />
+      </div>
+    </motion.div>
+  );
+}
