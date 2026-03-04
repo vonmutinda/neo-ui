@@ -51,8 +51,10 @@ export default function RegisterPage() {
   const phoneValid = phone.length === 9;
   const usernameValid = username.length >= 3 && username.length <= 30;
   const passwordValid = password.length >= 8;
-  const passwordsMatch = password === confirmPassword && confirmPassword.length > 0;
-  const formValid = phoneValid && usernameValid && passwordValid && passwordsMatch;
+  const passwordsMatch =
+    password === confirmPassword && confirmPassword.length > 0;
+  const formValid =
+    phoneValid && usernameValid && passwordValid && passwordsMatch;
 
   async function handleRegister() {
     if (isSubmitting || !formValid) return;
@@ -64,6 +66,10 @@ export default function RegisterPage() {
         username: username.trim().toLowerCase(),
         password,
       });
+      if (!resp?.accessToken || !resp?.refreshToken || !resp?.user?.id) {
+        setError("Invalid response from server");
+        return;
+      }
       login(resp.accessToken, resp.refreshToken, resp.user.id);
       router.replace("/");
     } catch (err) {
@@ -106,7 +112,9 @@ export default function RegisterPage() {
           <div className="relative">
             <div className="pointer-events-none absolute left-4 top-1/2 flex -translate-y-1/2 items-center gap-1.5">
               <span className="text-lg">🇪🇹</span>
-              <span className="text-sm font-medium text-muted-foreground">+251</span>
+              <span className="text-sm font-medium text-muted-foreground">
+                +251
+              </span>
             </div>
             <Input
               type="tel"
@@ -133,7 +141,9 @@ export default function RegisterPage() {
               maxLength={30}
             />
             {username.length > 0 && (
-              <span className={`absolute right-4 top-1/2 -translate-y-1/2 text-xs ${usernameValid ? "text-success" : "text-muted-foreground"}`}>
+              <span
+                className={`absolute right-4 top-1/2 -translate-y-1/2 text-xs ${usernameValid ? "text-success" : "text-muted-foreground"}`}
+              >
                 {username.length}/30
               </span>
             )}
@@ -155,7 +165,11 @@ export default function RegisterPage() {
               onClick={() => setShowPassword(!showPassword)}
               className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground"
             >
-              {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              {showPassword ? (
+                <EyeOff className="h-4 w-4" />
+              ) : (
+                <Eye className="h-4 w-4" />
+              )}
             </button>
           </div>
 
@@ -213,8 +227,13 @@ export default function RegisterPage() {
 
           <p className="text-center text-xs text-muted-foreground">
             By creating an account, you agree to our{" "}
-            <Link href="#" className="underline">Terms</Link> and{" "}
-            <Link href="#" className="underline">Privacy Policy</Link>
+            <Link href="#" className="underline">
+              Terms
+            </Link>{" "}
+            and{" "}
+            <Link href="#" className="underline">
+              Privacy Policy
+            </Link>
           </p>
         </div>
       </motion.div>

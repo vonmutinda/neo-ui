@@ -6,7 +6,12 @@ const withBundleAnalyzer = bundleAnalyzer({
 });
 
 // Allow API URL in CSP connect-src (e.g. Railway neo-api URL when UI is deployed)
-const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+// Normalize common typo "htts" -> "https" so CSP and connections work
+function normalizeApiUrl(url: string): string {
+  return url.replace(/^htts:\/\//i, "https://");
+}
+const rawApiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+const apiUrl = normalizeApiUrl(rawApiUrl);
 const connectSrc = ["'self'", "http://localhost:8080", "https://api.neo.et"];
 if (apiUrl && !apiUrl.includes("localhost")) {
   connectSrc.push(apiUrl);

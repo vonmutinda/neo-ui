@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "postinstall": "patch-package",
     "dev": "next dev",
     "dev:admin": "ADMIN_DEV=1 next dev --port 3001",
     "build": "next build",
@@ -60,6 +61,7 @@
     "eslint-config-next": "16.1.6",
     "husky": "^9.1.7",
     "jsdom": "^28.1.0",
+    "patch-package": "^8.0.1",
     "lint-staged": "^16.2.7",
     "shadcn": "^3.8.5",
     "tailwindcss": "^4",

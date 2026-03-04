@@ -1,6 +1,7 @@
 import { useAdminAuthStore } from "@/providers/admin-auth-store";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+const rawApiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+const API_URL = rawApiUrl.replace(/^htts:\/\//i, "https://");
 const ADMIN_PREFIX = "/admin/v1";
 const REQUEST_TIMEOUT_MS = 15_000;
 const MUTATING_METHODS = new Set(["POST", "PUT", "PATCH", "DELETE"]);
@@ -19,10 +20,7 @@ function uuid(): string {
   return crypto.randomUUID();
 }
 
-async function request<T>(
-  path: string,
-  options: RequestInit = {},
-): Promise<T> {
+async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const method = (options.method || "GET").toUpperCase();
   const headers = new Headers(options.headers);
 
@@ -44,7 +42,12 @@ async function request<T>(
   const url = `${API_URL}${ADMIN_PREFIX}${path}`;
   let res: Response;
   try {
-    res = await fetch(url, { ...options, method, headers, signal: controller.signal });
+    res = await fetch(url, {
+      ...options,
+      method,
+      headers,
+      signal: controller.signal,
+    });
   } catch (err) {
     if (err instanceof DOMException && err.name === "AbortError") {
       throw new AdminApiError(0, "Request timed out");
@@ -73,7 +76,12 @@ async function request<T>(
 
   const json = await res.json();
 
-  if (json && typeof json === "object" && "data" in json && !("pagination" in json)) {
+  if (
+    json &&
+    typeof json === "object" &&
+    "data" in json &&
+    !("pagination" in json)
+  ) {
     return json.data as T;
   }
 

@@ -39,6 +39,10 @@ export default function LoginPage() {
         identifier: identifier.trim(),
         password,
       });
+      if (!resp?.accessToken || !resp?.refreshToken || !resp?.user?.id) {
+        setError("Invalid response from server");
+        return;
+      }
       login(resp.accessToken, resp.refreshToken, resp.user.id);
       router.replace(redirect);
     } catch (err) {
@@ -140,7 +144,10 @@ export default function LoginPage() {
 
           <p className="text-center text-sm text-muted-foreground">
             Don&apos;t have an account?{" "}
-            <Link href="/register" className="font-medium text-primary underline">
+            <Link
+              href="/register"
+              className="font-medium text-primary underline"
+            >
               Register
             </Link>
           </p>
