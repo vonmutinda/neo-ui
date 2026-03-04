@@ -53,8 +53,6 @@ One deployment serves both customer and admin on the same URL, e.g.:
 | --------------------- | ------------------------------------------------------------------------------------------------- |
 | `NEXT_PUBLIC_API_URL` | API base URL (e.g. `https://neo-api.up.railway.app`). Set in Railway so the UI talks to your API. |
 
-**Optional Docker:** The repo includes **Dockerfile** and **Dockerfile.admin** for local Docker runs or other platforms (e.g. if you prefer to build an image yourself). Railway does not use them when `railway.toml` is set to `builder = "RAILPACK"`. For a second admin-only service on Railway you would add another service and set its Dockerfile path to `Dockerfile.admin`.
-
 **Before first push:** Ensure **src/** and all app code are committed. Add a public domain if you need HTTPS. See `.env.example` for local reference.
 
 ## Deploy on Vercel
