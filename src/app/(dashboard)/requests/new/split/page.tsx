@@ -18,7 +18,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useResolveRecipient } from "@/hooks/use-resolve-recipient";
 import { useCreateBatchPaymentRequest } from "@/hooks/use-payment-requests";
 import { formatMoney } from "@/lib/format";
-import type { RecipientInfo } from "@/lib/types";
+import type { BatchPaymentRequestBody, RecipientInfo } from "@/lib/types";
 
 const MAX_RECIPIENTS = 10;
 
@@ -30,7 +30,9 @@ export default function SplitRequestPage() {
   const [narration, setNarration] = useState("");
   const [success, setSuccess] = useState(false);
   const [splitMode, setSplitMode] = useState<"equal" | "custom">("equal");
-  const [customAmounts, setCustomAmounts] = useState<Record<string, string>>({});
+  const [customAmounts, setCustomAmounts] = useState<Record<string, string>>(
+    {},
+  );
 
   const resolve = useResolveRecipient();
   const batch = useCreateBatchPaymentRequest();
@@ -90,13 +92,7 @@ export default function SplitRequestPage() {
       return;
     try {
       const phones = recipients.map((r) => phoneE164(r));
-      const body: {
-        totalAmountCents: number;
-        currencyCode: string;
-        narration: string;
-        recipients: string[];
-        customAmounts?: Record<string, number>;
-      } = {
+      const body: BatchPaymentRequestBody = {
         totalAmountCents: effectiveTotal,
         currencyCode: "ETB",
         narration: narration.trim(),
@@ -234,7 +230,11 @@ export default function SplitRequestPage() {
                       transition={{ delay: 0.03 * i }}
                       className="flex items-center gap-2 rounded-full border bg-muted py-1.5 pl-1.5 pr-3"
                     >
-                      <UserAvatar name={recipientDisplayName(r)} size="sm" className="h-7 w-7 text-[10px]" />
+                      <UserAvatar
+                        name={recipientDisplayName(r)}
+                        size="sm"
+                        className="h-7 w-7 text-[10px]"
+                      />
                       <span className="text-sm font-medium">
                         {recipientDisplayName(r)}
                       </span>
@@ -360,7 +360,10 @@ export default function SplitRequestPage() {
                       key={r.id}
                       className="flex items-center gap-3 rounded-2xl bg-muted dark:bg-card dark:border dark:border-border p-4"
                     >
-                      <UserAvatar name={recipientDisplayName(r)} className="h-9 w-9" />
+                      <UserAvatar
+                        name={recipientDisplayName(r)}
+                        className="h-9 w-9"
+                      />
                       <div className="flex-1 min-w-0">
                         <p className="truncate text-sm font-medium">
                           {recipientDisplayName(r)}
