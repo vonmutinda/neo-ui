@@ -10,6 +10,7 @@ ENV NEXT_TELEMETRY_DISABLED=1
 FROM base AS deps
 WORKDIR /app
 COPY package.json package-lock.json* ./
+ENV HUSKY=0
 RUN npm ci --omit=dev
 
 FROM base AS builder
