@@ -1,0 +1,36 @@
+# neo-ui admin (Next.js 16) — separate deployment for admin UI only.
+# Use when you want admin on its own Railway service/URL (e.g. admin.neo.et).
+# Build with ADMIN_DEV=1 (output in .next-admin); no standalone, so we run next start.
+
+FROM node:20-alpine AS base
+RUN apk add --no-cache libc6-compat
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV ADMIN_DEV=1
+
+FROM base AS deps
+WORKDIR /app
+COPY package.json package-lock.json* ./
+RUN npm ci --omit=dev
+
+FROM base AS builder
+WORKDIR /app
+ENV ADMIN_DEV=1
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+RUN npm run build
+
+FROM base AS runner
+WORKDIR /app
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nextjs
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/.next-admin ./.next
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/package.json ./package.json
+RUN chown -R nextjs:nodejs /app
+USER nextjs
+EXPOSE 3001
+# Railway sets PORT; pass it to next start via -p.
+ENV HOSTNAME="0.0.0.0"
+CMD ["sh", "-c", "exec npx next start -p ${PORT:-3001}"]

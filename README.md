@@ -29,22 +29,42 @@ To learn more about Next.js, take a look at the following resources:
 
 You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
+## Customer vs admin (ports in dev)
+
+Locally you run two dev servers:
+
+- **Customer UI**: `npm run dev` → [http://localhost:3000](http://localhost:3000) (dashboard, auth, send, etc.)
+- **Admin UI**: `npm run dev:admin` → [http://localhost:3001](http://localhost:3001) (admin dashboard, staff, etc.)
+
+They use different build dirs (`.next` vs `.next-admin`) so both can run at once without overwriting each other. In **production** it’s one app: a single build serves both customer routes (`/`, `/dashboard`, …) and admin routes (`/admin`, `/admin/…`) on **one port**.
+
 ## Deploy on Railway
 
-The repo includes a root **Dockerfile** (Next.js standalone) and **railway.toml**. Connect the repo to a Railway service; the build will use the Dockerfile and bind to `PORT` automatically.
+### Option A: One service (recommended)
 
-**Before first push:**
+One Railway service runs the root **Dockerfile** (Next.js standalone). That single deployment serves both customer and admin on the same URL, e.g.:
 
-- Ensure **src/** and all app code are committed (nothing critical in `.gitignore` that would exclude `src/`).
-- Add a **public domain** in the service if you need HTTPS.
+- `https://neo-ui.up.railway.app/` → customer
+- `https://neo-ui.up.railway.app/admin` → admin
 
-**Environment variable:**
+Use **railway.toml** as-is (Dockerfile at root, healthcheck `/`). Railway sets `PORT`; the app listens on that port.
+
+**Env:**
 
 | Variable | Description |
 | -------- | ----------- |
-| `NEXT_PUBLIC_API_URL` | API base URL (e.g. `https://neo-api.up.railway.app`). Set this in Railway so the UI talks to your deployed API. |
+| `NEXT_PUBLIC_API_URL` | API base URL (e.g. `https://neo-api.up.railway.app`). Set in Railway so the UI talks to your API. |
 
-See `.env.example` for local reference.
+### Option B: Two services (customer + admin on different URLs)
+
+If you want separate URLs or scaling (e.g. `app.neo.et` and `admin.neo.et`):
+
+1. **Customer**: One Railway service, root **Dockerfile** (same as Option A).
+2. **Admin**: Second Railway service, set **Dockerfile path** to **`Dockerfile.admin`** in that service’s build settings. It builds with `ADMIN_DEV=1` and runs the admin app; Railway’s `PORT` is used.
+
+Each service gets its own domain and `NEXT_PUBLIC_API_URL` if needed.
+
+**Before first push:** Ensure **src/** and all app code are committed. Add a public domain per service if you need HTTPS. See `.env.example` for local reference.
 
 ## Deploy on Vercel
 
