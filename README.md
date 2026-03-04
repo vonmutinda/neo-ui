@@ -47,11 +47,13 @@ One deployment serves both customer and admin on the same URL, e.g.:
 - `https://neo-ui.up.railway.app/` → customer
 - `https://neo-ui.up.railway.app/admin` → admin
 
+**Connect UI to API:** In the **neo-ui** Railway service, set `NEXT_PUBLIC_API_URL` to your **neo-api** service's public URL (e.g. from neo-api Settings → Domains, or `https://neo-api-production-xxxx.up.railway.app`). Redeploy neo-ui after setting so the value is baked into the build. The API allows all origins by default (CORS).
+
 **Env:**
 
-| Variable              | Description                                                                                       |
-| --------------------- | ------------------------------------------------------------------------------------------------- |
-| `NEXT_PUBLIC_API_URL` | API base URL (e.g. `https://neo-api.up.railway.app`). Set in Railway so the UI talks to your API. |
+| Variable              | Description                                                                        |
+| --------------------- | ---------------------------------------------------------------------------------- |
+| `NEXT_PUBLIC_API_URL` | API base URL (e.g. your neo-api Railway URL). Required for the UI to call the API. |
 
 **Before first push:** Ensure **src/** and all app code are committed. Add a public domain if you need HTTPS. See `.env.example` for local reference.
 

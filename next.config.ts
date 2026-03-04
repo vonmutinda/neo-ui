@@ -5,6 +5,13 @@ const withBundleAnalyzer = bundleAnalyzer({
   enabled: process.env.ANALYZE === "true",
 });
 
+// Allow API URL in CSP connect-src (e.g. Railway neo-api URL when UI is deployed)
+const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+const connectSrc = ["'self'", "http://localhost:8080", "https://api.neo.et"];
+if (apiUrl && !apiUrl.includes("localhost")) {
+  connectSrc.push(apiUrl);
+}
+
 const securityHeaders = [
   { key: "X-Content-Type-Options", value: "nosniff" },
   { key: "X-Frame-Options", value: "DENY" },
@@ -22,7 +29,7 @@ const securityHeaders = [
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data: https://*.telegram.org",
       "font-src 'self'",
-      "connect-src 'self' http://localhost:8080 https://api.neo.et",
+      `connect-src ${connectSrc.join(" ")}`,
       "frame-ancestors 'none'",
     ].join("; "),
   },
