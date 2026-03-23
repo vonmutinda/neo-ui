@@ -46,23 +46,55 @@ const COUNTRIES: { code: string; name: string }[] = [
 interface CreateImportFormProps {
   onSubmit: (data: CreateImportRequest) => void;
   isSubmitting: boolean;
+  /** Pre-fill for edit mode */
+  initialData?: Partial<CreateImportRequest>;
+  /** Button label override */
+  submitLabel?: string;
+  onCancel?: () => void;
 }
 
 export function CreateImportForm({
   onSubmit,
   isSubmitting,
+  initialData,
+  submitLabel,
+  onCancel,
 }: CreateImportFormProps) {
-  const [supplierName, setSupplierName] = useState("");
-  const [supplierCountry, setSupplierCountry] = useState("");
-  const [goodsDescription, setGoodsDescription] = useState("");
-  const [hsCode, setHsCode] = useState("");
-  const [amount, setAmount] = useState("");
-  const [currency, setCurrency] = useState<SupportedCurrency>("USD");
-  const [paymentMethod, setPaymentMethod] = useState<ImportPaymentMethod>("lc");
-  const [insuranceAmount, setInsuranceAmount] = useState("");
-  const [insuranceProvider, setInsuranceProvider] = useState("");
-  const [portOfEntry, setPortOfEntry] = useState("");
-  const [expectedArrival, setExpectedArrival] = useState("");
+  const [supplierName, setSupplierName] = useState(
+    initialData?.supplierName ?? "",
+  );
+  const [supplierCountry, setSupplierCountry] = useState(
+    initialData?.supplierCountry ?? "",
+  );
+  const [goodsDescription, setGoodsDescription] = useState(
+    initialData?.goodsDescription ?? "",
+  );
+  const [hsCode, setHsCode] = useState(initialData?.hsCode ?? "");
+  const [amount, setAmount] = useState(
+    initialData?.proformaAmountCents
+      ? String(initialData.proformaAmountCents / 100)
+      : "",
+  );
+  const [currency, setCurrency] = useState<SupportedCurrency>(
+    initialData?.proformaCurrency ?? "USD",
+  );
+  const [paymentMethod, setPaymentMethod] = useState<ImportPaymentMethod>(
+    initialData?.paymentMethod ?? "lc",
+  );
+  const [insuranceAmount, setInsuranceAmount] = useState(
+    initialData?.insuranceAmountCents
+      ? String(initialData.insuranceAmountCents / 100)
+      : "",
+  );
+  const [insuranceProvider, setInsuranceProvider] = useState(
+    initialData?.insuranceProvider ?? "",
+  );
+  const [portOfEntry, setPortOfEntry] = useState(
+    initialData?.portOfEntry ?? "",
+  );
+  const [expectedArrival, setExpectedArrival] = useState(
+    initialData?.expectedArrivalDate ?? "",
+  );
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -291,6 +323,18 @@ export function CreateImportForm({
 
       {/* Submit */}
       <div className="flex items-center gap-3 pb-8">
+        {onCancel && (
+          <button
+            type="button"
+            onClick={onCancel}
+            className={cn(
+              "h-11 rounded-xl bg-secondary px-6 text-sm font-medium text-muted-foreground",
+              "transition-colors hover:bg-secondary/80",
+            )}
+          >
+            Cancel
+          </button>
+        )}
         <button
           type="submit"
           disabled={isSubmitting}
@@ -300,7 +344,7 @@ export function CreateImportForm({
             "disabled:opacity-40 disabled:pointer-events-none",
           )}
         >
-          {isSubmitting ? "Creating..." : "Create Import"}
+          {isSubmitting ? "Saving..." : (submitLabel ?? "Create Import")}
         </button>
       </div>
     </form>

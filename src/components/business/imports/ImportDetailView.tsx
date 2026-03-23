@@ -12,6 +12,7 @@ interface ImportDetailViewProps {
   canManage: boolean;
   onSubmit: () => void;
   onCancel: () => void;
+  onEdit?: () => void;
   isSubmitting: boolean;
   isCancelling: boolean;
 }
@@ -29,6 +30,7 @@ export function ImportDetailView({
   canManage,
   onSubmit,
   onCancel,
+  onEdit,
   isSubmitting,
   isCancelling,
 }: ImportDetailViewProps) {
@@ -193,8 +195,21 @@ export function ImportDetailView({
       )}
 
       {/* Actions */}
-      {canManage && (canSubmitImport || canCancelImport) && (
+      {canManage && (onEdit || canSubmitImport || canCancelImport) && (
         <div className="flex flex-wrap items-center gap-3 pb-8">
+          {onEdit && (
+            <button
+              type="button"
+              onClick={onEdit}
+              className={cn(
+                "h-11 rounded-xl bg-foreground px-6 text-sm font-medium text-background",
+                "transition-opacity hover:opacity-90 active:opacity-80",
+              )}
+            >
+              Edit
+            </button>
+          )}
+
           {canSubmitImport && (
             <button
               type="button"
