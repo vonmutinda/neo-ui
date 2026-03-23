@@ -35,22 +35,85 @@ export interface AdminStaff {
 
 export const ROLE_PERMISSIONS: Record<StaffRole, string[]> = {
   super_admin: [
-    "users:read", "users:freeze", "users:kyc_override",
-    "transactions:read", "transactions:reverse", "transactions:export",
-    "loans:read", "loans:write_off", "loans:credit_override",
-    "cards:read", "cards:manage",
-    "recon:read", "recon:manage",
-    "audit:read", "analytics:read",
-    "staff:manage", "system:accounts", "flags:manage", "config:manage",
+    "users:read",
+    "users:freeze",
+    "users:kyc_override",
+    "transactions:read",
+    "transactions:reverse",
+    "transactions:export",
+    "loans:read",
+    "loans:write_off",
+    "loans:credit_override",
+    "cards:read",
+    "cards:manage",
+    "recon:read",
+    "recon:manage",
+    "audit:read",
+    "analytics:read",
+    "staff:manage",
+    "system:accounts",
+    "flags:manage",
+    "config:manage",
   ],
-  customer_support: ["users:read", "transactions:read", "cards:read", "loans:read", "audit:read"],
-  customer_support_lead: ["users:read", "users:freeze", "transactions:read", "transactions:reverse", "cards:read", "loans:read", "audit:read"],
-  compliance_officer: ["users:read", "users:freeze", "transactions:read", "transactions:export", "loans:read", "cards:read", "recon:read", "audit:read", "analytics:read", "flags:manage"],
-  lending_officer: ["users:read", "loans:read", "loans:write_off", "loans:credit_override", "audit:read"],
-  reconciliation_analyst: ["transactions:read", "recon:read", "recon:manage", "audit:read"],
+  customer_support: [
+    "users:read",
+    "transactions:read",
+    "cards:read",
+    "loans:read",
+    "audit:read",
+  ],
+  customer_support_lead: [
+    "users:read",
+    "users:freeze",
+    "transactions:read",
+    "transactions:reverse",
+    "cards:read",
+    "loans:read",
+    "audit:read",
+  ],
+  compliance_officer: [
+    "users:read",
+    "users:freeze",
+    "transactions:read",
+    "transactions:export",
+    "loans:read",
+    "cards:read",
+    "recon:read",
+    "audit:read",
+    "analytics:read",
+    "flags:manage",
+  ],
+  lending_officer: [
+    "users:read",
+    "loans:read",
+    "loans:write_off",
+    "loans:credit_override",
+    "audit:read",
+  ],
+  reconciliation_analyst: [
+    "transactions:read",
+    "recon:read",
+    "recon:manage",
+    "audit:read",
+  ],
   card_operations: ["users:read", "cards:read", "cards:manage", "audit:read"],
-  treasury: ["transactions:read", "analytics:read", "system:accounts", "audit:read", "recon:read"],
-  auditor: ["users:read", "transactions:read", "loans:read", "cards:read", "recon:read", "audit:read", "analytics:read", "system:accounts"],
+  treasury: [
+    "transactions:read",
+    "analytics:read",
+    "system:accounts",
+    "audit:read",
+    "recon:read",
+  ],
+  auditor: [
+    "users:read",
+    "transactions:read",
+    "loans:read",
+    "cards:read",
+    "recon:read",
+    "audit:read",
+    "analytics:read",
+    "system:accounts",
+  ],
 };
 
 // --- Pagination ---
@@ -323,7 +386,12 @@ export interface AdminLoanBookSummary {
   portfolioAtRiskPercent: number;
   byStatus: Record<
     string,
-    { count: number; outstandingCents?: number; totalRepaidCents?: number; writtenOffCents?: number }
+    {
+      count: number;
+      outstandingCents?: number;
+      totalRepaidCents?: number;
+      writtenOffCents?: number;
+    }
   >;
   avgTrustScore: number;
   avgLoanSizeCents: number;
@@ -470,7 +538,10 @@ export interface AdminAnalyticsOverview {
   frozenAccounts: number;
   totalTransactions: number;
   totalTransactionsToday: number;
-  totalTransactionVolumeToday: Record<string, { count: number; volumeCents: number }>;
+  totalTransactionVolumeToday: Record<
+    string,
+    { count: number; volumeCents: number }
+  >;
   activeLoans: number;
   totalLoanOutstandingCents: number;
   activeCards: number;
@@ -594,6 +665,7 @@ export interface WriteOffLoanRequest {
 }
 
 export interface CreditOverrideRequest {
+  trustScore?: number; // 1-1000, optional; for testing
   approvedLimitCents: number;
   reason: string;
   expiresAt?: string;
@@ -681,4 +753,130 @@ export interface UpdateRuleRequest {
   value?: string;
   description?: string;
   effectiveTo?: string;
+}
+
+// --- Business Admin ---
+
+export interface AdminBusiness {
+  id: string;
+  ownerUserId: string;
+  name: string;
+  tradeName: string;
+  taxId: string;
+  registrationNumber: string;
+  industryCategory: string;
+  status: string;
+  kybLevel: number;
+  market: string;
+  isFrozen: boolean;
+  frozenReason?: string;
+  relationshipManagerId?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface BusinessFilter {
+  search?: string;
+  status?: string;
+  kybLevel?: number;
+  isFrozen?: boolean;
+  market?: string;
+  limit?: number;
+  offset?: number;
+}
+
+export interface UpdateBusinessStatusRequest {
+  status: string;
+  reason: string;
+}
+
+export interface AssignRMRequest {
+  relationshipManagerId: string;
+}
+
+export interface RelationshipManager {
+  id: string;
+  fullName: string;
+  businessCount: number;
+}
+
+// --- KYB Admin ---
+
+export interface AdminKYBSubmission {
+  id: string;
+  businessId: string;
+  status: string;
+  documents: AdminKYBDocument[];
+  submittedAt: string;
+  reviewedAt?: string;
+  reviewedBy?: string;
+}
+
+export interface AdminKYBDocument {
+  id: string;
+  documentType: string;
+  fileName: string;
+  status: string;
+  reviewNotes?: string;
+}
+
+export interface KYBReviewRequest {
+  decision: string;
+  notes: string;
+}
+
+// --- Currency Admin ---
+
+export interface AdminCurrency {
+  code: string;
+  name: string;
+  symbol: string;
+  countryCode: string;
+  decimalPlaces: number;
+  supportsAccountDetails: boolean;
+  isActive: boolean;
+  displayOrder: number;
+}
+
+// --- System Accounts ---
+
+export interface SystemAccount {
+  name: string;
+  balanceCents: number;
+  currency: string;
+}
+
+export interface TopUpRequest {
+  account: string;
+  amountCents: number;
+  currency: string;
+  reason: string;
+}
+
+// --- Card Simulator (dev/staging) ---
+
+export interface SimulateAuthorizeRequest {
+  cardId: string;
+  merchantName: string;
+  merchantCategoryCode: string;
+  amountCents: number;
+  currency: string;
+}
+
+export interface SimulateSettleRequest {
+  authorizationId: string;
+  amountCents?: number;
+}
+
+export interface SimulateReverseRequest {
+  authorizationId: string;
+  amountCents?: number;
+}
+
+// --- Customer Deposit ---
+
+export interface AdminDepositRequest {
+  amountCents: number;
+  currency: string;
+  narration: string;
 }

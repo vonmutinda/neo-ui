@@ -12,6 +12,8 @@ import {
   type InvoiceFormState,
 } from "@/components/business/invoices/InvoiceForm";
 import { InvoicePreview } from "@/components/business/invoices/InvoicePreview";
+import { InvoicesSkeleton } from "@/components/business/invoices/InvoicesSkeleton";
+import { useBusinessPermissionCheck } from "@/hooks/business/use-business-members";
 import type { CreateInvoiceRequest } from "@/lib/business-types";
 
 const INITIAL_PREVIEW: InvoiceFormState = {
@@ -30,6 +32,9 @@ const INITIAL_PREVIEW: InvoiceFormState = {
 export default function NewInvoicePage() {
   const router = useRouter();
   const { activeBusinessId, activeBusiness } = useBusinessStore();
+  const { isChecking, allowed: canManageInvoices } = useBusinessPermissionCheck(
+    ["biz:invoices:manage"],
+  );
 
   const createMutation = useCreateInvoice(activeBusinessId);
   const sendMutation = useSendInvoice(activeBusinessId);
@@ -74,6 +79,22 @@ export default function NewInvoicePage() {
   const isSubmitting = createMutation.isPending || sendMutation.isPending;
   const businessName =
     activeBusiness?.tradeName || activeBusiness?.name || "Your Business";
+
+  if (isChecking) {
+    return <InvoicesSkeleton />;
+  }
+
+  if (!canManageInvoices) {
+    return (
+      <div className="space-y-6">
+        <PageHeader title="New Invoice" backHref="/business/invoices" />
+        <p className="text-sm text-muted-foreground">
+          You don&apos;t have permission to create or manage invoices for this
+          business.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

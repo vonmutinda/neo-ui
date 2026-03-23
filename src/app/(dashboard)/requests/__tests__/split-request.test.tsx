@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
-import { createElement, type ReactNode } from "react";
+import { createElement, type ComponentType, type ReactNode } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 vi.mock("next/link", () => ({
@@ -57,42 +57,46 @@ beforeEach(() => {
 
 describe("SplitRequestPage", () => {
   it("renders step 1 with lookup input", () => {
-    render(createElement(SplitRequestPage), { wrapper });
+    render(createElement(SplitRequestPage as ComponentType), { wrapper });
     expect(screen.getByText("Add people")).toBeTruthy();
     expect(screen.getByPlaceholderText("Phone or @username")).toBeTruthy();
   });
 
   it("disables Continue with fewer than 2 recipients", () => {
-    render(createElement(SplitRequestPage), { wrapper });
+    render(createElement(SplitRequestPage as ComponentType), { wrapper });
     const continueBtn = screen.getByText("Continue");
     expect(continueBtn.closest("button")?.disabled).toBe(true);
   });
 
   it("shows split mode toggle on step 2", () => {
-    render(createElement(SplitRequestPage), { wrapper });
+    render(createElement(SplitRequestPage as ComponentType), { wrapper });
 
-    mockResolve.mockImplementation((_id: string, opts: { onSuccess: (info: unknown) => void }) => {
-      opts.onSuccess({
-        id: "u1",
-        phoneNumber: "+251911111111",
-        firstName: "Abebe",
-        lastName: "Bikila",
-      });
-    });
+    mockResolve.mockImplementation(
+      (_id: string, opts: { onSuccess: (info: unknown) => void }) => {
+        opts.onSuccess({
+          id: "u1",
+          phoneNumber: "+251911111111",
+          firstName: "Abebe",
+          lastName: "Bikila",
+        });
+      },
+    );
 
     const input = screen.getByPlaceholderText("Phone or @username");
     fireEvent.change(input, { target: { value: "+251911111111" } });
     fireEvent.click(screen.getByText("Lookup"));
 
     fireEvent.change(input, { target: { value: "+251922222222" } });
-    mockResolve.mockImplementation((_id: string, opts: { onSuccess: (info: unknown) => void }) => {
-      opts.onSuccess({
-        id: "u2",
-        phoneNumber: "+251922222222",
-        firstName: "Dawit",
-        lastName: "Haile",
-      });
-    });
+    mockResolve.mockImplementation(
+      (_id: string, opts: { onSuccess: (info: unknown) => void }) => {
+        opts.onSuccess({
+          id: "u2",
+          phoneNumber: "+251922222222",
+          firstName: "Dawit",
+          lastName: "Haile",
+        });
+      },
+    );
     fireEvent.click(screen.getByText("Lookup"));
 
     fireEvent.click(screen.getByText("Continue"));
@@ -102,27 +106,31 @@ describe("SplitRequestPage", () => {
   });
 
   it("shows per-person inputs in custom mode", () => {
-    render(createElement(SplitRequestPage), { wrapper });
+    render(createElement(SplitRequestPage as ComponentType), { wrapper });
 
-    mockResolve.mockImplementation((_id: string, opts: { onSuccess: (info: unknown) => void }) => {
-      opts.onSuccess({
-        id: "u1",
-        phoneNumber: "+251911111111",
-        firstName: "Abebe",
-      });
-    });
+    mockResolve.mockImplementation(
+      (_id: string, opts: { onSuccess: (info: unknown) => void }) => {
+        opts.onSuccess({
+          id: "u1",
+          phoneNumber: "+251911111111",
+          firstName: "Abebe",
+        });
+      },
+    );
     fireEvent.change(screen.getByPlaceholderText("Phone or @username"), {
       target: { value: "+251911111111" },
     });
     fireEvent.click(screen.getByText("Lookup"));
 
-    mockResolve.mockImplementation((_id: string, opts: { onSuccess: (info: unknown) => void }) => {
-      opts.onSuccess({
-        id: "u2",
-        phoneNumber: "+251922222222",
-        firstName: "Dawit",
-      });
-    });
+    mockResolve.mockImplementation(
+      (_id: string, opts: { onSuccess: (info: unknown) => void }) => {
+        opts.onSuccess({
+          id: "u2",
+          phoneNumber: "+251922222222",
+          firstName: "Dawit",
+        });
+      },
+    );
     fireEvent.change(screen.getByPlaceholderText("Phone or @username"), {
       target: { value: "+251922222222" },
     });
@@ -137,19 +145,31 @@ describe("SplitRequestPage", () => {
   });
 
   it("shows narration input on step 2", () => {
-    render(createElement(SplitRequestPage), { wrapper });
+    render(createElement(SplitRequestPage as ComponentType), { wrapper });
 
-    mockResolve.mockImplementation((_id: string, opts: { onSuccess: (info: unknown) => void }) => {
-      opts.onSuccess({ id: "u1", phoneNumber: "+251911111111", firstName: "A" });
-    });
+    mockResolve.mockImplementation(
+      (_id: string, opts: { onSuccess: (info: unknown) => void }) => {
+        opts.onSuccess({
+          id: "u1",
+          phoneNumber: "+251911111111",
+          firstName: "A",
+        });
+      },
+    );
     fireEvent.change(screen.getByPlaceholderText("Phone or @username"), {
       target: { value: "+251911111111" },
     });
     fireEvent.click(screen.getByText("Lookup"));
 
-    mockResolve.mockImplementation((_id: string, opts: { onSuccess: (info: unknown) => void }) => {
-      opts.onSuccess({ id: "u2", phoneNumber: "+251922222222", firstName: "B" });
-    });
+    mockResolve.mockImplementation(
+      (_id: string, opts: { onSuccess: (info: unknown) => void }) => {
+        opts.onSuccess({
+          id: "u2",
+          phoneNumber: "+251922222222",
+          firstName: "B",
+        });
+      },
+    );
     fireEvent.change(screen.getByPlaceholderText("Phone or @username"), {
       target: { value: "+251922222222" },
     });

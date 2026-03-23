@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Enviar — Creative Explorations</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800&family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@300;400;500;600;700;800&family=Sora:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: #F5EDE3;
+    color: #2A1F14;
+    padding: 40px 20px 100px;
+    min-height: 100vh;
+  }
+
+  .header { text-align: center; margin-bottom: 48px; }
+  .header h1 { font-size: 28px; font-weight: 700; letter-spacing: -0.5px; }
+  .header p { margin-top: 6px; font-size: 14px; color: #8A7A6A; max-width: 480px; margin-left: auto; margin-right: auto; }
+
+  .label {
+    max-width: 1200px; margin: 0 auto 18px;
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 2px; color: #9A7830;
+    padding-bottom: 8px; border-bottom: 1px solid rgba(154,120,48,0.15);
+  }
+
+  .grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+    gap: 24px; max-width: 1200px; margin: 0 auto 52px;
+  }
+
+  .card {
+    background: #FDFAF6; border-radius: 24px;
+    border: 1px solid rgba(90,70,50,0.07);
+    box-shadow: 0 1px 3px rgba(90,70,50,0.05), 0 8px 28px rgba(90,70,50,0.07);
+    overflow: hidden; transition: transform 0.2s;
+  }
+  .card:hover { transform: translateY(-3px); }
+
+  .display {
+    display: flex; align-items: center; justify-content: center;
+    padding: 44px 32px; min-height: 170px;
+  }
+  .display.dark { background: #1A150F; }
+  .display.night { background: #0F0D0A; }
+  .display.rich { background: linear-gradient(135deg, #2A1F14, #1A150F); }
+  .display.warm { background: linear-gradient(135deg, #F5EDE3, #EBE0D0); }
+  .display.gold { background: linear-gradient(135deg, #C99A20, #8B6914); }
+
+  .info {
+    padding: 18px 24px 20px; border-top: 1px solid rgba(90,70,50,0.05);
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .info h3 { font-size: 14px; font-weight: 700; }
+  .info p { font-size: 11px; color: #8A7A6A; margin-top: 2px; }
+  .tag {
+    font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px;
+    padding: 3px 8px; border-radius: 5px;
+    background: rgba(180,130,50,0.08); color: #9A7830; white-space: nowrap;
+  }
+
+  /* Phone mockups */
+  .phones {
+    display: flex; gap: 32px; justify-content: center; flex-wrap: wrap;
+    max-width: 1200px; margin: 0 auto 52px;
+  }
+  .phone {
+    width: 260px; background: #1A150F; border-radius: 36px;
+    padding: 16px 12px; box-shadow: 0 8px 40px rgba(0,0,0,0.18);
+  }
+  .screen { background: #F5EDE3; border-radius: 26px; overflow: hidden; }
+  .sbar { display: flex; justify-content: space-between; padding: 10px 16px 6px; font-size: 10px; font-weight: 600; color: #2A1F14; }
+  .splash { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 64px 20px 80px; gap: 14px; }
+  .splash .sub { font-size: 12px; color: #8A7A6A; font-weight: 500; }
+  .pcap { text-align: center; margin-top: 12px; font-size: 11px; color: #8A7A6A; font-weight: 500; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Enviar — Fresh Concepts</h1>
+  <p>10 new creative directions exploring geometry, negative space, cultural motifs, and typographic play</p>
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<div class="label">Geometric &amp; Abstract</div>
+<div class="grid">
+
+  <!-- 1: Orbit — circular arrow path -->
+  <div class="card">
+    <div class="display">
+      <svg width="280" height="64" viewBox="0 0 280 64" fill="none">
+        <defs><linearGradient id="g1" x1="0" y1="0" x2="56" y2="56" gradientUnits="userSpaceOnUse"><stop stop-color="#C99A20"/><stop offset="1" stop-color="#8B6914"/></linearGradient></defs>
+        <rect width="56" height="56" x="0" y="4" rx="15" fill="url(#g1)"/>
+        <!-- Circular orbit path with arrow -->
+        <circle cx="28" cy="32" r="14" fill="none" stroke="white" stroke-width="2.2" stroke-dasharray="72 16" stroke-linecap="round"/>
+        <!-- Arrow tip at top of orbit -->
+        <path d="M30 17L35 20L30 23" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <!-- Center dot -->
+        <circle cx="28" cy="32" r="3" fill="white" opacity="0.9"/>
+        <text x="72" y="42" font-family="'DM Sans', sans-serif" font-size="34" font-weight="700" fill="#2A1F14" letter-spacing="-0.8">enviar</text>
+      </svg>
+    </div>
+    <div class="info">
+      <div><h3>Orbit</h3><p>Money in motion around you</p></div>
+      <span class="tag">Circular</span>
+    </div>
+  </div>
+
+  <!-- 2: Fold — origami E -->
+  <div class="card">
+    <div class="display dark">
+      <svg width="280" height="64" viewBox="0 0 280 64" fill="none">
+        <rect width="56" height="56" x="0" y="4" rx="15" fill="#C99A20"/>
+        <!-- Folded paper / origami arrow shape -->
+        <polygon points="18,44 28,14 38,44 28,36" fill="white" opacity="0.95"/>
+        <polygon points="28,14 38,44 28,36" fill="white" opacity="0.7"/>
+        <!-- Fold line -->
+        <line x1="28" y1="14" x2="28" y2="36" stroke="#C99A20" stroke-width="0.8" opacity="0.4"/>
+        <text x="72" y="42" font-family="'Sora', sans-serif" font-size="32" font-weight="600" fill="#F5EDE3" letter-spacing="-0.5">enviar</text>
+      </svg>
+    </div>
+    <div class="info">
+      <div><h3>Fold</h3><p>Origami arrow — paper meets precision</p></div>
+      <span class="tag">Minimal</span>
+    </div>
+  </div>
+
+  <!-- 3: Prism — layered triangles -->
+  <div class="card">
+    <div class="display">
+      <svg width="280" height="64" viewBox="0 0 280 64" fill="none">
+        <defs><linearGradient id="g3" x1="0" y1="4" x2="56" y2="60" gradientUnits="userSpaceOnUse"><stop stop-color="#D4A830"/><stop offset="1" stop-color="#8B6914"/></linearGradient></defs>
+        <rect width="56" height="56" x="0" y="4" rx="15" fill="url(#g3)"/>
+        <!-- Two overlapping triangles creating depth -->
+        <polygon points="28,16 40,42 16,42" fill="none" stroke="white" stroke-width="2.2" stroke-linejoin="round"/>
+        <polygon points="28,22 36,40 20,40" fill="white" opacity="0.25"/>
+        <!-- Small highlight line -->
+        <line x1="28" y1="16" x2="28" y2="22" stroke="white" stroke-width="2" stroke-linecap="round"/>
+        <text x="72" y="42" font-family="'Space Grotesk', sans-serif" font-size="34" font-weight="600" fill="#2A1F14" letter-spacing="-1">enviar</text>
+      </svg>
+    </div>
+    <div class="info">
+      <div><h3>Prism</h3><p>Layered depth — stability meets aspiration</p></div>
+      <span class="tag">Geometric</span>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<div class="label">Negative Space &amp; Clever Marks</div>
+<div class="grid">
+
+  <!-- 4: Portal — E cut from circle -->
+  <div class="card">
+    <div class="display rich">
+      <svg width="280" height="64" viewBox="0 0 280 64" fill="none">
+        <defs>
+          <mask id="emask">
+            <rect width="56" height="56" x="0" y="4" fill="white"/>
+            <!-- Cut out E shape -->
+            <rect x="18" y="16" width="22" height="4" rx="2" fill="black"/>
+            <rect x="18" y="28" width="16" height="4" rx="2" fill="black"/>
+            <rect x="18" y="40" width="22" height="4" rx="2" fill="black"/>
+            <rect x="18" y="16" width="4" height="28" rx="2" fill="black"/>
+          </mask>
+        </defs>
+        <circle cx="28" cy="32" r="26" fill="#D4A830" mask="url(#emask)"/>
+        <text x="68" y="42" font-family="'DM Sans', sans-serif" font-size="34" font-weight="700" fill="#F5EDE3" letter-spacing="-0.8">enviar</text>
+      </svg>
+    </div>
+    <div class="info">
+      <div><h3>Portal</h3><p>E carved from a golden disc</p></div>
+      <span class="tag">Negative space</span>
+    </div>
+  </div>
+
+  <!-- 5: Warp — arrow bending through space -->
+  <div class="card">
+    <div class="display">
+      <svg width="300" height="64" viewBox="0 0 300 64" fill="none">
+        <defs><linearGradient id="g5" x1="0" y1="4" x2="56" y2="60" gradientUnits="userSpaceOnUse"><stop stop-color="#C99A20"/><stop offset="1" stop-color="#9A7510"/></linearGradient></defs>
+        <rect width="56" height="56" x="0" y="4" rx="15" fill="url(#g5)"/>
+        <!-- Curved send arrow -->
+        <path d="M16 40C16 40 20 20 36 16" stroke="white" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+        <path d="M32 12L38 16L32 20" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <!-- Trailing dot -->
+        <circle cx="16" cy="42" r="2.5" fill="white" opacity="0.5"/>
+        <text x="72" y="42" font-family="'Outfit', sans-serif" font-size="34" font-weight="600" fill="#2A1F14" letter-spacing="-0.8">enviar</text>
+      </svg>
+    </div>
+    <div class="info">
+      <div><h3>Warp</h3><p>Curved trajectory — money finding its way</p></div>
+      <span class="tag">Fluid</span>
+    </div>
+  </div>
+
+  <!-- 6: Split — two halves making a whole -->
+  <div class="card">
+    <div class="display dark">
+      <svg width="280" height="64" viewBox="0 0 280 64" fill="none">
+        <rect width="56" height="56" x="0" y="4" rx="15" fill="none" stroke="#D4A830" stroke-width="2"/>
+        <!-- Left half arrow - sender -->
+        <path d="M14 32L26 20" stroke="#D4A830" stroke-width="2.5" stroke-linecap="round"/>
+        <path d="M14 32L26 44" stroke="#D4A830" stroke-width="2.5" stroke-linecap="round"/>
+        <!-- Right half arrow - receiver -->
+        <path d="M42 32L30 20" stroke="#D4A830" stroke-width="2.5" stroke-linecap="round"/>
+        <path d="M42 32L30 44" stroke="#D4A830" stroke-width="2.5" stroke-linecap="round"/>
+        <!-- Center line connecting -->
+        <line x1="22" y1="32" x2="34" y2="32" stroke="#D4A830" stroke-width="2" stroke-linecap="round" stroke-dasharray="4 3"/>
+        <text x="72" y="42" font-family="'DM Sans', sans-serif" font-size="34" font-weight="700" fill="#D4A830" letter-spacing="-0.8">enviar</text>
+      </svg>
+    </div>
+    <div class="info">
+      <div><h3>Split</h3><p>Two arrows meet — sender and receiver</p></div>
+      <span class="tag">Dualism</span>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<div class="label">Typographic &amp; Wordmark-Forward</div>
+<div class="grid">
+
+  <!-- 7: Kinetic — tilted E with motion blur -->
+  <div class="card">
+    <div class="display">
+      <svg width="300" height="64" viewBox="0 0 300 64" fill="none">
+        <!-- Tilted bold E as the icon -->
+        <g transform="translate(28,32) rotate(-12) translate(-28,-32)">
+          <rect width="52" height="52" x="2" y="6" rx="14" fill="#C99A20"/>
+          <text x="28" y="42" font-family="'Inter', sans-serif" font-size="36" font-weight="800" fill="white" text-anchor="middle">E</text>
+        </g>
+        <!-- Speed lines -->
+        <line x1="54" y1="22" x2="62" y2="22" stroke="#C99A20" stroke-width="2" stroke-linecap="round" opacity="0.3"/>
+        <line x1="56" y1="32" x2="64" y2="32" stroke="#C99A20" stroke-width="2" stroke-linecap="round" opacity="0.2"/>
+        <line x1="54" y1="42" x2="62" y2="42" stroke="#C99A20" stroke-width="2" stroke-linecap="round" opacity="0.3"/>
+        <text x="76" y="42" font-family="'Sora', sans-serif" font-size="34" font-weight="700" fill="#2A1F14" letter-spacing="-1">nviar</text>
+      </svg>
+    </div>
+    <div class="info">
+      <div><h3>Kinetic</h3><p>The E breaks free — icon IS the first letter</p></div>
+      <span class="tag">Playful</span>
+    </div>
+  </div>
+
+  <!-- 8: Stencil — clean all-caps logotype -->
+  <div class="card">
+    <div class="display night">
+      <svg width="300" height="56" viewBox="0 0 300 56" fill="none">
+        <text x="0" y="42" font-family="'Space Grotesk', sans-serif" font-size="44" font-weight="700" fill="#D4A830" letter-spacing="6">ENVIAR</text>
+        <!-- Underline accent -->
+        <rect x="0" y="50" width="60" height="3" rx="1.5" fill="#D4A830" opacity="0.4"/>
+      </svg>
+    </div>
+    <div class="info">
+      <div><h3>Stencil</h3><p>All-caps logotype — bold, editorial, no icon needed</p></div>
+      <span class="tag">Type-only</span>
+    </div>
+  </div>
+
+  <!-- 9: Cursive — flowing script-like wordmark -->
+  <div class="card">
+    <div class="display warm">
+      <svg width="280" height="64" viewBox="0 0 280 64" fill="none">
+        <!-- Small golden dot as a brand mark -->
+        <circle cx="12" cy="32" r="8" fill="#C99A20"/>
+        <circle cx="12" cy="32" r="4" fill="white" opacity="0.6"/>
+        <text x="30" y="44" font-family="'DM Sans', sans-serif" font-size="38" font-weight="700" fill="#2A1F14" letter-spacing="-1.5" font-style="italic">enviar</text>
+        <!-- Swoosh underline -->
+        <path d="M30 50Q100 58 230 44" stroke="#C99A20" stroke-width="2" stroke-linecap="round" fill="none" opacity="0.35"/>
+      </svg>
+    </div>
+    <div class="info">
+      <div><h3>Script</h3><p>Italic warmth with a golden accent dot</p></div>
+      <span class="tag">Warm</span>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<div class="label">Cultural &amp; Symbolic</div>
+<div class="grid">
+
+  <!-- 10: Meskel — inspired by Ethiopian cross geometry -->
+  <div class="card">
+    <div class="display">
+      <svg width="280" height="64" viewBox="0 0 280 64" fill="none">
+        <defs><linearGradient id="g10" x1="0" y1="4" x2="56" y2="60" gradientUnits="userSpaceOnUse"><stop stop-color="#C99A20"/><stop offset="1" stop-color="#8B6914"/></linearGradient></defs>
+        <rect width="56" height="56" x="0" y="4" rx="15" fill="url(#g10)"/>
+        <!-- Ethiopian-inspired interlocking diamond pattern -->
+        <path d="M28 16L38 32L28 48L18 32Z" fill="none" stroke="white" stroke-width="2" stroke-linejoin="round"/>
+        <path d="M20 24L36 24L36 40L20 40Z" fill="none" stroke="white" stroke-width="1.5" stroke-linejoin="round" opacity="0.5"/>
+        <!-- Center dot -->
+        <circle cx="28" cy="32" r="2.5" fill="white"/>
+        <text x="72" y="42" font-family="'DM Sans', sans-serif" font-size="34" font-weight="700" fill="#2A1F14" letter-spacing="-0.8">enviar</text>
+      </svg>
+    </div>
+    <div class="info">
+      <div><h3>Meskel</h3><p>Diamond &amp; square interlock — Ethiopian geometry</p></div>
+      <span class="tag">Heritage</span>
+    </div>
+  </div>
+
+  <!-- 11: Seed — growth from a point -->
+  <div class="card">
+    <div class="display dark">
+      <svg width="280" height="64" viewBox="0 0 280 64" fill="none">
+        <circle cx="28" cy="32" r="26" fill="none" stroke="#D4A830" stroke-width="1.5"/>
+        <!-- Growing sprout / seed shape -->
+        <path d="M28 46V28" stroke="#D4A830" stroke-width="2.5" stroke-linecap="round"/>
+        <path d="M28 28C28 28 20 26 18 20C18 20 24 22 28 22C32 22 38 20 38 20C36 26 28 28 28 28Z" fill="#D4A830" opacity="0.8"/>
+        <!-- Small root -->
+        <path d="M28 46C26 48 24 48 22 47" stroke="#D4A830" stroke-width="1.2" stroke-linecap="round" opacity="0.4"/>
+        <text x="66" y="42" font-family="'DM Sans', sans-serif" font-size="34" font-weight="700" fill="#D4A830" letter-spacing="-0.8">enviar</text>
+      </svg>
+    </div>
+    <div class="info">
+      <div><h3>Seed</h3><p>Growth from a single point — nurturing wealth</p></div>
+      <span class="tag">Organic</span>
+    </div>
+  </div>
+
+  <!-- 12: Pulse — heartbeat / signal wave -->
+  <div class="card">
+    <div class="display">
+      <svg width="280" height="64" viewBox="0 0 280 64" fill="none">
+        <defs><linearGradient id="g12" x1="0" y1="4" x2="56" y2="60" gradientUnits="userSpaceOnUse"><stop stop-color="#C99A20"/><stop offset="1" stop-color="#9A7510"/></linearGradient></defs>
+        <rect width="56" height="56" x="0" y="4" rx="15" fill="url(#g12)"/>
+        <!-- Signal / pulse wave -->
+        <polyline points="12,32 20,32 24,18 28,44 32,26 36,38 40,32 44,32" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        <text x="72" y="42" font-family="'Outfit', sans-serif" font-size="34" font-weight="600" fill="#2A1F14" letter-spacing="-0.8">enviar</text>
+      </svg>
+    </div>
+    <div class="info">
+      <div><h3>Pulse</h3><p>Financial heartbeat — your money, alive</p></div>
+      <span class="tag">Fintech</span>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<div class="label">Splash Screen Previews — Top Picks</div>
+<div class="phones">
+
+  <!-- Orbit splash -->
+  <div>
+    <div class="phone">
+      <div class="screen">
+        <div class="sbar"><span>9:41</span><span>...</span></div>
+        <div class="splash">
+          <svg width="68" height="68" viewBox="0 0 56 56" fill="none">
+            <defs><linearGradient id="sp1" x1="0" y1="0" x2="56" y2="56" gradientUnits="userSpaceOnUse"><stop stop-color="#C99A20"/><stop offset="1" stop-color="#8B6914"/></linearGradient></defs>
+            <rect width="56" height="56" rx="15" fill="url(#sp1)"/>
+            <circle cx="28" cy="28" r="14" fill="none" stroke="white" stroke-width="2.2" stroke-dasharray="72 16" stroke-linecap="round"/>
+            <path d="M30 13L35 16L30 19" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="28" cy="28" r="3" fill="white" opacity="0.9"/>
+          </svg>
+          <span style="font-size:24px;font-weight:700;color:#2A1F14;letter-spacing:-0.5px;">enviar</span>
+          <span class="sub">Send money, effortlessly</span>
+        </div>
+      </div>
+    </div>
+    <div class="pcap">Orbit</div>
+  </div>
+
+  <!-- Fold splash -->
+  <div>
+    <div class="phone">
+      <div class="screen">
+        <div class="sbar"><span>9:41</span><span>...</span></div>
+        <div class="splash">
+          <svg width="68" height="68" viewBox="0 0 56 56" fill="none">
+            <rect width="56" height="56" rx="15" fill="#C99A20"/>
+            <polygon points="18,44 28,14 38,44 28,36" fill="white" opacity="0.95"/>
+            <polygon points="28,14 38,44 28,36" fill="white" opacity="0.7"/>
+            <line x1="28" y1="14" x2="28" y2="36" stroke="#C99A20" stroke-width="0.8" opacity="0.4"/>
+          </svg>
+          <span style="font-size:24px;font-weight:600;color:#2A1F14;letter-spacing:-0.5px;font-family:'Sora',sans-serif;">enviar</span>
+          <span class="sub">Send money, effortlessly</span>
+        </div>
+      </div>
+    </div>
+    <div class="pcap">Fold</div>
+  </div>
+
+  <!-- Warp splash -->
+  <div>
+    <div class="phone">
+      <div class="screen">
+        <div class="sbar"><span>9:41</span><span>...</span></div>
+        <div class="splash">
+          <svg width="68" height="68" viewBox="0 0 56 56" fill="none">
+            <defs><linearGradient id="sp3" x1="0" y1="0" x2="56" y2="56" gradientUnits="userSpaceOnUse"><stop stop-color="#C99A20"/><stop offset="1" stop-color="#9A7510"/></linearGradient></defs>
+            <rect width="56" height="56" rx="15" fill="url(#sp3)"/>
+            <path d="M14 38C14 38 18 18 34 14" stroke="white" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+            <path d="M30 10L36 14L30 18" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="14" cy="40" r="2.5" fill="white" opacity="0.5"/>
+          </svg>
+          <span style="font-size:24px;font-weight:600;color:#2A1F14;letter-spacing:-0.5px;font-family:'Outfit',sans-serif;">enviar</span>
+          <span class="sub">Send money, effortlessly</span>
+        </div>
+      </div>
+    </div>
+    <div class="pcap">Warp</div>
+  </div>
+
+  <!-- Meskel splash -->
+  <div>
+    <div class="phone">
+      <div class="screen">
+        <div class="sbar"><span>9:41</span><span>...</span></div>
+        <div class="splash">
+          <svg width="68" height="68" viewBox="0 0 56 56" fill="none">
+            <defs><linearGradient id="sp4" x1="0" y1="0" x2="56" y2="56" gradientUnits="userSpaceOnUse"><stop stop-color="#C99A20"/><stop offset="1" stop-color="#8B6914"/></linearGradient></defs>
+            <rect width="56" height="56" rx="15" fill="url(#sp4)"/>
+            <path d="M28 12L38 28L28 44L18 28Z" fill="none" stroke="white" stroke-width="2" stroke-linejoin="round"/>
+            <path d="M20 20L36 20L36 36L20 36Z" fill="none" stroke="white" stroke-width="1.5" stroke-linejoin="round" opacity="0.5"/>
+            <circle cx="28" cy="28" r="2.5" fill="white"/>
+          </svg>
+          <span style="font-size:24px;font-weight:700;color:#2A1F14;letter-spacing:-0.5px;">enviar</span>
+          <span class="sub">Send money, effortlessly</span>
+        </div>
+      </div>
+    </div>
+    <div class="pcap">Meskel</div>
+  </div>
+
+  <!-- Pulse splash -->
+  <div>
+    <div class="phone">
+      <div class="screen">
+        <div class="sbar"><span>9:41</span><span>...</span></div>
+        <div class="splash">
+          <svg width="68" height="68" viewBox="0 0 56 56" fill="none">
+            <defs><linearGradient id="sp5" x1="0" y1="0" x2="56" y2="56" gradientUnits="userSpaceOnUse"><stop stop-color="#C99A20"/><stop offset="1" stop-color="#9A7510"/></linearGradient></defs>
+            <rect width="56" height="56" rx="15" fill="url(#sp5)"/>
+            <polyline points="10,28 18,28 22,14 26,40 30,22 34,34 38,28 46,28" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+          </svg>
+          <span style="font-size:24px;font-weight:600;color:#2A1F14;letter-spacing:-0.5px;font-family:'Outfit',sans-serif;">enviar</span>
+          <span class="sub">Send money, effortlessly</span>
+        </div>
+      </div>
+    </div>
+    <div class="pcap">Pulse</div>
+  </div>
+
+</div>
+
+</body>
+</html>

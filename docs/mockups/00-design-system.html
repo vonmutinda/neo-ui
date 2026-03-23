@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Enviar — Design System v2</title>
+<link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  /* ============================================================
+     ENVIAR DESIGN SYSTEM v2
+     Apple-grade simplicity. Dieter Rams restraint.
+     Every element earns its place.
+     ============================================================ */
+
+  :root {
+    /* The palette is almost monochrome. Color appears only to communicate. */
+    --bg: #F5F5F7;
+    --surface: #FFFFFF;
+    --surface-raised: #FFFFFF;
+    --surface-inset: #F5F5F7;
+    --text-1: #1D1D1F;
+    --text-2: #86868B;
+    --text-3: #C7C7CC;
+    --border: rgba(0,0,0,0.06);
+    --border-strong: rgba(0,0,0,0.12);
+
+    /* Functional color — only when meaning demands it */
+    --blue: #0071E3;
+    --blue-hover: #0077ED;
+    --blue-subtle: rgba(0,113,227,0.06);
+    --green: #34C759;
+    --green-subtle: rgba(52,199,89,0.08);
+    --green-text: #248A3D;
+    --red: #FF3B30;
+    --red-subtle: rgba(255,59,48,0.08);
+    --red-text: #D70015;
+    --orange: #FF9500;
+    --orange-subtle: rgba(255,149,0,0.08);
+    --orange-text: #C93400;
+
+    /* Radius — generous, Apple-like */
+    --r-xs: 8px;
+    --r-sm: 12px;
+    --r-md: 16px;
+    --r-lg: 20px;
+    --r-xl: 28px;
+    --r-full: 980px;
+
+    /* Shadows — depth without borders */
+    --shadow-xs: 0 1px 2px rgba(0,0,0,0.04);
+    --shadow-sm: 0 2px 8px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.06);
+    --shadow-md: 0 4px 16px rgba(0,0,0,0.06), 0 1px 4px rgba(0,0,0,0.04);
+    --shadow-lg: 0 8px 32px rgba(0,0,0,0.08), 0 2px 8px rgba(0,0,0,0.04);
+    --shadow-xl: 0 20px 60px rgba(0,0,0,0.1), 0 4px 16px rgba(0,0,0,0.04);
+
+    /* Type */
+    --sans: 'Inter', -apple-system, 'SF Pro Display', 'Helvetica Neue', sans-serif;
+    --mono: 'JetBrains Mono', 'SF Mono', monospace;
+
+    /* Sidebar */
+    --sidebar-w: 240px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: var(--sans);
+    background: var(--bg);
+    color: var(--text-1);
+    font-size: 15px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  .page { max-width: 1000px; margin: 0 auto; padding: 80px 40px 120px; }
+
+  /* ---- Section ---- */
+  .ds-section { margin-bottom: 80px; }
+  .ds-overline {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text-3);
+    margin-bottom: 8px;
+  }
+  .ds-heading {
+    font-size: 40px;
+    font-weight: 600;
+    letter-spacing: -1.5px;
+    line-height: 1.1;
+    margin-bottom: 12px;
+  }
+  .ds-desc {
+    font-size: 17px;
+    color: var(--text-2);
+    max-width: 540px;
+    line-height: 1.65;
+  }
+
+  /* ---- Principles ---- */
+  .principles {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2px;
+    background: var(--border);
+    border-radius: var(--r-md);
+    overflow: hidden;
+    margin-top: 40px;
+  }
+  .principle {
+    background: var(--surface);
+    padding: 36px 28px;
+  }
+  .principle-num {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-3);
+    margin-bottom: 16px;
+  }
+  .principle-title {
+    font-size: 17px;
+    font-weight: 600;
+    letter-spacing: -0.3px;
+    margin-bottom: 8px;
+  }
+  .principle-body {
+    font-size: 14px;
+    color: var(--text-2);
+    line-height: 1.6;
+  }
+
+  /* ---- Colors ---- */
+  .swatches {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 12px;
+    margin-top: 32px;
+  }
+  .swatch {
+    border-radius: var(--r-sm);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+  }
+  .swatch-block { height: 72px; }
+  .swatch-info { padding: 12px 14px; background: var(--surface); }
+  .swatch-name { font-size: 13px; font-weight: 500; }
+  .swatch-val { font-family: var(--mono); font-size: 11px; color: var(--text-2); margin-top: 2px; }
+
+  /* ---- Typography ---- */
+  .type-stack { margin-top: 32px; }
+  .type-row {
+    display: flex;
+    align-items: baseline;
+    gap: 32px;
+    padding: 24px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .type-row:last-child { border-bottom: none; }
+  .type-label {
+    width: 100px;
+    flex-shrink: 0;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: var(--text-3);
+  }
+
+  /* ---- Buttons ---- */
+  .btn-row { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 32px; align-items: center; }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-family: var(--sans);
+    font-size: 15px;
+    font-weight: 500;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.25, 0.1, 0.25, 1);
+    border-radius: var(--r-full);
+    padding: 12px 28px;
+  }
+  .btn:active { transform: scale(0.97); }
+
+  .btn--filled { background: var(--blue); color: white; }
+  .btn--filled:hover { background: var(--blue-hover); }
+
+  .btn--dark { background: var(--text-1); color: white; }
+  .btn--dark:hover { background: #333; }
+
+  .btn--outline { background: transparent; color: var(--text-1); box-shadow: inset 0 0 0 1.5px var(--border-strong); }
+  .btn--outline:hover { background: rgba(0,0,0,0.03); }
+
+  .btn--ghost { background: transparent; color: var(--blue); padding: 12px 16px; }
+  .btn--ghost:hover { background: var(--blue-subtle); }
+
+  .btn--danger { background: var(--red); color: white; }
+
+  .btn--sm { font-size: 13px; padding: 8px 20px; }
+
+  /* ---- Badges ---- */
+  .badge-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 32px; }
+
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 5px 14px;
+    border-radius: var(--r-full);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.2px;
+  }
+  .pill--green { background: var(--green-subtle); color: var(--green-text); }
+  .pill--red { background: var(--red-subtle); color: var(--red-text); }
+  .pill--orange { background: var(--orange-subtle); color: var(--orange-text); }
+  .pill--blue { background: var(--blue-subtle); color: var(--blue); }
+  .pill--neutral { background: rgba(0,0,0,0.05); color: var(--text-2); }
+
+  /* ---- Inputs ---- */
+  .input-row { display: flex; gap: 16px; margin-top: 32px; flex-wrap: wrap; }
+
+  .input {
+    padding: 14px 18px;
+    border-radius: var(--r-sm);
+    border: 1.5px solid var(--border-strong);
+    font-size: 15px;
+    font-family: var(--sans);
+    background: var(--surface);
+    color: var(--text-1);
+    outline: none;
+    width: 280px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .input:focus {
+    border-color: var(--blue);
+    box-shadow: 0 0 0 4px var(--blue-subtle);
+  }
+  .input::placeholder { color: var(--text-3); }
+  .input--mono { font-family: var(--mono); font-size: 20px; font-weight: 600; text-align: center; letter-spacing: -0.5px; }
+
+  /* ---- Segmented Control ---- */
+  .seg-row { margin-top: 32px; }
+  .seg {
+    display: inline-flex;
+    background: rgba(0,0,0,0.05);
+    border-radius: var(--r-full);
+    padding: 4px;
+    gap: 4px;
+  }
+  .seg__item {
+    padding: 8px 20px;
+    border-radius: var(--r-full);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-2);
+    cursor: pointer;
+    transition: all 0.2s;
+    user-select: none;
+  }
+  .seg__item:hover { color: var(--text-1); }
+  .seg__item--active {
+    background: var(--surface);
+    color: var(--text-1);
+    box-shadow: var(--shadow-sm);
+  }
+
+  /* ---- Cards ---- */
+  .card-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 32px; }
+
+  .card {
+    background: var(--surface);
+    border-radius: var(--r-md);
+    box-shadow: var(--shadow-sm);
+    padding: 28px;
+    transition: box-shadow 0.3s, transform 0.3s;
+  }
+  .card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+  }
+  .card__overline {
+    font-size: 12px;
+    color: var(--text-2);
+    margin-bottom: 4px;
+  }
+  .card__value {
+    font-family: var(--mono);
+    font-size: 32px;
+    font-weight: 600;
+    letter-spacing: -1.5px;
+    line-height: 1.1;
+  }
+  .card__change {
+    font-size: 13px;
+    font-weight: 500;
+    margin-top: 8px;
+  }
+
+  /* ---- Table ---- */
+  .table-wrap { margin-top: 32px; background: var(--surface); border-radius: var(--r-md); box-shadow: var(--shadow-sm); overflow: hidden; }
+  .tbl { width: 100%; border-collapse: collapse; }
+  .tbl th {
+    text-align: left;
+    padding: 14px 24px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: var(--text-3);
+    border-bottom: 1px solid var(--border);
+  }
+  .tbl td {
+    padding: 16px 24px;
+    font-size: 15px;
+    border-bottom: 1px solid var(--border);
+  }
+  .tbl tr:last-child td { border-bottom: none; }
+  .tbl tr { transition: background 0.15s; }
+  .tbl tr:hover td { background: rgba(0,0,0,0.015); }
+  .tbl .mono { font-family: var(--mono); font-weight: 500; letter-spacing: -0.3px; }
+  .tbl .credit { color: var(--green-text); }
+  .tbl .muted { color: var(--text-2); font-size: 14px; }
+
+  /* ---- Sidebar Preview ---- */
+  .sidebar-preview {
+    width: 240px;
+    background: var(--surface);
+    border-radius: var(--r-md);
+    box-shadow: var(--shadow-sm);
+    padding: 20px 0;
+    margin-top: 32px;
+  }
+  .sb-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 20px 16px;
+    margin-bottom: 8px;
+  }
+  .sb-logo {
+    width: 28px;
+    height: 28px;
+    background: var(--text-1);
+    border-radius: var(--r-xs);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 700;
+    font-size: 14px;
+  }
+  .sb-name { font-size: 16px; font-weight: 600; letter-spacing: -0.3px; }
+  .sb-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 20px;
+    font-size: 14px;
+    color: var(--text-2);
+    cursor: pointer;
+    transition: all 0.15s;
+    border-radius: 0;
+  }
+  .sb-nav-item:hover { color: var(--text-1); background: rgba(0,0,0,0.02); }
+  .sb-nav-item--active {
+    color: var(--text-1);
+    font-weight: 500;
+    background: rgba(0,0,0,0.04);
+  }
+  .sb-nav-item__icon {
+    width: 20px;
+    text-align: center;
+    font-size: 15px;
+    opacity: 0.5;
+  }
+  .sb-nav-item--active .sb-nav-item__icon { opacity: 1; }
+  .sb-divider { height: 1px; background: var(--border); margin: 8px 0; }
+  .sb-section-label {
+    padding: 12px 20px 4px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--text-3);
+  }
+
+  /* ---- Utility ---- */
+  .mt-48 { margin-top: 48px; }
+  .mt-32 { margin-top: 32px; }
+  .flex-center { display: flex; align-items: center; gap: 12px; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- Header -->
+  <div class="ds-section">
+    <div class="ds-overline">Design System v2</div>
+    <div class="ds-heading">Enviar Business</div>
+    <div class="ds-desc">
+      Stripped to essentials. Every surface, every number, every pixel of whitespace
+      is intentional. The interface disappears. The money speaks.
+    </div>
+
+    <div class="principles">
+      <div class="principle">
+        <div class="principle-num">01</div>
+        <div class="principle-title">Subtract</div>
+        <div class="principle-body">If you can remove it and nothing breaks, remove it. Borders become shadows. Labels become context. Chrome becomes content.</div>
+      </div>
+      <div class="principle">
+        <div class="principle-num">02</div>
+        <div class="principle-title">Breathe</div>
+        <div class="principle-body">Generous whitespace isn't empty space. It's confidence. A financial dashboard that breathes says: we're in control.</div>
+      </div>
+      <div class="principle">
+        <div class="principle-num">03</div>
+        <div class="principle-title">Honest</div>
+        <div class="principle-body">Green means money in. Red means money out. Orange means action needed. No other colors. Numbers are always monospace.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Colors -->
+  <div class="ds-section">
+    <div class="ds-overline">Palette</div>
+    <div class="ds-heading" style="font-size:28px;">Almost monochrome</div>
+    <div class="ds-desc">Color is rationed. It appears only to communicate status or demand attention. Everything else is grayscale.</div>
+    <div class="swatches">
+      <div class="swatch"><div class="swatch-block" style="background:#1D1D1F"></div><div class="swatch-info"><div class="swatch-name">Ink</div><div class="swatch-val">#1D1D1F</div></div></div>
+      <div class="swatch"><div class="swatch-block" style="background:#86868B"></div><div class="swatch-info"><div class="swatch-name">Secondary</div><div class="swatch-val">#86868B</div></div></div>
+      <div class="swatch"><div class="swatch-block" style="background:#F5F5F7"></div><div class="swatch-info"><div class="swatch-name">Canvas</div><div class="swatch-val">#F5F5F7</div></div></div>
+      <div class="swatch"><div class="swatch-block" style="background:#FFFFFF"></div><div class="swatch-info"><div class="swatch-name">Surface</div><div class="swatch-val">#FFFFFF</div></div></div>
+      <div class="swatch"><div class="swatch-block" style="background:#0071E3"></div><div class="swatch-info"><div class="swatch-name">Action</div><div class="swatch-val">#0071E3</div></div></div>
+      <div class="swatch"><div class="swatch-block" style="background:#34C759"></div><div class="swatch-info"><div class="swatch-name">In</div><div class="swatch-val">#34C759</div></div></div>
+      <div class="swatch"><div class="swatch-block" style="background:#FF3B30"></div><div class="swatch-info"><div class="swatch-name">Out</div><div class="swatch-val">#FF3B30</div></div></div>
+      <div class="swatch"><div class="swatch-block" style="background:#FF9500"></div><div class="swatch-info"><div class="swatch-name">Attention</div><div class="swatch-val">#FF9500</div></div></div>
+    </div>
+  </div>
+
+  <!-- Typography -->
+  <div class="ds-section">
+    <div class="ds-overline">Typography</div>
+    <div class="ds-heading" style="font-size:28px;">Numbers are first-class</div>
+    <div class="type-stack">
+      <div class="type-row">
+        <div class="type-label">Display</div>
+        <div style="font-family:var(--mono);font-size:48px;font-weight:600;letter-spacing:-2.5px;line-height:1;">Br 2,847,320</div>
+      </div>
+      <div class="type-row">
+        <div class="type-label">Heading</div>
+        <div style="font-size:28px;font-weight:600;letter-spacing:-0.8px;">Transfers</div>
+      </div>
+      <div class="type-row">
+        <div class="type-label">Title</div>
+        <div style="font-size:20px;font-weight:600;letter-spacing:-0.4px;">Pending Approvals</div>
+      </div>
+      <div class="type-row">
+        <div class="type-label">Body</div>
+        <div style="font-size:15px;">Transfer to Dashen Bank ending in 4521</div>
+      </div>
+      <div class="type-row">
+        <div class="type-label">Caption</div>
+        <div style="font-size:13px;color:var(--text-2);">Initiated by Sara M. &middot; 2 hours ago</div>
+      </div>
+      <div class="type-row">
+        <div class="type-label">Overline</div>
+        <div style="font-size:12px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-3);">Total Balance</div>
+      </div>
+      <div class="type-row">
+        <div class="type-label">Mono</div>
+        <div style="font-family:var(--mono);font-size:15px;font-weight:500;letter-spacing:-0.3px;">Br 125,000.00</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Buttons -->
+  <div class="ds-section">
+    <div class="ds-overline">Interactions</div>
+    <div class="ds-heading" style="font-size:28px;">Pill buttons. Zero borders.</div>
+    <div class="btn-row">
+      <button class="btn btn--filled">Send Money</button>
+      <button class="btn btn--dark">Approve</button>
+      <button class="btn btn--outline">Cancel</button>
+      <button class="btn btn--ghost">View details &#8594;</button>
+      <button class="btn btn--danger btn--sm">Reject</button>
+      <button class="btn btn--outline btn--sm">Export</button>
+    </div>
+  </div>
+
+  <!-- Badges -->
+  <div class="ds-section">
+    <div class="ds-overline">Status</div>
+    <div class="ds-heading" style="font-size:28px;">Pill badges</div>
+    <div class="badge-row">
+      <span class="pill pill--green">Completed</span>
+      <span class="pill pill--green">Active</span>
+      <span class="pill pill--orange">Pending</span>
+      <span class="pill pill--orange">Processing</span>
+      <span class="pill pill--red">Rejected</span>
+      <span class="pill pill--red">Failed</span>
+      <span class="pill pill--blue">In Review</span>
+      <span class="pill pill--neutral">Draft</span>
+      <span class="pill pill--neutral">Cancelled</span>
+    </div>
+  </div>
+
+  <!-- Inputs -->
+  <div class="ds-section">
+    <div class="ds-overline">Inputs</div>
+    <div class="ds-heading" style="font-size:28px;">Generous. Focusable.</div>
+    <div class="input-row">
+      <input class="input" placeholder="Search transactions...">
+      <input class="input input--mono" value="125,000">
+    </div>
+  </div>
+
+  <!-- Segmented Control -->
+  <div class="ds-section">
+    <div class="ds-overline">Navigation</div>
+    <div class="ds-heading" style="font-size:28px;">Segmented controls</div>
+    <div class="seg-row">
+      <div class="seg">
+        <div class="seg__item seg__item--active">All</div>
+        <div class="seg__item">Pending</div>
+        <div class="seg__item">Approved</div>
+        <div class="seg__item">Rejected</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Metric Cards -->
+  <div class="ds-section">
+    <div class="ds-overline">Data</div>
+    <div class="ds-heading" style="font-size:28px;">Cards float on shadow</div>
+    <div class="card-row">
+      <div class="card">
+        <div class="card__overline">Total Balance</div>
+        <div class="card__value">Br 2.8M</div>
+        <div class="card__change" style="color:var(--green-text);">&#8593; 12.4%</div>
+      </div>
+      <div class="card">
+        <div class="card__overline">Pending</div>
+        <div class="card__value" style="color:var(--orange);">7</div>
+        <div class="card__change" style="color:var(--text-2);">Needs your action</div>
+      </div>
+      <div class="card">
+        <div class="card__overline">Monthly Outflow</div>
+        <div class="card__value">Br 834K</div>
+        <div class="card__change" style="color:var(--green-text);">&#8595; 8.2% less</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="ds-section">
+    <div class="ds-overline">Tables</div>
+    <div class="ds-heading" style="font-size:28px;">Content-dense. Border-free.</div>
+    <div class="table-wrap">
+      <table class="tbl">
+        <thead>
+          <tr>
+            <th>Recipient</th>
+            <th style="text-align:right">Amount</th>
+            <th>Status</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Dashen Bank ****4521</td>
+            <td class="mono" style="text-align:right">Br 125,000</td>
+            <td><span class="pill pill--orange">Pending</span></td>
+            <td class="muted">Mar 21</td>
+          </tr>
+          <tr>
+            <td>Kebede Trading PLC</td>
+            <td class="mono credit" style="text-align:right">+Br 340,000</td>
+            <td><span class="pill pill--green">Completed</span></td>
+            <td class="muted">Mar 20</td>
+          </tr>
+          <tr>
+            <td>March Payroll Batch</td>
+            <td class="mono" style="text-align:right">Br 890,450</td>
+            <td><span class="pill pill--green">Completed</span></td>
+            <td class="muted">Mar 19</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Sidebar -->
+  <div class="ds-section">
+    <div class="ds-overline">Navigation</div>
+    <div class="ds-heading" style="font-size:28px;">Clean sidebar</div>
+    <div class="sidebar-preview">
+      <div class="sb-brand">
+        <div class="sb-logo">E</div>
+        <div class="sb-name">Enviar</div>
+      </div>
+      <div class="sb-nav-item sb-nav-item--active"><span class="sb-nav-item__icon">&#9632;</span> Dashboard</div>
+      <div class="sb-nav-item"><span class="sb-nav-item__icon">&#8599;</span> Transfers</div>
+      <div class="sb-nav-item"><span class="sb-nav-item__icon">&#9776;</span> Payments</div>
+      <div class="sb-nav-item"><span class="sb-nav-item__icon">&#9744;</span> Invoices</div>
+      <div class="sb-nav-item"><span class="sb-nav-item__icon">&#9645;</span> Cards</div>
+      <div class="sb-divider"></div>
+      <div class="sb-section-label">Trade</div>
+      <div class="sb-nav-item"><span class="sb-nav-item__icon">&#8615;</span> Imports</div>
+      <div class="sb-nav-item"><span class="sb-nav-item__icon">&#8613;</span> Exports</div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

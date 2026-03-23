@@ -14,7 +14,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     hydrate();
-    setHydrated(true);
+    setHydrated(true); // eslint-disable-line react-hooks/set-state-in-effect -- SSR hydration guard
   }, [hydrate]);
 
   useEffect(() => {

@@ -11,7 +11,7 @@ const ADMIN_PREFIX = "/admin/v1";
 export const TEST_TOKEN = "test-admin-jwt-token";
 export const TEST_STAFF: AdminStaff = {
   id: "staff-uuid-1",
-  email: "admin@neo.et",
+  email: "admin@enviar.et",
   fullName: "Test Admin",
   role: "super_admin",
   department: "Executive",
@@ -32,8 +32,10 @@ export function createWrapper() {
   const qc = new QueryClient({
     defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
   });
-  return ({ children }: { children: ReactNode }) =>
+  const Wrapper = ({ children }: { children: ReactNode }) =>
     createElement(QueryClientProvider, { client: qc }, children);
+  Wrapper.displayName = "TestWrapper";
+  return Wrapper;
 }
 
 export function mockFetchSuccess(data: unknown, status = 200) {
@@ -46,7 +48,12 @@ export function mockFetchSuccess(data: unknown, status = 200) {
   });
 }
 
-export function mockFetchPaginated(data: unknown[], total: number, limit = 20, offset = 0) {
+export function mockFetchPaginated(
+  data: unknown[],
+  total: number,
+  limit = 20,
+  offset = 0,
+) {
   return vi.fn().mockResolvedValue({
     ok: true,
     status: 200,
@@ -77,10 +84,7 @@ export function expectAdminCall(
   expect(opts.headers.get("X-Request-Id")).toBeTruthy();
 }
 
-export function expectAdminCallBody(
-  fetchMock: AnyMock,
-  expectedBody: unknown,
-) {
+export function expectAdminCallBody(fetchMock: AnyMock, expectedBody: unknown) {
   const [, opts] = fetchMock.mock.calls[0];
   expect(JSON.parse(opts.body)).toEqual(expectedBody);
 }

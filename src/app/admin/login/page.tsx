@@ -3,10 +3,11 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { Mail, Lock, ArrowRight, Loader2, Shield } from "lucide-react";
+import { Mail, Lock, ArrowRight, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAdminAuthStore } from "@/providers/admin-auth-store";
+import { EnviarLogo } from "@/components/shared/EnviarLogo";
 import { adminApi } from "@/lib/admin-api-client";
 import type { AdminLoginResponse } from "@/lib/admin-types";
 
@@ -32,12 +33,19 @@ export default function AdminLoginPage() {
     setError("");
     setIsSubmitting(true);
     try {
-      const resp = await adminApi.post<AdminLoginResponse>("/auth/login", { email, password });
+      const resp = await adminApi.post<AdminLoginResponse>("/auth/login", {
+        email,
+        password,
+      });
       login(resp.token, resp.staff);
       router.replace("/admin");
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Something went wrong";
-      if (msg.includes("401") || msg.includes("invalid") || msg.includes("Invalid")) {
+      if (
+        msg.includes("401") ||
+        msg.includes("invalid") ||
+        msg.includes("Invalid")
+      ) {
         setError("Invalid email or password");
       } else {
         setError(msg);
@@ -49,18 +57,17 @@ export default function AdminLoginPage() {
 
   return (
     <div className="flex min-h-dvh flex-col items-center justify-center bg-background px-4 py-8">
-      <div className="w-full max-w-sm rounded-2xl bg-card p-6 dark:border dark:border-border md:p-8">
+      <div className="w-full max-w-sm rounded-2xl bg-card p-6 md:p-8">
         <motion.div
           className="mb-8 flex flex-col items-center gap-3"
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
         >
-          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary shadow-sm">
-            <Shield className="h-8 w-8 text-primary-foreground" />
-          </div>
-          <h1 className="text-2xl font-bold">Neo Admin</h1>
-          <p className="text-sm text-muted-foreground">Bank Operations Dashboard</p>
+          <EnviarLogo size="lg" />
+          <p className="text-sm text-muted-foreground">
+            Admin · Bank Operations Dashboard
+          </p>
         </motion.div>
 
         <motion.div
@@ -81,7 +88,7 @@ export default function AdminLoginPage() {
               <Mail className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
                 type="email"
-                placeholder="staff@neo.et"
+                placeholder="staff@enviar.et"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="h-12 rounded-[10px] pl-11 text-base"
@@ -100,13 +107,16 @@ export default function AdminLoginPage() {
                 className="h-12 rounded-[10px] pl-11 text-base"
                 autoComplete="current-password"
                 onKeyDown={(e) => {
-                  if (e.key === "Enter" && formValid && !isSubmitting) handleLogin();
+                  if (e.key === "Enter" && formValid && !isSubmitting)
+                    handleLogin();
                 }}
               />
             </div>
           </div>
 
-          {error && <p className="text-center text-sm text-destructive">{error}</p>}
+          {error && (
+            <p className="text-center text-sm text-destructive">{error}</p>
+          )}
 
           <Button
             size="lg"

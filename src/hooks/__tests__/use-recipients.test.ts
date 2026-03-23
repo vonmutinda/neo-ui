@@ -45,7 +45,14 @@ describe("useRecipients", () => {
     globalThis.fetch = mockFetchSuccess({ recipients: [], total: 0 });
 
     const { result } = renderHook(
-      () => useRecipients({ q: "abebe", type: "neo_user", favorite: true, limit: 10, offset: 5 }),
+      () =>
+        useRecipients({
+          q: "abebe",
+          type: "enviar_user",
+          favorite: true,
+          limit: 10,
+          offset: 5,
+        }),
       { wrapper: createWrapper() },
     );
 
@@ -53,7 +60,7 @@ describe("useRecipients", () => {
     expectApiCall(
       globalThis.fetch,
       "GET",
-      "/v1/recipients?q=abebe&type=neo_user&favorite=true&limit=10&offset=5",
+      "/v1/recipients?q=abebe&type=enviar_user&favorite=true&limit=10&offset=5",
     );
   });
 });
@@ -116,22 +123,24 @@ describe("useSearchRecipientsByName", () => {
   it("calls search endpoint with name query", async () => {
     globalThis.fetch = mockFetchSuccess([]);
 
-    const { result } = renderHook(
-      () => useSearchRecipientsByName("abebe"),
-      { wrapper: createWrapper() },
-    );
+    const { result } = renderHook(() => useSearchRecipientsByName("abebe"), {
+      wrapper: createWrapper(),
+    });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expectApiCall(globalThis.fetch, "GET", "/v1/recipients/search/name?q=abebe");
+    expectApiCall(
+      globalThis.fetch,
+      "GET",
+      "/v1/recipients/search/name?q=abebe",
+    );
   });
 
   it("does not fire when name is too short", async () => {
     globalThis.fetch = mockFetchSuccess([]);
 
-    const { result } = renderHook(
-      () => useSearchRecipientsByName("a"),
-      { wrapper: createWrapper() },
-    );
+    const { result } = renderHook(() => useSearchRecipientsByName("a"), {
+      wrapper: createWrapper(),
+    });
 
     await waitFor(() => expect(result.current.fetchStatus).toBe("idle"));
     expect(globalThis.fetch).not.toHaveBeenCalled();
@@ -188,10 +197,10 @@ describe("useBanks", () => {
 });
 
 describe("useCreateRecipient", () => {
-  it("calls POST /v1/recipients for neo_user", async () => {
+  it("calls POST /v1/recipients for enviar_user", async () => {
     globalThis.fetch = mockFetchSuccess({
       id: "r1",
-      type: "neo_user",
+      type: "enviar_user",
       displayName: "Abebe Bikila",
     });
 
@@ -199,14 +208,14 @@ describe("useCreateRecipient", () => {
       wrapper: createWrapper(),
     });
     result.current.mutate({
-      type: "neo_user",
+      type: "enviar_user",
       identifier: "+251911223344",
     });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expectApiCall(globalThis.fetch, "POST", "/v1/recipients");
     expectApiCallBody(globalThis.fetch, {
-      type: "neo_user",
+      type: "enviar_user",
       identifier: "+251911223344",
     });
     expectIdempotencyKey(globalThis.fetch);

@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import {
   useAdminTransactions,
   useAdminTransaction,
@@ -57,7 +57,9 @@ describe("useAdminTransaction", () => {
   it("calls GET /transactions/{id}", async () => {
     globalThis.fetch = mockFetchSuccess({ id: "t1" });
 
-    const { result } = renderHook(() => useAdminTransaction("t1"), { wrapper: createWrapper() });
+    const { result } = renderHook(() => useAdminTransaction("t1"), {
+      wrapper: createWrapper(),
+    });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expectAdminCall(globalThis.fetch, "GET", "/transactions/t1");
@@ -74,7 +76,9 @@ describe("useAdminConversion", () => {
       toAmountCents: 1000,
     });
 
-    const { result } = renderHook(() => useAdminConversion("t1"), { wrapper: createWrapper() });
+    const { result } = renderHook(() => useAdminConversion("t1"), {
+      wrapper: createWrapper(),
+    });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expectAdminCall(globalThis.fetch, "GET", "/transactions/t1/conversion");
@@ -85,11 +89,20 @@ describe("useAdminReverseTransaction", () => {
   it("calls POST /transactions/{id}/reverse with reason and ticket", async () => {
     globalThis.fetch = mockFetchSuccess(null);
 
-    const { result } = renderHook(() => useAdminReverseTransaction(), { wrapper: createWrapper() });
-    result.current.mutate({ id: "t1", reason: "Unauthorized", referenceTicket: "CS-001" });
+    const { result } = renderHook(() => useAdminReverseTransaction(), {
+      wrapper: createWrapper(),
+    });
+    result.current.mutate({
+      id: "t1",
+      reason: "Unauthorized",
+      referenceTicket: "CS-001",
+    });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expectAdminCall(globalThis.fetch, "POST", "/transactions/t1/reverse");
-    expectAdminCallBody(globalThis.fetch, { reason: "Unauthorized", referenceTicket: "CS-001" });
+    expectAdminCallBody(globalThis.fetch, {
+      reason: "Unauthorized",
+      referenceTicket: "CS-001",
+    });
   });
 });

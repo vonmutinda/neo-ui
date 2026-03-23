@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Enviar — Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #F5F5F7; --surface: #FFFFFF;
+    --text-1: #1D1D1F; --text-2: #86868B; --text-3: #C7C7CC;
+    --border: rgba(0,0,0,0.06); --border-strong: rgba(0,0,0,0.12);
+    --blue: #0071E3; --blue-subtle: rgba(0,113,227,0.06);
+    --green: #34C759; --green-subtle: rgba(52,199,89,0.08); --green-text: #248A3D;
+    --red: #FF3B30; --red-subtle: rgba(255,59,48,0.08); --red-text: #D70015;
+    --orange: #FF9500; --orange-subtle: rgba(255,149,0,0.08); --orange-text: #C93400;
+    --r-xs: 8px; --r-sm: 12px; --r-md: 16px; --r-lg: 20px; --r-xl: 28px; --r-full: 980px;
+    --shadow-sm: 0 2px 8px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.06);
+    --shadow-md: 0 4px 16px rgba(0,0,0,0.06), 0 1px 4px rgba(0,0,0,0.04);
+    --shadow-lg: 0 8px 32px rgba(0,0,0,0.08), 0 2px 8px rgba(0,0,0,0.04);
+    --sans: 'Inter', -apple-system, sans-serif;
+    --mono: 'JetBrains Mono', monospace;
+    --sidebar-w: 240px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: var(--sans); background: var(--bg); color: var(--text-1); font-size: 15px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+
+  /* ---- Layout ---- */
+  .app { display: flex; min-height: 100vh; }
+
+  /* ---- Sidebar ---- */
+  .sidebar {
+    width: var(--sidebar-w);
+    background: var(--surface);
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    display: flex;
+    flex-direction: column;
+    z-index: 10;
+    box-shadow: 1px 0 0 var(--border);
+  }
+  .sb-top { padding: 24px 20px 20px; }
+  .sb-brand { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
+  .sb-logo { width: 28px; height: 28px; background: var(--text-1); border-radius: var(--r-xs); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 14px; }
+  .sb-name { font-size: 17px; font-weight: 600; letter-spacing: -0.4px; }
+  .sb-switcher { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-radius: var(--r-sm); background: var(--bg); cursor: pointer; transition: background 0.15s; }
+  .sb-switcher:hover { background: rgba(0,0,0,0.06); }
+  .sb-avatar { width: 24px; height: 24px; border-radius: 6px; background: #E8D5F5; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; color: #7C3AED; }
+  .sb-biz { font-size: 13px; font-weight: 500; flex: 1; }
+  .sb-chevron { color: var(--text-3); font-size: 10px; }
+
+  .sb-nav { flex: 1; padding: 8px 8px; overflow-y: auto; }
+  .sb-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 12px; border-radius: var(--r-xs);
+    font-size: 14px; color: var(--text-2);
+    cursor: pointer; transition: all 0.12s;
+    text-decoration: none; margin-bottom: 1px;
+  }
+  .sb-item:hover { color: var(--text-1); background: rgba(0,0,0,0.03); }
+  .sb-item--active { color: var(--text-1); font-weight: 500; background: rgba(0,0,0,0.05); }
+  .sb-icon { width: 18px; text-align: center; font-size: 14px; opacity: 0.4; }
+  .sb-item--active .sb-icon { opacity: 0.8; }
+  .sb-badge { margin-left: auto; background: var(--orange); color: white; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: var(--r-full); }
+  .sb-label { padding: 16px 12px 6px; font-size: 11px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: var(--text-3); }
+  .sb-divider { height: 1px; background: var(--border); margin: 8px 12px; }
+
+  .sb-footer { padding: 12px 8px; border-top: 1px solid var(--border); }
+  .sb-user { display: flex; align-items: center; gap: 10px; padding: 8px 12px; }
+  .sb-user-avatar { width: 28px; height: 28px; border-radius: 50%; background: var(--blue-subtle); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; color: var(--blue); }
+  .sb-user-name { font-size: 13px; font-weight: 500; }
+  .sb-user-role { font-size: 11px; color: var(--text-3); }
+
+  /* ---- Main ---- */
+  .main { flex: 1; margin-left: var(--sidebar-w); }
+  .content { padding: 40px 48px; max-width: 1200px; }
+
+  /* ---- Hero Balance ---- */
+  .hero {
+    margin-bottom: 48px;
+  }
+  .hero__greeting {
+    font-size: 13px;
+    color: var(--text-2);
+    margin-bottom: 4px;
+  }
+  .hero__amount {
+    font-family: var(--mono);
+    font-size: 56px;
+    font-weight: 600;
+    letter-spacing: -3px;
+    line-height: 1;
+    margin-bottom: 12px;
+  }
+  .hero__meta {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    font-size: 14px;
+    color: var(--text-2);
+  }
+  .hero__change {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-weight: 500;
+    color: var(--green-text);
+  }
+  .hero__dot { width: 3px; height: 3px; border-radius: 50%; background: var(--text-3); }
+
+  /* ---- Quick Actions ---- */
+  .actions {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 48px;
+  }
+  .action-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 24px;
+    background: var(--surface);
+    border-radius: var(--r-full);
+    box-shadow: var(--shadow-sm);
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.25, 0.1, 0.25, 1);
+    border: none;
+    font-family: var(--sans);
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-1);
+  }
+  .action-btn:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
+  .action-btn:active { transform: scale(0.97); }
+  .action-btn__icon {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+  }
+  .action-btn__icon--send { background: #EDE9FE; color: #7C3AED; }
+  .action-btn__icon--invoice { background: var(--orange-subtle); color: var(--orange-text); }
+  .action-btn__icon--batch { background: var(--blue-subtle); color: var(--blue); }
+  .action-btn__icon--convert { background: var(--green-subtle); color: var(--green-text); }
+
+  /* ---- Currency Row ---- */
+  .currencies {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 48px;
+  }
+  .curr-card {
+    background: var(--surface);
+    border-radius: var(--r-md);
+    padding: 24px;
+    box-shadow: var(--shadow-sm);
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+  }
+  .curr-card:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
+  .curr-card--primary::after {
+    content: 'Primary';
+    position: absolute;
+    top: 12px; right: 14px;
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--blue);
+    letter-spacing: 0.3px;
+  }
+  .curr-flag { font-size: 20px; margin-bottom: 12px; }
+  .curr-code { font-size: 12px; font-weight: 600; letter-spacing: 0.5px; color: var(--text-2); }
+  .curr-bal { font-family: var(--mono); font-size: 22px; font-weight: 600; letter-spacing: -0.8px; margin-top: 4px; }
+
+  /* ---- Two Column ---- */
+  .two-col { display: grid; grid-template-columns: 1.5fr 1fr; gap: 20px; }
+
+  /* ---- Table Card ---- */
+  .tcard {
+    background: var(--surface);
+    border-radius: var(--r-md);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+  }
+  .tcard__head {
+    padding: 20px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .tcard__title { font-size: 16px; font-weight: 600; letter-spacing: -0.3px; }
+  .tcard__link { font-size: 13px; color: var(--blue); font-weight: 500; cursor: pointer; text-decoration: none; }
+  .tcard__link:hover { text-decoration: underline; }
+
+  .tbl { width: 100%; border-collapse: collapse; }
+  .tbl th {
+    text-align: left; padding: 10px 24px;
+    font-size: 11px; font-weight: 600; letter-spacing: 0.5px;
+    text-transform: uppercase; color: var(--text-3);
+    border-bottom: 1px solid var(--border);
+  }
+  .tbl td { padding: 14px 24px; font-size: 14px; border-bottom: 1px solid var(--border); }
+  .tbl tr:last-child td { border-bottom: none; }
+  .tbl tr { transition: background 0.1s; cursor: pointer; }
+  .tbl tr:hover td { background: rgba(0,0,0,0.015); }
+  .mono { font-family: var(--mono); font-weight: 500; letter-spacing: -0.3px; }
+  .credit { color: var(--green-text); }
+  .muted { color: var(--text-2); }
+
+  .pill {
+    display: inline-flex; align-items: center;
+    padding: 4px 12px; border-radius: var(--r-full);
+    font-size: 12px; font-weight: 600;
+  }
+  .pill--green { background: var(--green-subtle); color: var(--green-text); }
+  .pill--orange { background: var(--orange-subtle); color: var(--orange-text); }
+  .pill--red { background: var(--red-subtle); color: var(--red-text); }
+
+  /* ---- Approval List ---- */
+  .approvals { display: flex; flex-direction: column; }
+  .approval {
+    display: flex; align-items: center; gap: 14px;
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border);
+    transition: background 0.1s;
+    cursor: pointer;
+  }
+  .approval:last-child { border-bottom: none; }
+  .approval:hover { background: rgba(0,0,0,0.015); }
+  .approval__icon {
+    width: 40px; height: 40px;
+    border-radius: var(--r-sm);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; flex-shrink: 0;
+  }
+  .approval__icon--transfer { background: var(--orange-subtle); color: var(--orange-text); }
+  .approval__icon--batch { background: var(--blue-subtle); color: var(--blue); }
+  .approval__body { flex: 1; min-width: 0; }
+  .approval__title { font-size: 14px; font-weight: 500; }
+  .approval__meta { font-size: 12px; color: var(--text-2); margin-top: 2px; }
+  .approval__amount { font-family: var(--mono); font-size: 14px; font-weight: 600; letter-spacing: -0.3px; text-align: right; flex-shrink: 0; }
+  .approval__actions { display: flex; gap: 6px; flex-shrink: 0; margin-left: 12px; }
+  .a-btn {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    border: none;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; font-size: 14px;
+    transition: all 0.15s;
+  }
+  .a-btn:active { transform: scale(0.9); }
+  .a-btn--yes { background: var(--green-subtle); color: var(--green-text); }
+  .a-btn--yes:hover { background: var(--green); color: white; }
+  .a-btn--no { background: var(--red-subtle); color: var(--red-text); }
+  .a-btn--no:hover { background: var(--red); color: white; }
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sb-top">
+      <div class="sb-brand">
+        <div class="sb-logo">E</div>
+        <div class="sb-name">Enviar</div>
+      </div>
+      <div class="sb-switcher">
+        <div class="sb-avatar">AH</div>
+        <div class="sb-biz">Addis Hub Trading</div>
+        <div class="sb-chevron">&#9662;</div>
+      </div>
+    </div>
+    <nav class="sb-nav">
+      <a class="sb-item sb-item--active"><span class="sb-icon">&#9632;</span> Dashboard</a>
+      <a class="sb-item"><span class="sb-icon">&#9671;</span> Wallets</a>
+      <a class="sb-item"><span class="sb-icon">&#8599;</span> Transfers <span class="sb-badge">3</span></a>
+      <a class="sb-item"><span class="sb-icon">&#9776;</span> Payments</a>
+      <a class="sb-item"><span class="sb-icon">&#9744;</span> Invoices</a>
+      <a class="sb-item"><span class="sb-icon">&#9645;</span> Cards</a>
+      <div class="sb-label">Trade</div>
+      <a class="sb-item"><span class="sb-icon">&#8615;</span> Imports</a>
+      <a class="sb-item"><span class="sb-icon">&#8613;</span> Exports</a>
+      <div class="sb-label">Finance</div>
+      <a class="sb-item"><span class="sb-icon">&#9733;</span> Loans</a>
+      <a class="sb-item"><span class="sb-icon">&#9879;</span> Tax</a>
+      <a class="sb-item"><span class="sb-icon">&#128214;</span> Accounting</a>
+      <div class="sb-label">Admin</div>
+      <a class="sb-item"><span class="sb-icon">&#128101;</span> Team</a>
+      <a class="sb-item"><span class="sb-icon">&#9881;</span> Settings</a>
+    </nav>
+    <div class="sb-footer">
+      <div class="sb-user">
+        <div class="sb-user-avatar">AK</div>
+        <div><div class="sb-user-name">Abebe Kebede</div><div class="sb-user-role">Owner</div></div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="main">
+    <div class="content">
+
+      <!-- Hero Balance -->
+      <div class="hero">
+        <div class="hero__greeting">Good morning, Abebe</div>
+        <div class="hero__amount">Br 2,847,320</div>
+        <div class="hero__meta">
+          <span class="hero__change">&#8593; 12.4% this month</span>
+          <span class="hero__dot"></span>
+          <span>4 currencies</span>
+          <span class="hero__dot"></span>
+          <span>KYB Level 2</span>
+        </div>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="actions">
+        <button class="action-btn">
+          <span class="action-btn__icon action-btn__icon--send">&#8599;</span>
+          Send Money
+        </button>
+        <button class="action-btn">
+          <span class="action-btn__icon action-btn__icon--invoice">&#9744;</span>
+          Invoice
+        </button>
+        <button class="action-btn">
+          <span class="action-btn__icon action-btn__icon--batch">&#9776;</span>
+          Batch Pay
+        </button>
+        <button class="action-btn">
+          <span class="action-btn__icon action-btn__icon--convert">&#8644;</span>
+          Convert
+        </button>
+      </div>
+
+      <!-- Currencies -->
+      <div class="currencies">
+        <div class="curr-card curr-card--primary">
+          <div class="curr-flag">&#127466;&#127481;</div>
+          <div class="curr-code">ETB</div>
+          <div class="curr-bal">Br 2,147,320</div>
+        </div>
+        <div class="curr-card">
+          <div class="curr-flag">&#127482;&#127480;</div>
+          <div class="curr-code">USD</div>
+          <div class="curr-bal">$12,450</div>
+        </div>
+        <div class="curr-card">
+          <div class="curr-flag">&#127466;&#127482;</div>
+          <div class="curr-code">EUR</div>
+          <div class="curr-bal">&euro;3,200</div>
+        </div>
+        <div class="curr-card">
+          <div class="curr-flag">&#127464;&#127475;</div>
+          <div class="curr-code">CNY</div>
+          <div class="curr-bal">&yen;45,800</div>
+        </div>
+      </div>
+
+      <!-- Two Column -->
+      <div class="two-col">
+        <!-- Recent -->
+        <div class="tcard">
+          <div class="tcard__head">
+            <div class="tcard__title">Recent</div>
+            <a class="tcard__link">View all &#8594;</a>
+          </div>
+          <table class="tbl">
+            <thead>
+              <tr>
+                <th>Recipient</th>
+                <th style="text-align:right">Amount</th>
+                <th>Status</th>
+                <th>Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Dashen Bank ****4521</td>
+                <td class="mono" style="text-align:right">Br 125,000</td>
+                <td><span class="pill pill--orange">Pending</span></td>
+                <td class="muted" style="font-size:13px">Mar 21</td>
+              </tr>
+              <tr>
+                <td>Kebede Trading PLC</td>
+                <td class="mono credit" style="text-align:right">+Br 340,000</td>
+                <td><span class="pill pill--green">Done</span></td>
+                <td class="muted" style="font-size:13px">Mar 20</td>
+              </tr>
+              <tr>
+                <td>March Payroll</td>
+                <td class="mono" style="text-align:right">Br 890,450</td>
+                <td><span class="pill pill--green">Done</span></td>
+                <td class="muted" style="font-size:13px">Mar 19</td>
+              </tr>
+              <tr>
+                <td>Shenzhen Imports Ltd</td>
+                <td class="mono" style="text-align:right">$15,200</td>
+                <td><span class="pill pill--green">Done</span></td>
+                <td class="muted" style="font-size:13px">Mar 18</td>
+              </tr>
+              <tr>
+                <td>Awash Bank ****8832</td>
+                <td class="mono" style="text-align:right">Br 67,500</td>
+                <td><span class="pill pill--green">Done</span></td>
+                <td class="muted" style="font-size:13px">Mar 17</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Approvals -->
+        <div class="tcard">
+          <div class="tcard__head">
+            <div class="tcard__title">Needs Approval</div>
+            <span class="pill pill--orange">7</span>
+          </div>
+          <div class="approvals">
+            <div class="approval">
+              <div class="approval__icon approval__icon--transfer">&#8599;</div>
+              <div class="approval__body">
+                <div class="approval__title">Dashen Bank</div>
+                <div class="approval__meta">Sara M. &middot; 2h ago</div>
+              </div>
+              <div class="approval__amount">Br 125K</div>
+              <div class="approval__actions">
+                <button class="a-btn a-btn--yes">&#10003;</button>
+                <button class="a-btn a-btn--no">&#10005;</button>
+              </div>
+            </div>
+            <div class="approval">
+              <div class="approval__icon approval__icon--transfer">&#8599;</div>
+              <div class="approval__body">
+                <div class="approval__title">NIB Bank</div>
+                <div class="approval__meta">Dawit T. &middot; 5h ago</div>
+              </div>
+              <div class="approval__amount">Br 89K</div>
+              <div class="approval__actions">
+                <button class="a-btn a-btn--yes">&#10003;</button>
+                <button class="a-btn a-btn--no">&#10005;</button>
+              </div>
+            </div>
+            <div class="approval">
+              <div class="approval__icon approval__icon--batch">&#9776;</div>
+              <div class="approval__body">
+                <div class="approval__title">March Bonus Batch</div>
+                <div class="approval__meta">12 items &middot; Sara M.</div>
+              </div>
+              <div class="approval__amount">Br 234K</div>
+              <div class="approval__actions">
+                <button class="a-btn a-btn--yes">&#10003;</button>
+                <button class="a-btn a-btn--no">&#10005;</button>
+              </div>
+            </div>
+            <div class="approval">
+              <div class="approval__icon approval__icon--transfer">&#8644;</div>
+              <div class="approval__body">
+                <div class="approval__title">FX: USD &#8594; ETB</div>
+                <div class="approval__meta">Abebe K. &middot; 1d ago</div>
+              </div>
+              <div class="approval__amount">$5,000</div>
+              <div class="approval__actions">
+                <button class="a-btn a-btn--yes">&#10003;</button>
+                <button class="a-btn a-btn--no">&#10005;</button>
+              </div>
+            </div>
+          </div>
+          <div style="padding:14px 24px;border-top:1px solid var(--border);">
+            <a class="tcard__link">See all 7 &#8594;</a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+</body>
+</html>

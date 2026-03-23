@@ -1,14 +1,12 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
-  ArrowLeft,
   ArrowDownLeft,
   ArrowUpRight,
   ArrowLeftRight,
   Search,
   X,
-  Clock,
   CreditCard,
   Building2,
   HandCoins,
@@ -18,35 +16,55 @@ import {
   Users,
   PiggyBank,
   Wallet,
+  ReceiptText,
+  ChevronLeft,
+  ChevronRight,
+  Clock,
+  CheckCircle2,
+  XCircle,
+  Ban,
 } from "lucide-react";
-import { UserAvatar } from "@/components/shared/UserAvatar";
-import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useTransactions } from "@/hooks/use-wallets";
+import { useBalances } from "@/hooks/use-balances";
+import { EmptyState } from "@/components/shared/EmptyState";
+import { PageHeader } from "@/components/shared/PageHeader";
 import { CurrencyFlag } from "@/components/shared/CurrencyFlag";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Badge } from "@/components/ui/badge";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
-import type { SupportedCurrency, TransactionReceipt, ReceiptType } from "@/lib/types";
+import type {
+  SupportedCurrency,
+  TransactionReceipt,
+  ReceiptType,
+  PaymentRequest,
+} from "@/lib/types";
 import { Input } from "@/components/ui/input";
 import { formatMoney } from "@/lib/format";
+import {
+  useReceivedRequests,
+  useSentRequests,
+} from "@/hooks/use-payment-requests";
 
-const CURRENCIES: (SupportedCurrency | "all")[] = ["all", "ETB", "USD", "EUR"];
+const CURRENCY_ORDER: SupportedCurrency[] = [
+  "ETB",
+  "USD",
+  "EUR",
+  "GBP",
+  "AED",
+  "SAR",
+  "CNY",
+  "KES",
+];
 const PAGE_SIZE = 20;
 
-const CREDIT_TYPES: Set<ReceiptType> = new Set(["p2p_receive", "ethswitch_in", "loan_disbursement", "convert_in", "pot_withdraw"]);
-
-const STATUS_VARIANT: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
-  completed: "default",
-  pending: "outline",
-  failed: "destructive",
-  reversed: "secondary",
-};
+const CREDIT_TYPES: Set<ReceiptType> = new Set([
+  "p2p_receive",
+  "ethswitch_in",
+  "loan_disbursement",
+  "convert_in",
+  "pot_withdraw",
+  "business_transfer_in",
+]);
 
 type InflowOverdraftMetadata = {
   totalInflowCents?: number;
@@ -54,17 +72,55 @@ type InflowOverdraftMetadata = {
   netInflowCents?: number;
 };
 
-function getOverdraftMetadata(tx: TransactionReceipt): InflowOverdraftMetadata | null {
+function getOverdraftMetadata(
+  tx: TransactionReceipt,
+): InflowOverdraftMetadata | null {
   if (!tx.metadata) return null;
-  // convert_out can carry overdraft metadata when paired convert_in had repayment (wallet API merges it)
-  if (tx.type !== "p2p_receive" && tx.type !== "convert_in" && tx.type !== "convert_out") return null;
+  if (
+    tx.type !== "p2p_receive" &&
+    tx.type !== "convert_in" &&
+    tx.type !== "convert_out"
+  )
+    return null;
   const m = tx.metadata as InflowOverdraftMetadata;
-  return m?.overdraftRepaymentCents != null && m.overdraftRepaymentCents > 0 ? m : null;
+  return m?.overdraftRepaymentCents != null && m.overdraftRepaymentCents > 0
+    ? m
+    : null;
 }
 
-// Overdraft repayment only applies to ETB inflows; metadata amounts are always in ETB (use for display).
 const OVERDRAFT_DISPLAY_CURRENCY = "ETB";
 
+// --- Type filters ---
+type TypeFilter =
+  | "all"
+  | "sent"
+  | "received"
+  | "requests"
+  | "cards"
+  | "conversions";
+
+const TYPE_FILTERS: { key: TypeFilter; label: string }[] = [
+  { key: "all", label: "All" },
+  { key: "sent", label: "Sent" },
+  { key: "received", label: "Received" },
+  { key: "requests", label: "Requests" },
+  { key: "cards", label: "Cards" },
+  { key: "conversions", label: "Conversions" },
+];
+
+const SENT_TYPES: Set<ReceiptType> = new Set([
+  "p2p_send",
+  "ethswitch_out",
+  "batch_send",
+]);
+const RECEIVED_TYPES: Set<ReceiptType> = new Set([
+  "p2p_receive",
+  "ethswitch_in",
+]);
+const CARD_TX_TYPES: Set<ReceiptType> = new Set(["card_purchase", "card_atm"]);
+const CONVERT_TYPES: Set<ReceiptType> = new Set(["convert_out", "convert_in"]);
+
+// --- Receipt display ---
 function getReceiptDisplay(tx: TransactionReceipt): {
   label: string;
   icon: React.ReactNode;
@@ -73,67 +129,129 @@ function getReceiptDisplay(tx: TransactionReceipt): {
   const name = tx.counterpartyName;
   switch (tx.type) {
     case "p2p_send":
-      return { label: name ? `Sent to ${name}` : "Sent", icon: <ArrowUpRight className="h-5 w-5" />, colorClass: "bg-destructive/10 text-destructive" };
+      return {
+        label: name ? `Sent to ${name}` : "Sent",
+        icon: <ArrowUpRight className="h-5 w-5" />,
+        colorClass: "bg-destructive/10 text-destructive",
+      };
     case "p2p_receive":
-      return { label: name ? `From ${name}` : "Received", icon: <ArrowDownLeft className="h-5 w-5" />, colorClass: "bg-success/10 text-success" };
+      return {
+        label: name ? `From ${name}` : "Received",
+        icon: <ArrowDownLeft className="h-5 w-5" />,
+        colorClass: "bg-success/10 text-success",
+      };
     case "ethswitch_out":
-      return { label: name ? `Bank transfer to ${name}` : "Bank transfer", icon: <Building2 className="h-5 w-5" />, colorClass: "bg-orange-500/10 text-orange-500" };
+      return {
+        label: name ? `Bank transfer to ${name}` : "Bank transfer",
+        icon: <Building2 className="h-5 w-5" />,
+        colorClass: "bg-muted text-muted-foreground",
+      };
     case "ethswitch_in":
-      return { label: name ? `From ${name}` : "Bank transfer received", icon: <Building2 className="h-5 w-5" />, colorClass: "bg-success/10 text-success" };
+      return {
+        label: name ? `From ${name}` : "Bank transfer received",
+        icon: <Building2 className="h-5 w-5" />,
+        colorClass: "bg-success/10 text-success",
+      };
     case "card_purchase":
-      return { label: "Card purchase", icon: <CreditCard className="h-5 w-5" />, colorClass: "bg-purple-500/10 text-purple-500" };
+      return {
+        label: "Card purchase",
+        icon: <CreditCard className="h-5 w-5" />,
+        colorClass: "bg-primary/10 text-primary",
+      };
     case "card_atm":
-      return { label: "ATM withdrawal", icon: <Banknote className="h-5 w-5" />, colorClass: "bg-amber-500/10 text-amber-500" };
+      return {
+        label: "ATM withdrawal",
+        icon: <Banknote className="h-5 w-5" />,
+        colorClass: "bg-primary/10 text-primary",
+      };
     case "loan_disbursement":
-      return { label: "Loan disbursed", icon: <HandCoins className="h-5 w-5" />, colorClass: "bg-success/10 text-success" };
+      return {
+        label: "Loan disbursed",
+        icon: <HandCoins className="h-5 w-5" />,
+        colorClass: "bg-success/10 text-success",
+      };
     case "loan_repayment":
-      return { label: "Loan repayment", icon: <Receipt className="h-5 w-5" />, colorClass: "bg-amber-500/10 text-amber-500" };
+      return {
+        label: "Loan repayment",
+        icon: <Receipt className="h-5 w-5" />,
+        colorClass: "bg-muted text-muted-foreground",
+      };
     case "batch_send": {
-      const meta = tx.metadata as { recipients?: { name: string }[] } | undefined;
+      const meta = tx.metadata as
+        | { recipients?: { name: string }[] }
+        | undefined;
       const count = meta?.recipients?.length ?? 0;
-      return { label: count > 0 ? `Sent to ${count} people` : (tx.narration ?? "Batch transfer"), icon: <Users className="h-5 w-5" />, colorClass: "bg-primary/10 text-primary" };
+      return {
+        label:
+          count > 0
+            ? `Sent to ${count} people`
+            : (tx.narration ?? "Batch transfer"),
+        icon: <Users className="h-5 w-5" />,
+        colorClass: "bg-primary/10 text-primary",
+      };
     }
     case "fee":
-      return { label: "Service fee", icon: <CircleDollarSign className="h-5 w-5" />, colorClass: "bg-muted text-muted-foreground" };
+      return {
+        label: "Service fee",
+        icon: <CircleDollarSign className="h-5 w-5" />,
+        colorClass: "bg-muted text-muted-foreground",
+      };
     case "convert_out": {
-      const convertMeta = tx.metadata as { fromCurrency?: string; toCurrency?: string } | undefined;
-      const label = convertMeta?.fromCurrency && convertMeta?.toCurrency
-        ? `${convertMeta.fromCurrency} → ${convertMeta.toCurrency}`
-        : (tx.narration ?? "Currency conversion");
-      return { label, icon: <ArrowLeftRight className="h-5 w-5" />, colorClass: "bg-blue-500/10 text-blue-500" };
+      const convertMeta = tx.metadata as
+        | { fromCurrency?: string; toCurrency?: string }
+        | undefined;
+      const label =
+        convertMeta?.fromCurrency && convertMeta?.toCurrency
+          ? `${convertMeta.fromCurrency} → ${convertMeta.toCurrency}`
+          : (tx.narration ?? "Currency conversion");
+      return {
+        label,
+        icon: <ArrowLeftRight className="h-5 w-5" />,
+        colorClass: "bg-primary/10 text-primary",
+      };
     }
     case "convert_in": {
-      const convertMeta = tx.metadata as { fromCurrency?: string; toCurrency?: string } | undefined;
-      const label = convertMeta?.fromCurrency && convertMeta?.toCurrency
-        ? `${convertMeta.fromCurrency} → ${convertMeta.toCurrency}`
-        : (tx.narration ?? "Currency conversion");
-      return { label, icon: <ArrowLeftRight className="h-5 w-5" />, colorClass: "bg-blue-500/10 text-blue-500" };
+      const convertMeta = tx.metadata as
+        | { fromCurrency?: string; toCurrency?: string }
+        | undefined;
+      const label =
+        convertMeta?.fromCurrency && convertMeta?.toCurrency
+          ? `${convertMeta.fromCurrency} → ${convertMeta.toCurrency}`
+          : (tx.narration ?? "Currency conversion");
+      return {
+        label,
+        icon: <ArrowLeftRight className="h-5 w-5" />,
+        colorClass: "bg-primary/10 text-primary",
+      };
     }
     case "pot_deposit": {
       const potMeta = tx.metadata as { potName?: string } | undefined;
-      const potName = potMeta?.potName ?? "Pot";
-      return { label: `Added to ${potName}`, icon: <PiggyBank className="h-5 w-5" />, colorClass: "bg-teal-500/10 text-teal-600 dark:text-teal-400" };
+      return {
+        label: `Added to ${potMeta?.potName ?? "Pot"}`,
+        icon: <PiggyBank className="h-5 w-5" />,
+        colorClass: "bg-primary/10 text-primary",
+      };
     }
     case "pot_withdraw": {
       const potMeta = tx.metadata as { potName?: string } | undefined;
-      const potName = potMeta?.potName ?? "Pot";
-      return { label: `Withdrawn from ${potName}`, icon: <Wallet className="h-5 w-5" />, colorClass: "bg-success/10 text-success" };
+      return {
+        label: `Withdrawn from ${potMeta?.potName ?? "Pot"}`,
+        icon: <Wallet className="h-5 w-5" />,
+        colorClass: "bg-success/10 text-success",
+      };
     }
     default:
-      return { label: tx.narration ?? "Transaction", icon: <ArrowUpRight className="h-5 w-5" />, colorClass: "bg-muted text-muted-foreground" };
+      return {
+        label: tx.narration ?? "Transaction",
+        icon: <ArrowUpRight className="h-5 w-5" />,
+        colorClass: "bg-muted text-muted-foreground",
+      };
   }
 }
 
 function formatTxAmount(tx: TransactionReceipt) {
   const isCredit = CREDIT_TYPES.has(tx.type);
-  return formatMoney(tx.amountCents, tx.currency, isCredit ? true : false);
-}
-
-function formatDetailDate(dateStr: string | undefined) {
-  if (!dateStr) return "";
-  return new Date(dateStr).toLocaleDateString("en-ET", {
-    month: "short", day: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit",
-  });
+  return formatMoney(tx.amountCents, tx.currency, isCredit);
 }
 
 function formatRelativeTime(dateStr: string | undefined): string {
@@ -146,7 +264,10 @@ function formatRelativeTime(dateStr: string | undefined): string {
   if (diffHr < 24) return `${diffHr}h ago`;
   const diffDay = Math.floor(diffHr / 24);
   if (diffDay < 7) return `${diffDay}d ago`;
-  return new Date(dateStr).toLocaleDateString("en-ET", { month: "short", day: "numeric" });
+  return new Date(dateStr).toLocaleDateString("en-ET", {
+    month: "short",
+    day: "numeric",
+  });
 }
 
 function dateGroupKey(dateStr: string | undefined): string {
@@ -157,7 +278,11 @@ function dateGroupKey(dateStr: string | undefined): string {
   yesterday.setDate(today.getDate() - 1);
   if (d.toDateString() === today.toDateString()) return "Today";
   if (d.toDateString() === yesterday.toDateString()) return "Yesterday";
-  return d.toLocaleDateString("en-ET", { month: "long", day: "numeric", year: "numeric" });
+  return d.toLocaleDateString("en-ET", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  });
 }
 
 type GroupedTxs = { label: string; transactions: TransactionReceipt[] }[];
@@ -170,167 +295,414 @@ function groupByDate(txs: TransactionReceipt[]): GroupedTxs {
     if (arr) arr.push(tx);
     else map.set(key, [tx]);
   }
-  return Array.from(map.entries()).map(([label, transactions]) => ({ label, transactions }));
+  return Array.from(map.entries()).map(([label, transactions]) => ({
+    label,
+    transactions,
+  }));
 }
 
+// --- Request display helpers ---
+type DirectedRequest = PaymentRequest & { direction: "sent" | "received" };
+
+function getRequestIcon(status: string) {
+  switch (status) {
+    case "pending":
+      return <Clock className="h-5 w-5" />;
+    case "paid":
+      return <CheckCircle2 className="h-5 w-5" />;
+    case "declined":
+      return <XCircle className="h-5 w-5" />;
+    default:
+      return <Ban className="h-5 w-5" />;
+  }
+}
+
+function getRequestColorClass(status: string) {
+  switch (status) {
+    case "pending":
+      return "bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400";
+    case "paid":
+      return "bg-success/10 text-success";
+    case "declined":
+      return "bg-destructive/10 text-destructive";
+    default:
+      return "bg-muted text-muted-foreground";
+  }
+}
+
+function getRequestStatusColor(status: string) {
+  switch (status) {
+    case "pending":
+      return "text-amber-500";
+    case "paid":
+      return "text-emerald-500";
+    case "declined":
+      return "text-red-500";
+    default:
+      return "text-muted-foreground";
+  }
+}
+
+// =============================================
 export default function TransactionsPage() {
-  const [filter, setFilter] = useState<SupportedCurrency | "all">("all");
+  const searchParams = useSearchParams();
+
+  // Support legacy ?tab=requests and new ?filter=X
+  const initialTypeFilter = (() => {
+    const tab = searchParams.get("tab");
+    const filter = searchParams.get("filter");
+    if (tab === "requests" || filter === "requests")
+      return "requests" as TypeFilter;
+    if (filter && TYPE_FILTERS.some((f) => f.key === filter))
+      return filter as TypeFilter;
+    return "all" as TypeFilter;
+  })();
+
+  const [typeFilter, setTypeFilter] = useState<TypeFilter>(initialTypeFilter);
+  const [requestSubFilter, setRequestSubFilter] = useState<"pending" | "all">(
+    "pending",
+  );
+  const [currencyFilter, setCurrencyFilter] = useState<
+    SupportedCurrency | "all"
+  >("all");
   const [search, setSearch] = useState("");
-  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
-  const [selectedTx, setSelectedTx] = useState<TransactionReceipt | null>(null);
-  const sentinelRef = useRef<HTMLDivElement>(null);
+  const [page, setPage] = useState(1);
 
-  const currency = filter === "all" ? undefined : filter;
+  // Data
+  const { data: balances } = useBalances();
+  const currency = currencyFilter === "all" ? undefined : currencyFilter;
   const { data: allTxs, isLoading, error } = useTransactions(currency);
+  const { data: receivedRequests } = useReceivedRequests();
+  const { data: sentRequests } = useSentRequests();
 
-  const filtered = useMemo(() => {
-    const all = allTxs ?? [];
+  const currencyOptions = useMemo((): (SupportedCurrency | "all")[] => {
+    const codes = new Set((balances ?? []).map((b) => b.currencyCode));
+    return ["all", ...CURRENCY_ORDER.filter((c) => codes.has(c))];
+  }, [balances]);
+
+  // Merge requests
+  const allRequests = useMemo((): DirectedRequest[] => {
+    const received = Array.isArray(receivedRequests) ? receivedRequests : [];
+    const sent = Array.isArray(sentRequests) ? sentRequests : [];
+    return [
+      ...received.map((r) => ({ ...r, direction: "received" as const })),
+      ...sent.map((r) => ({ ...r, direction: "sent" as const })),
+    ].sort(
+      (a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+    );
+  }, [receivedRequests, sentRequests]);
+
+  const pendingRequests = useMemo(
+    () => allRequests.filter((r) => r.status === "pending"),
+    [allRequests],
+  );
+
+  const pendingCount = pendingRequests.length;
+
+  // Filter transactions by type
+  const filteredTxs = useMemo(() => {
+    const all = Array.isArray(allTxs) ? allTxs : [];
+    // Deduplicate convert_in when paired with convert_out
     const convertOutNarrations = new Set(
-      all.filter((tx) => tx.type === "convert_out" && tx.narration).map((tx) => tx.narration),
+      all
+        .filter((tx) => tx.type === "convert_out" && tx.narration)
+        .map((tx) => tx.narration),
     );
-    return all.filter((tx) => {
-      if (tx.type === "convert_in" && tx.narration && convertOutNarrations.has(tx.narration)) return false;
-      if (!search) return true;
-      const q = search.toLowerCase();
-      return (
-        (tx.counterpartyName ?? "").toLowerCase().includes(q) ||
-        (tx.narration ?? "").toLowerCase().includes(q) ||
-        tx.type.toLowerCase().includes(q) ||
-        tx.id.toLowerCase().includes(q)
-      );
+    const list = all.filter((tx) => {
+      if (
+        tx.type === "convert_in" &&
+        tx.narration &&
+        convertOutNarrations.has(tx.narration)
+      )
+        return false;
+      // Type filter
+      if (typeFilter === "sent" && !SENT_TYPES.has(tx.type)) return false;
+      if (typeFilter === "received" && !RECEIVED_TYPES.has(tx.type))
+        return false;
+      if (typeFilter === "cards" && !CARD_TX_TYPES.has(tx.type)) return false;
+      if (typeFilter === "conversions" && !CONVERT_TYPES.has(tx.type))
+        return false;
+      if (typeFilter === "requests") return false; // requests shown separately
+      // Search
+      if (search) {
+        const q = search.toLowerCase();
+        return (
+          (tx.counterpartyName ?? "").toLowerCase().includes(q) ||
+          (tx.narration ?? "").toLowerCase().includes(q) ||
+          tx.type.toLowerCase().includes(q) ||
+          tx.id.toLowerCase().includes(q)
+        );
+      }
+      return true;
     });
-  }, [allTxs, search]);
+    return list;
+  }, [allTxs, typeFilter, search]);
 
-  const visible = filtered.slice(0, visibleCount);
-  const hasMore = visibleCount < filtered.length;
-  const groups = useMemo(() => groupByDate(visible), [visible]);
+  // Filter requests by search + sub-filter
+  const filteredRequests = useMemo(() => {
+    let list = typeFilter === "requests" ? allRequests : pendingRequests;
+    if (typeFilter === "requests" && requestSubFilter === "pending") {
+      list = list.filter((r) => r.status === "pending");
+    }
+    if (search) {
+      const q = search.toLowerCase();
+      list = list.filter(
+        (r) =>
+          (r.requesterName ?? "").toLowerCase().includes(q) ||
+          (r.payerName ?? "").toLowerCase().includes(q) ||
+          (r.narration ?? "").toLowerCase().includes(q),
+      );
+    }
+    return list;
+  }, [allRequests, pendingRequests, typeFilter, requestSubFilter, search]);
 
-  const loadMore = useCallback(() => {
-    if (hasMore) setVisibleCount((prev) => prev + PAGE_SIZE);
-  }, [hasMore]);
+  // Pagination (transactions only)
+  const totalPages = Math.max(1, Math.ceil(filteredTxs.length / PAGE_SIZE));
+  const safePage = Math.min(page, totalPages);
+  const start = (safePage - 1) * PAGE_SIZE;
+  const visibleTxs = filteredTxs.slice(start, start + PAGE_SIZE);
+  const groups = useMemo(() => groupByDate(visibleTxs), [visibleTxs]);
 
+  /* eslint-disable react-hooks/set-state-in-effect -- reset pagination and invalid currency filter */
   useEffect(() => {
-    const el = sentinelRef.current;
-    if (!el) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => { if (entry.isIntersecting) loadMore(); },
-      { rootMargin: "200px" },
-    );
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, [loadMore]);
+    setPage(1);
+  }, [typeFilter, currencyFilter, search]);
+  useEffect(() => {
+    if (currencyFilter !== "all" && !currencyOptions.includes(currencyFilter)) {
+      setCurrencyFilter("all");
+    }
+  }, [currencyFilter, currencyOptions]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
-  useEffect(() => { setVisibleCount(PAGE_SIZE); }, [filter, search]);
+  // Show pending requests at top of "all" view
+  const showPendingSection =
+    typeFilter === "all" && filteredRequests.length > 0;
+  // Show request list for "requests" view
+  const showRequestList = typeFilter === "requests";
+  // Show transaction list for all non-request views
+  const showTxList = typeFilter !== "requests";
 
   return (
-    <div className="flex flex-col gap-6">
-      {/* Header */}
-      <div className="flex items-center gap-3">
-        <Link href="/" className="flex h-10 w-10 items-center justify-center rounded-full transition-colors active:bg-muted">
-          <ArrowLeft className="h-5 w-5" />
-        </Link>
-        <h1 className="text-xl font-semibold">Transactions</h1>
-      </div>
+    <div className="flex flex-col gap-4">
+      <PageHeader title="Transactions" backHref="/" />
 
       {/* Search */}
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+      <div className="relative rounded-2xl border border-border/60 bg-card">
+        <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-primary/60" />
         <Input
           type="text"
           placeholder="Search by name, note, or type..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="h-11 rounded-[10px] bg-background pl-10 pr-10 text-sm"
+          className="border-0 bg-transparent pl-10 pr-10 text-sm focus-visible:ring-0 focus-visible:ring-offset-0"
         />
         {search && (
-          <button onClick={() => setSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2">
-            <X className="h-4 w-4 text-muted-foreground" />
+          <button
+            onClick={() => setSearch("")}
+            className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1 transition-colors hover:bg-primary/10"
+            aria-label="Clear search"
+          >
+            <X className="h-4 w-4 text-primary/70" />
           </button>
         )}
       </div>
 
-      {/* Currency filter */}
-      <div className="flex gap-2 overflow-x-auto">
-        {CURRENCIES.map((c) => (
+      {/* Type filter chips */}
+      <div className="flex gap-2 overflow-x-auto pb-0.5">
+        {TYPE_FILTERS.map((f) => (
           <button
-            key={c}
-            onClick={() => setFilter(c)}
-            className={`flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-semibold transition-colors ${
-              filter === c ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+            key={f.key}
+            onClick={() => setTypeFilter(f.key)}
+            className={`shrink-0 rounded-full border px-3.5 py-1.5 text-xs font-medium transition-all active:scale-95 ${
+              typeFilter === f.key
+                ? "border-primary bg-primary/10 text-primary"
+                : "border-border/60 bg-card text-muted-foreground hover:border-primary/40 hover:text-foreground/80"
             }`}
           >
-            {c !== "all" && <CurrencyFlag currency={c} size="sm" />}
-            {c === "all" ? "All" : c}
+            {f.label}
+            {f.key === "requests" && pendingCount > 0 && (
+              <span className="ml-1.5 inline-flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground">
+                {pendingCount}
+              </span>
+            )}
           </button>
         ))}
       </div>
 
-      {/* Loading */}
-      {isLoading && (
-        <div className="space-y-2">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="flex items-center gap-3 rounded-lg px-2 py-3">
-              <Skeleton className="h-10 w-10 rounded-full" />
-              <div className="flex-1 space-y-1.5">
-                <Skeleton className="h-3.5 w-32" />
-                <Skeleton className="h-3 w-20" />
-              </div>
-              <Skeleton className="h-4 w-16" />
-            </div>
+      {/* Request sub-filter (when on Requests view) */}
+      {showRequestList && (
+        <div className="flex gap-2">
+          {(["pending", "all"] as const).map((f) => (
+            <button
+              key={f}
+              onClick={() => setRequestSubFilter(f)}
+              className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
+                requestSubFilter === f
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-muted text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {f === "pending" ? "Pending" : "All"}
+            </button>
           ))}
         </div>
       )}
 
-      {error && (
-        <div className="rounded-2xl border border-destructive/20 bg-destructive/5 p-6 text-center">
-          <p className="text-sm text-destructive">Failed to load transactions</p>
+      {/* Currency filter (not shown for requests-only view) */}
+      {showTxList && currencyOptions.length > 2 && (
+        <div className="flex gap-2 overflow-x-auto pb-0.5">
+          {currencyOptions.map((c) => (
+            <button
+              key={c}
+              onClick={() => setCurrencyFilter(c)}
+              className={`flex shrink-0 items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-xs font-medium transition-colors ${
+                currencyFilter === c
+                  ? "border-primary bg-primary/10 text-primary"
+                  : "border-border/60 bg-card text-muted-foreground hover:border-primary/40 hover:text-foreground/80"
+              }`}
+            >
+              {c !== "all" && <CurrencyFlag currency={c} size="sm" />}
+              {c === "all" ? "All currencies" : c}
+            </button>
+          ))}
         </div>
       )}
 
-      {!isLoading && filtered.length === 0 && (
-        <div className="py-16 text-center">
-          <p className="text-sm text-muted-foreground">
-            {search ? "No transactions match your search" : "No transactions yet"}
+      {/* Pending requests at top of "All" view */}
+      {showPendingSection && (
+        <div className="overflow-hidden rounded-2xl border border-border/60 bg-card">
+          <p className="border-b border-border/60 bg-amber-50/50 px-4 py-2 text-[11px] font-semibold uppercase tracking-widest text-amber-600 dark:bg-amber-950/10 dark:text-amber-400">
+            Pending requests
           </p>
+          <div className="divide-y divide-border/60">
+            {filteredRequests.map((req) => (
+              <RequestRow key={req.id} req={req} />
+            ))}
+          </div>
         </div>
+      )}
+
+      {/* Request list (when Requests filter active) */}
+      {showRequestList && (
+        <>
+          {filteredRequests.length > 0 ? (
+            <div className="overflow-hidden rounded-2xl border border-border/60 bg-card">
+              <div className="divide-y divide-border/60">
+                {filteredRequests.map((req) => (
+                  <RequestRow key={req.id} req={req} />
+                ))}
+              </div>
+            </div>
+          ) : (
+            <EmptyState
+              icon={HandCoins}
+              title={
+                requestSubFilter === "pending"
+                  ? "No pending requests"
+                  : "No requests yet"
+              }
+              description="Payment requests you send or receive will appear here."
+              actionLabel="Request money"
+              actionHref="/requests/new"
+            />
+          )}
+        </>
+      )}
+
+      {/* Loading skeleton */}
+      {showTxList && isLoading && (
+        <div className="overflow-hidden rounded-2xl border border-border/60 bg-card">
+          <div className="divide-y divide-border/60">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="flex items-center gap-3 px-4 py-3">
+                <Skeleton className="h-10 w-10 rounded-full" />
+                <div className="flex-1 space-y-1.5">
+                  <Skeleton className="h-3.5 w-32" />
+                  <Skeleton className="h-3 w-20" />
+                </div>
+                <Skeleton className="h-4 w-16" />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Error */}
+      {showTxList && error && (
+        <EmptyState
+          icon={ReceiptText}
+          title="Failed to load transactions"
+          description="Try refreshing your activity feed."
+        />
+      )}
+
+      {/* Empty state */}
+      {showTxList && !isLoading && filteredTxs.length === 0 && !error && (
+        <EmptyState
+          icon={ReceiptText}
+          title={search ? "No matching transactions" : "No transactions yet"}
+          description={
+            search
+              ? "Try a different name, note, or type."
+              : "Your latest money movement will appear here."
+          }
+          actionLabel={!search ? "Make a transfer" : undefined}
+          actionHref={!search ? "/send" : undefined}
+        />
       )}
 
       {/* Transaction list */}
-      {groups.length > 0 && (
-        <div className="space-y-6">
-          {groups.map((group) => (
-            <div key={group.label}>
-              <p className="mb-1 px-1 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
-                {group.label}
-              </p>
-              <div className="space-y-0.5">
-                <AnimatePresence initial={false}>
+      {showTxList && groups.length > 0 && (
+        <div className="space-y-4">
+          <div className="overflow-hidden rounded-2xl border border-border/60 bg-card">
+            {groups.map((group) => (
+              <div key={group.label}>
+                <p className="border-b border-border/60 bg-muted/50 px-4 py-2 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+                  {group.label}
+                </p>
+                <div className="divide-y divide-border/60">
                   {group.transactions.map((tx, i) => {
                     const display = getReceiptDisplay(tx);
                     const isCredit = CREDIT_TYPES.has(tx.type);
                     const odMeta = getOverdraftMetadata(tx);
                     return (
-                      <motion.button
+                      <Link
                         key={tx.id ?? `tx-${i}`}
-                        initial={{ opacity: 0, y: 8 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: Math.min(i * 0.02, 0.3) }}
-                        onClick={() => setSelectedTx(tx)}
-                        className="flex w-full items-center gap-3 rounded-2xl px-2 py-3 text-left transition-colors active:bg-muted"
+                        href={`/transactions/${tx.id}`}
+                        className="flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-muted/50 active:bg-primary/5"
                       >
-                        <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${display.colorClass}`}>
+                        <div
+                          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${display.colorClass}`}
+                        >
                           {display.icon}
                         </div>
                         <div className="min-w-0 flex-1">
-                          <p className="truncate text-sm font-medium">{display.label}</p>
+                          <p className="truncate text-sm font-medium text-foreground">
+                            {display.label}
+                          </p>
                           {odMeta ? (
                             <p className="truncate text-xs text-muted-foreground">
-                              {formatMoney(odMeta.overdraftRepaymentCents ?? 0, OVERDRAFT_DISPLAY_CURRENCY)} to overdraft · Net{" "}
-                              {formatMoney(odMeta.netInflowCents ?? 0, OVERDRAFT_DISPLAY_CURRENCY)} · {formatRelativeTime(tx.createdAt)}
+                              {formatMoney(
+                                odMeta.overdraftRepaymentCents ?? 0,
+                                OVERDRAFT_DISPLAY_CURRENCY,
+                              )}{" "}
+                              to overdraft · Net{" "}
+                              {formatMoney(
+                                odMeta.netInflowCents ?? 0,
+                                OVERDRAFT_DISPLAY_CURRENCY,
+                              )}{" "}
+                              · {formatRelativeTime(tx.createdAt)}
                             </p>
                           ) : tx.type === "batch_send" && tx.metadata ? (
                             <p className="truncate text-xs text-muted-foreground">
-                              {((tx.metadata as { recipients?: { name: string }[] }).recipients ?? [])
+                              {(
+                                (
+                                  tx.metadata as {
+                                    recipients?: { name: string }[];
+                                  }
+                                ).recipients ?? []
+                              )
                                 .map((r) => r.name)
                                 .join(", ") || tx.currency}{" "}
                               · {formatRelativeTime(tx.createdAt)}
@@ -341,154 +713,91 @@ export default function TransactionsPage() {
                             </p>
                           )}
                         </div>
-                        <div className="shrink-0 text-right">
-                          <span className={`block font-tabular text-sm font-semibold ${isCredit ? "text-success" : "text-foreground"}`}>
-                            {formatTxAmount(tx)}
-                          </span>
-                        </div>
-                      </motion.button>
+                        <span
+                          className={`shrink-0 font-tabular text-sm font-medium ${isCredit ? "text-success" : "text-foreground"}`}
+                        >
+                          {formatTxAmount(tx)}
+                        </span>
+                      </Link>
                     );
                   })}
-                </AnimatePresence>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Pagination */}
+          {filteredTxs.length > PAGE_SIZE && (
+            <div className="flex flex-col items-center gap-3 rounded-2xl border border-border/60 bg-card px-4 py-4">
+              <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
+                Page {safePage} of {totalPages}
+              </p>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  disabled={safePage <= 1}
+                  className="flex items-center gap-1 rounded-lg border border-border/60 bg-card px-3 py-2 text-sm font-medium text-primary transition-colors hover:bg-muted disabled:pointer-events-none disabled:opacity-50"
+                  aria-label="Previous page"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                  Previous
+                </button>
+                <button
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={safePage >= totalPages}
+                  className="flex items-center gap-1 rounded-lg border border-border/60 bg-card px-3 py-2 text-sm font-medium text-primary transition-colors hover:bg-muted disabled:pointer-events-none disabled:opacity-50"
+                  aria-label="Next page"
+                >
+                  Next
+                  <ChevronRight className="h-4 w-4" />
+                </button>
               </div>
             </div>
-          ))}
-
-          <div ref={sentinelRef} className="h-1" />
-
-          {!hasMore && filtered.length > PAGE_SIZE && (
-            <p className="py-4 text-center text-xs text-muted-foreground">
-              All {filtered.length} transactions loaded
-            </p>
           )}
         </div>
       )}
-
-      {/* Receipt detail sheet */}
-      <Sheet open={!!selectedTx} onOpenChange={(open) => !open && setSelectedTx(null)}>
-        <SheetContent side="bottom" className="rounded-t-3xl border-x border-t border-border">
-          {selectedTx && <ReceiptDetail tx={selectedTx} />}
-        </SheetContent>
-      </Sheet>
     </div>
   );
 }
 
-function ReceiptDetail({ tx }: { tx: TransactionReceipt }) {
-  const display = getReceiptDisplay(tx);
-  const isCredit = CREDIT_TYPES.has(tx.type);
-
-  const batchRecipients =
-    tx.type === "batch_send" && tx.metadata
-      ? ((tx.metadata as { recipients?: { name: string; phone: string; amountCents: number }[] }).recipients ?? [])
-      : [];
-
-  const overdraftMeta = getOverdraftMetadata(tx);
+// --- Request row component ---
+function RequestRow({ req }: { req: DirectedRequest }) {
+  const counterparty =
+    req.direction === "received"
+      ? (req.requesterName ?? "Someone")
+      : (req.payerName ?? req.payerPhone ?? "Someone");
+  const label =
+    req.direction === "received"
+      ? `Request from ${counterparty}`
+      : `Requested ${counterparty}`;
 
   return (
-    <>
-      <SheetHeader>
-        <SheetTitle>Transaction Details</SheetTitle>
-      </SheetHeader>
-      <div className="space-y-5 p-5">
-        <div className="text-center">
-          <p className={`font-tabular text-3xl font-bold ${isCredit ? "text-success" : "text-foreground"}`}>
-            {formatMoney(tx.amountCents, tx.currency, isCredit ? true : false)}
-          </p>
-          <p className="mt-1 text-sm text-muted-foreground">{display.label}</p>
-          {overdraftMeta && (
-            <p className="mt-1 text-xs text-muted-foreground">
-              {formatMoney(overdraftMeta.overdraftRepaymentCents ?? 0, OVERDRAFT_DISPLAY_CURRENCY)} applied to overdraft · Net{" "}
-              {formatMoney(overdraftMeta.netInflowCents ?? 0, OVERDRAFT_DISPLAY_CURRENCY)} to wallet
-            </p>
-          )}
-        </div>
-
-        {overdraftMeta && (
-          <div>
-            <h3 className="mb-2 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
-              Inflow breakdown
-            </h3>
-            <div className="space-y-0 rounded-2xl bg-muted dark:bg-card dark:border dark:border-border">
-              <DetailRow label="Total incoming" value={formatMoney(overdraftMeta.totalInflowCents ?? 0, OVERDRAFT_DISPLAY_CURRENCY)} />
-              <DetailRow label="Applied to overdraft" value={formatMoney(overdraftMeta.overdraftRepaymentCents ?? 0, OVERDRAFT_DISPLAY_CURRENCY)} />
-              <DetailRow label="Net to wallet" value={formatMoney(overdraftMeta.netInflowCents ?? 0, OVERDRAFT_DISPLAY_CURRENCY)} />
-            </div>
-          </div>
-        )}
-
-        <div className="space-y-0 rounded-2xl bg-muted dark:bg-card dark:border dark:border-border">
-          <DetailRow label="Type" value={tx.type.replaceAll("_", " ")} />
-          <DetailRow label="Status">
-            <Badge variant={STATUS_VARIANT[tx.status] ?? "outline"} className="capitalize">
-              {tx.status}
-            </Badge>
-          </DetailRow>
-          <DetailRow label="Currency" value={tx.currency} />
-          {(tx.type === "pot_deposit" || tx.type === "pot_withdraw") && (tx.metadata as { potName?: string })?.potName && (
-            <DetailRow label="Pot" value={(tx.metadata as { potName: string }).potName} />
-          )}
-          {tx.counterpartyName && <DetailRow label="Counterparty" value={tx.counterpartyName} />}
-          {tx.counterpartyPhone && <DetailRow label="Phone" value={tx.counterpartyPhone} />}
-          {tx.narration && <DetailRow label="Note" value={tx.narration} />}
-          {tx.feeCents > 0 && (
-            <DetailRow label="Fee" value={formatMoney(tx.feeCents, tx.currency)} />
-          )}
-          <DetailRow label="Date" value={formatDetailDate(tx.createdAt)} icon={<Clock className="h-3.5 w-3.5 text-muted-foreground" />} />
-          <DetailRow label="Transaction ID" value={tx.id} mono />
-        </div>
-
-        {batchRecipients.length > 0 && (
-          <div>
-            <h3 className="mb-2 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
-              Recipients ({batchRecipients.length})
-            </h3>
-            <div className="space-y-0 rounded-2xl bg-muted dark:bg-card dark:border dark:border-border">
-              {batchRecipients.map((r, i) => (
-                <div
-                  key={i}
-                  className={`flex items-center gap-3 px-4 py-3 ${i < batchRecipients.length - 1 ? "border-b border-border" : ""}`}
-                >
-                  <UserAvatar name={r.name} size="sm" />
-                  <div className="flex-1 min-w-0">
-                    <p className="truncate text-sm font-medium">{r.name}</p>
-                    <p className="truncate text-xs text-muted-foreground">{r.phone}</p>
-                  </div>
-                  <span className="shrink-0 text-sm font-semibold font-tabular">
-                    {formatMoney(r.amountCents, tx.currency)}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+    <Link
+      href={`/requests/${req.id}`}
+      className="flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-muted/50 active:bg-primary/5"
+    >
+      <div
+        className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${getRequestColorClass(req.status)}`}
+      >
+        {getRequestIcon(req.status)}
       </div>
-    </>
-  );
-}
-
-function DetailRow({
-  label,
-  value,
-  mono,
-  icon,
-  children,
-}: {
-  label: string;
-  value?: string;
-  mono?: boolean;
-  icon?: React.ReactNode;
-  children?: React.ReactNode;
-}) {
-  return (
-    <div className="flex items-start justify-between border-b border-border/50 px-4 py-3 last:border-0">
-      <span className="shrink-0 text-sm capitalize text-muted-foreground">{label}</span>
-      {children ?? (
-        <span className={`ml-4 flex items-center gap-1.5 text-right text-sm font-medium ${mono ? "font-mono text-xs break-all" : ""}`}>
-          {icon}
-          {value}
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-sm font-medium text-foreground">{label}</p>
+        <p className="text-xs text-muted-foreground">
+          {req.narration && `${req.narration} · `}
+          {formatRelativeTime(req.createdAt)}
+        </p>
+      </div>
+      <div className="shrink-0 text-right">
+        <span className="block font-tabular text-sm font-medium text-foreground">
+          {formatMoney(req.amountCents, req.currencyCode)}
         </span>
-      )}
-    </div>
+        <span
+          className={`text-[10px] font-medium ${getRequestStatusColor(req.status)}`}
+        >
+          {req.status.charAt(0).toUpperCase() + req.status.slice(1)}
+        </span>
+      </div>
+    </Link>
   );
 }

@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Enviar — Transfers</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #F5F5F7; --surface: #FFFFFF;
+    --text-1: #1D1D1F; --text-2: #86868B; --text-3: #C7C7CC;
+    --border: rgba(0,0,0,0.06); --border-strong: rgba(0,0,0,0.12);
+    --blue: #0071E3; --blue-subtle: rgba(0,113,227,0.06);
+    --green-subtle: rgba(52,199,89,0.08); --green-text: #248A3D;
+    --red-subtle: rgba(255,59,48,0.08); --red-text: #D70015;
+    --orange: #FF9500; --orange-subtle: rgba(255,149,0,0.08); --orange-text: #C93400;
+    --r-xs: 8px; --r-sm: 12px; --r-md: 16px; --r-full: 980px;
+    --shadow-sm: 0 2px 8px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.06);
+    --shadow-md: 0 4px 16px rgba(0,0,0,0.06), 0 1px 4px rgba(0,0,0,0.04);
+    --sans: 'Inter', -apple-system, sans-serif;
+    --mono: 'JetBrains Mono', monospace;
+    --sidebar-w: 240px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: var(--sans); background: var(--bg); color: var(--text-1); font-size: 15px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+  .app { display: flex; min-height: 100vh; }
+
+  /* Sidebar — same as dashboard */
+  .sidebar { width: var(--sidebar-w); background: var(--surface); position: fixed; top: 0; left: 0; bottom: 0; display: flex; flex-direction: column; z-index: 10; box-shadow: 1px 0 0 var(--border); }
+  .sb-top { padding: 24px 20px 20px; }
+  .sb-brand { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
+  .sb-logo { width: 28px; height: 28px; background: var(--text-1); border-radius: var(--r-xs); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 14px; }
+  .sb-name { font-size: 17px; font-weight: 600; letter-spacing: -0.4px; }
+  .sb-switcher { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-radius: var(--r-sm); background: var(--bg); font-size: 13px; font-weight: 500; }
+  .sb-avatar { width: 24px; height: 24px; border-radius: 6px; background: #E8D5F5; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; color: #7C3AED; }
+  .sb-nav { flex: 1; padding: 8px 8px; overflow-y: auto; }
+  .sb-item { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: var(--r-xs); font-size: 14px; color: var(--text-2); cursor: pointer; text-decoration: none; margin-bottom: 1px; }
+  .sb-item:hover { color: var(--text-1); background: rgba(0,0,0,0.03); }
+  .sb-item--active { color: var(--text-1); font-weight: 500; background: rgba(0,0,0,0.05); }
+  .sb-icon { width: 18px; text-align: center; font-size: 14px; opacity: 0.4; }
+  .sb-item--active .sb-icon { opacity: 0.8; }
+  .sb-badge { margin-left: auto; background: var(--orange); color: white; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: var(--r-full); }
+  .sb-label { padding: 16px 12px 6px; font-size: 11px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: var(--text-3); }
+
+  .main { flex: 1; margin-left: var(--sidebar-w); }
+  .content { padding: 40px 48px; max-width: 1200px; }
+
+  /* Page Header */
+  .page-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 32px; }
+  .page-title { font-size: 28px; font-weight: 600; letter-spacing: -0.8px; }
+  .btn { display: inline-flex; align-items: center; gap: 6px; font-family: var(--sans); font-size: 15px; font-weight: 500; border: none; cursor: pointer; border-radius: var(--r-full); padding: 12px 28px; transition: all 0.2s; }
+  .btn:active { transform: scale(0.97); }
+  .btn--dark { background: var(--text-1); color: white; }
+  .btn--dark:hover { background: #333; }
+  .btn--outline { background: transparent; color: var(--text-1); box-shadow: inset 0 0 0 1.5px var(--border-strong); padding: 10px 20px; font-size: 13px; }
+  .btn--outline:hover { background: rgba(0,0,0,0.03); }
+
+  /* Segmented Control */
+  .seg { display: inline-flex; background: rgba(0,0,0,0.05); border-radius: var(--r-full); padding: 4px; gap: 4px; margin-bottom: 24px; }
+  .seg__item { padding: 8px 20px; border-radius: var(--r-full); font-size: 13px; font-weight: 500; color: var(--text-2); cursor: pointer; transition: all 0.2s; user-select: none; }
+  .seg__item:hover { color: var(--text-1); }
+  .seg__item--active { background: var(--surface); color: var(--text-1); box-shadow: var(--shadow-sm); }
+  .seg__count { font-size: 11px; margin-left: 4px; opacity: 0.6; }
+
+  /* Filter Bar */
+  .filters { display: flex; gap: 10px; margin-bottom: 20px; align-items: center; }
+  .f-input {
+    padding: 10px 16px; border-radius: var(--r-full);
+    border: 1.5px solid var(--border-strong); font-size: 14px;
+    font-family: var(--sans); background: var(--surface); outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .f-input:focus { border-color: var(--blue); box-shadow: 0 0 0 4px var(--blue-subtle); }
+  .f-input::placeholder { color: var(--text-3); }
+  .f-select {
+    padding: 10px 32px 10px 16px; border-radius: var(--r-full);
+    border: 1.5px solid var(--border-strong); font-size: 13px; font-weight: 500;
+    font-family: var(--sans); background: var(--surface); color: var(--text-1);
+    appearance: none; cursor: pointer;
+    background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%23C7C7CC' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 12px center;
+  }
+
+  /* Table */
+  .tcard { background: var(--surface); border-radius: var(--r-md); box-shadow: var(--shadow-sm); overflow: hidden; }
+  .tbl { width: 100%; border-collapse: collapse; }
+  .tbl th { text-align: left; padding: 12px 24px; font-size: 11px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; color: var(--text-3); border-bottom: 1px solid var(--border); }
+  .tbl td { padding: 16px 24px; font-size: 14px; border-bottom: 1px solid var(--border); }
+  .tbl tr:last-child td { border-bottom: none; }
+  .tbl tr { transition: background 0.1s; cursor: pointer; }
+  .tbl tr:hover td { background: rgba(0,0,0,0.015); }
+  .mono { font-family: var(--mono); font-weight: 500; letter-spacing: -0.3px; }
+  .credit { color: var(--green-text); }
+  .muted { color: var(--text-2); }
+  .sm { font-size: 13px; }
+
+  .pill { display: inline-flex; align-items: center; padding: 4px 12px; border-radius: var(--r-full); font-size: 12px; font-weight: 600; }
+  .pill--green { background: var(--green-subtle); color: var(--green-text); }
+  .pill--orange { background: var(--orange-subtle); color: var(--orange-text); }
+  .pill--red { background: var(--red-subtle); color: var(--red-text); }
+  .pill--neutral { background: rgba(0,0,0,0.05); color: var(--text-2); }
+
+  /* Recipient cell */
+  .recip { display: flex; flex-direction: column; }
+  .recip__name { font-size: 14px; font-weight: 450; }
+  .recip__detail { font-size: 12px; color: var(--text-3); margin-top: 1px; }
+
+  /* Member cell */
+  .member { display: flex; align-items: center; gap: 8px; }
+  .member__dot { width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 700; flex-shrink: 0; }
+
+  /* Inline approve */
+  .inline-act { display: flex; gap: 6px; }
+  .act-btn { padding: 6px 14px; border-radius: var(--r-full); font-size: 12px; font-weight: 600; cursor: pointer; border: none; font-family: var(--sans); transition: all 0.15s; }
+  .act-btn:active { transform: scale(0.95); }
+  .act-btn--yes { background: var(--green-subtle); color: var(--green-text); }
+  .act-btn--yes:hover { background: #34C759; color: white; }
+  .act-btn--no { background: rgba(0,0,0,0.04); color: var(--text-2); }
+  .act-btn--no:hover { background: var(--red-subtle); color: var(--red-text); }
+
+  /* Pagination */
+  .pag { display: flex; align-items: center; justify-content: space-between; padding: 16px 24px; border-top: 1px solid var(--border); }
+  .pag__info { font-size: 13px; color: var(--text-2); }
+  .pag__btns { display: flex; gap: 4px; }
+  .pag__btn { width: 32px; height: 32px; border-radius: var(--r-xs); border: none; background: transparent; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 13px; font-weight: 500; color: var(--text-2); transition: all 0.1s; }
+  .pag__btn:hover { background: rgba(0,0,0,0.04); }
+  .pag__btn--active { background: var(--text-1); color: white; border-radius: var(--r-xs); }
+  .pag__btn--disabled { opacity: 0.3; cursor: default; }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="sb-top">
+      <div class="sb-brand"><div class="sb-logo">E</div><div class="sb-name">Enviar</div></div>
+      <div class="sb-switcher"><div class="sb-avatar">AH</div><span style="flex:1">Addis Hub Trading</span><span style="color:var(--text-3);font-size:10px">&#9662;</span></div>
+    </div>
+    <nav class="sb-nav">
+      <a class="sb-item"><span class="sb-icon">&#9632;</span> Dashboard</a>
+      <a class="sb-item"><span class="sb-icon">&#9671;</span> Wallets</a>
+      <a class="sb-item sb-item--active"><span class="sb-icon">&#8599;</span> Transfers <span class="sb-badge">3</span></a>
+      <a class="sb-item"><span class="sb-icon">&#9776;</span> Payments</a>
+      <a class="sb-item"><span class="sb-icon">&#9744;</span> Invoices</a>
+      <a class="sb-item"><span class="sb-icon">&#9645;</span> Cards</a>
+      <div class="sb-label">Trade</div>
+      <a class="sb-item"><span class="sb-icon">&#8615;</span> Imports</a>
+      <a class="sb-item"><span class="sb-icon">&#8613;</span> Exports</a>
+      <div class="sb-label">Finance</div>
+      <a class="sb-item"><span class="sb-icon">&#9733;</span> Loans</a>
+      <a class="sb-item"><span class="sb-icon">&#9879;</span> Tax</a>
+      <a class="sb-item"><span class="sb-icon">&#128214;</span> Accounting</a>
+      <div class="sb-label">Admin</div>
+      <a class="sb-item"><span class="sb-icon">&#128101;</span> Team</a>
+      <a class="sb-item"><span class="sb-icon">&#9881;</span> Settings</a>
+    </nav>
+  </aside>
+
+  <main class="main">
+    <div class="content">
+      <div class="page-head">
+        <div class="page-title">Transfers</div>
+        <button class="btn btn--dark">&#43; New Transfer</button>
+      </div>
+
+      <!-- Segmented -->
+      <div class="seg">
+        <div class="seg__item seg__item--active">All</div>
+        <div class="seg__item">Pending <span class="seg__count">3</span></div>
+        <div class="seg__item">Approved</div>
+        <div class="seg__item">Executed</div>
+        <div class="seg__item">Rejected</div>
+      </div>
+
+      <!-- Filters -->
+      <div class="filters">
+        <input class="f-input" placeholder="Search recipient..." style="width:200px">
+        <select class="f-select"><option>All currencies</option><option>ETB</option><option>USD</option><option>EUR</option></select>
+        <select class="f-select"><option>All types</option><option>Internal</option><option>External</option></select>
+        <select class="f-select"><option>All members</option><option>Abebe K.</option><option>Sara M.</option><option>Dawit T.</option></select>
+        <div style="flex:1"></div>
+        <button class="btn--outline">&#8681; Export</button>
+      </div>
+
+      <!-- Table -->
+      <div class="tcard">
+        <table class="tbl">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Recipient</th>
+              <th style="text-align:right">Amount</th>
+              <th>Status</th>
+              <th>By</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="muted sm">Mar 21, 14:32</td>
+              <td><div class="recip"><span class="recip__name">Dashen Bank ****4521</span><span class="recip__detail">Supplier payment</span></div></td>
+              <td class="mono" style="text-align:right">Br 125,000</td>
+              <td><span class="pill pill--orange">Pending</span></td>
+              <td><div class="member"><div class="member__dot" style="background:#FEF3C7;color:#D97706;">SM</div><span class="muted sm">Sara M.</span></div></td>
+              <td><div class="inline-act"><button class="act-btn act-btn--yes">Approve</button><button class="act-btn act-btn--no">Reject</button></div></td>
+            </tr>
+            <tr>
+              <td class="muted sm">Mar 21, 11:15</td>
+              <td><div class="recip"><span class="recip__name">NIB Bank ****8891</span><span class="recip__detail">Office rent</span></div></td>
+              <td class="mono" style="text-align:right">Br 89,000</td>
+              <td><span class="pill pill--orange">Pending</span></td>
+              <td><div class="member"><div class="member__dot" style="background:#DBEAFE;color:#2563EB;">DT</div><span class="muted sm">Dawit T.</span></div></td>
+              <td><div class="inline-act"><button class="act-btn act-btn--yes">Approve</button><button class="act-btn act-btn--no">Reject</button></div></td>
+            </tr>
+            <tr>
+              <td class="muted sm">Mar 20, 16:44</td>
+              <td><div class="recip"><span class="recip__name">Zemen Bank ****3345</span><span class="recip__detail">Contractor payment</span></div></td>
+              <td class="mono" style="text-align:right">Br 45,000</td>
+              <td><span class="pill pill--orange">Pending</span></td>
+              <td><div class="member"><div class="member__dot" style="background:#FEF3C7;color:#D97706;">SM</div><span class="muted sm">Sara M.</span></div></td>
+              <td><div class="inline-act"><button class="act-btn act-btn--yes">Approve</button><button class="act-btn act-btn--no">Reject</button></div></td>
+            </tr>
+            <tr>
+              <td class="muted sm">Mar 20, 09:21</td>
+              <td><div class="recip"><span class="recip__name">Kebede Trading PLC</span><span class="recip__detail">Invoice INV-0044</span></div></td>
+              <td class="mono credit" style="text-align:right">+Br 340,000</td>
+              <td><span class="pill pill--green">Executed</span></td>
+              <td><div class="member"><div class="member__dot" style="background:#E8D5F5;color:#7C3AED;">AK</div><span class="muted sm">Abebe K.</span></div></td>
+              <td></td>
+            </tr>
+            <tr>
+              <td class="muted sm">Mar 19, 15:00</td>
+              <td><div class="recip"><span class="recip__name">March Payroll</span><span class="recip__detail">Batch &middot; 34 items</span></div></td>
+              <td class="mono" style="text-align:right">Br 890,450</td>
+              <td><span class="pill pill--green">Executed</span></td>
+              <td><div class="member"><div class="member__dot" style="background:#FEF3C7;color:#D97706;">SM</div><span class="muted sm">Sara M.</span></div></td>
+              <td></td>
+            </tr>
+            <tr>
+              <td class="muted sm">Mar 18, 10:33</td>
+              <td><div class="recip"><span class="recip__name">Shenzhen Imports Ltd</span><span class="recip__detail">FX conversion</span></div></td>
+              <td class="mono" style="text-align:right">$15,200</td>
+              <td><span class="pill pill--green">Executed</span></td>
+              <td><div class="member"><div class="member__dot" style="background:#E8D5F5;color:#7C3AED;">AK</div><span class="muted sm">Abebe K.</span></div></td>
+              <td></td>
+            </tr>
+            <tr>
+              <td class="muted sm">Mar 17, 08:12</td>
+              <td><div class="recip"><span class="recip__name">Awash Bank ****8832</span><span class="recip__detail">Tax payment</span></div></td>
+              <td class="mono" style="text-align:right">Br 67,500</td>
+              <td><span class="pill pill--green">Executed</span></td>
+              <td><div class="member"><div class="member__dot" style="background:#DBEAFE;color:#2563EB;">DT</div><span class="muted sm">Dawit T.</span></div></td>
+              <td></td>
+            </tr>
+            <tr>
+              <td class="muted sm">Mar 15, 14:09</td>
+              <td><div class="recip"><span class="recip__name">CBE ****1122</span><span class="recip__detail">Equipment purchase</span></div></td>
+              <td class="mono" style="text-align:right">Br 230,000</td>
+              <td><span class="pill pill--red">Rejected</span></td>
+              <td><div class="member"><div class="member__dot" style="background:#DBEAFE;color:#2563EB;">DT</div><span class="muted sm">Dawit T.</span></div></td>
+              <td></td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="pag">
+          <div class="pag__info">1 &ndash; 8 of 142</div>
+          <div class="pag__btns">
+            <div class="pag__btn pag__btn--disabled">&#8249;</div>
+            <div class="pag__btn pag__btn--active">1</div>
+            <div class="pag__btn">2</div>
+            <div class="pag__btn">3</div>
+            <div class="pag__btn">&hellip;</div>
+            <div class="pag__btn">18</div>
+            <div class="pag__btn">&#8250;</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+</body>
+</html>

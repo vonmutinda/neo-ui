@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import {
   useAdminCards,
   useAdminCard,
@@ -33,12 +33,22 @@ describe("useAdminCards", () => {
     globalThis.fetch = mockFetchPaginated([], 0);
 
     const { result } = renderHook(
-      () => useAdminCards({ type: "virtual", status: "active", limit: 20, offset: 0 }),
+      () =>
+        useAdminCards({
+          type: "virtual",
+          status: "active",
+          limit: 20,
+          offset: 0,
+        }),
       { wrapper: createWrapper() },
     );
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expectAdminCall(globalThis.fetch, "GET", "/cards?type=virtual&status=active&limit=20&offset=0");
+    expectAdminCall(
+      globalThis.fetch,
+      "GET",
+      "/cards?type=virtual&status=active&limit=20&offset=0",
+    );
   });
 });
 
@@ -46,7 +56,9 @@ describe("useAdminCard", () => {
   it("calls GET /cards/{id}", async () => {
     globalThis.fetch = mockFetchSuccess({ id: "c1", lastFour: "1234" });
 
-    const { result } = renderHook(() => useAdminCard("c1"), { wrapper: createWrapper() });
+    const { result } = renderHook(() => useAdminCard("c1"), {
+      wrapper: createWrapper(),
+    });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expectAdminCall(globalThis.fetch, "GET", "/cards/c1");
@@ -63,7 +75,11 @@ describe("useAdminCardAuthorizations", () => {
     );
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expectAdminCall(globalThis.fetch, "GET", "/cards/c1/authorizations?limit=20&offset=0");
+    expectAdminCall(
+      globalThis.fetch,
+      "GET",
+      "/cards/c1/authorizations?limit=20&offset=0",
+    );
   });
 });
 
@@ -71,7 +87,9 @@ describe("useAdminFreezeCard", () => {
   it("calls POST /cards/{id}/freeze", async () => {
     globalThis.fetch = mockFetchSuccess(null);
 
-    const { result } = renderHook(() => useAdminFreezeCard(), { wrapper: createWrapper() });
+    const { result } = renderHook(() => useAdminFreezeCard(), {
+      wrapper: createWrapper(),
+    });
     result.current.mutate("c1");
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
@@ -83,7 +101,9 @@ describe("useAdminUnfreezeCard", () => {
   it("calls POST /cards/{id}/unfreeze", async () => {
     globalThis.fetch = mockFetchSuccess(null);
 
-    const { result } = renderHook(() => useAdminUnfreezeCard(), { wrapper: createWrapper() });
+    const { result } = renderHook(() => useAdminUnfreezeCard(), {
+      wrapper: createWrapper(),
+    });
     result.current.mutate("c1");
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
@@ -95,7 +115,9 @@ describe("useAdminCancelCard", () => {
   it("calls POST /cards/{id}/cancel", async () => {
     globalThis.fetch = mockFetchSuccess(null);
 
-    const { result } = renderHook(() => useAdminCancelCard(), { wrapper: createWrapper() });
+    const { result } = renderHook(() => useAdminCancelCard(), {
+      wrapper: createWrapper(),
+    });
     result.current.mutate("c1");
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
@@ -107,7 +129,9 @@ describe("useAdminUpdateCardLimits", () => {
   it("calls PATCH /cards/{id}/limits", async () => {
     globalThis.fetch = mockFetchSuccess(null);
 
-    const { result } = renderHook(() => useAdminUpdateCardLimits(), { wrapper: createWrapper() });
+    const { result } = renderHook(() => useAdminUpdateCardLimits(), {
+      wrapper: createWrapper(),
+    });
     result.current.mutate({ id: "c1", dailyLimitCents: 5000000 });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));

@@ -595,11 +595,12 @@ export interface CreateImportRequest {
   hsCode?: string;
   proformaAmountCents: number;
   proformaCurrency: SupportedCurrency;
-  paymentMethod: ImportPaymentMethod;
+  paymentMethod?: ImportPaymentMethod;
   insuranceAmountCents?: number;
   insuranceProvider?: string;
   portOfEntry?: string;
   expectedArrivalDate?: string;
+  notes?: string;
 }
 
 export interface ImportFilter {
@@ -681,6 +682,7 @@ export interface CreateExportRequest {
   contractAmountCents: number;
   contractCurrency: SupportedCurrency;
   expectedProceedsDate?: string;
+  notes?: string;
 }
 
 export interface ExportFilter {

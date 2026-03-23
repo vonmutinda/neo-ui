@@ -2,7 +2,12 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api-client";
-import type { WalletSummary, TransactionReceipt, SupportedCurrency } from "@/lib/types";
+import { paginatedListFromResponse } from "@/lib/api-paginated-list";
+import type {
+  WalletSummary,
+  TransactionReceipt,
+  SupportedCurrency,
+} from "@/lib/types";
 
 export function useWalletSummary() {
   return useQuery<WalletSummary>({
@@ -16,8 +21,14 @@ export function useTransactions(currency?: SupportedCurrency) {
     ? `/v1/wallets/transactions?currency=${currency}`
     : "/v1/wallets/transactions";
 
-  return useQuery<TransactionReceipt[]>({
+  return useQuery({
     queryKey: ["wallets", "transactions", currency ?? "all"],
-    queryFn: () => api.get<TransactionReceipt[]>(path),
+    queryFn: async () => {
+      const res = await api.get<unknown>(path);
+      return paginatedListFromResponse<TransactionReceipt>(res);
+    },
+    /** Normalises persisted cache that may still hold pre-fix `PaginatedResult` shapes. */
+    select: (data: unknown) =>
+      paginatedListFromResponse<TransactionReceipt>(data),
   });
 }

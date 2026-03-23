@@ -9,6 +9,7 @@ import type {
   RecipientType,
   Bank,
   CreateRecipientRequest,
+  BeneficiaryRelationship,
 } from "@/lib/types";
 
 export function useRecipients(params?: {
@@ -21,7 +22,8 @@ export function useRecipients(params?: {
   const qs = new URLSearchParams();
   if (params?.q) qs.set("q", params.q);
   if (params?.type) qs.set("type", params.type);
-  if (params?.favorite !== undefined) qs.set("favorite", String(params.favorite));
+  if (params?.favorite !== undefined)
+    qs.set("favorite", String(params.favorite));
   qs.set("limit", String(params?.limit ?? 20));
   qs.set("offset", String(params?.offset ?? 0));
 
@@ -40,7 +42,10 @@ export function useRecipient(id: string) {
   });
 }
 
-export function useSearchRecipientsByBank(institution: string, account: string) {
+export function useSearchRecipientsByBank(
+  institution: string,
+  account: string,
+) {
   return useQuery<Recipient[]>({
     queryKey: ["recipients", "search", "bank", institution, account],
     queryFn: () =>
@@ -68,11 +73,36 @@ export function useToggleFavorite() {
     mutationFn: ({ id, isFavorite }) =>
       api.patch<void>(`/v1/recipients/${id}/favorite`, { isFavorite }),
     onSuccess: (_, { isFavorite }) => {
-      toast.success(isFavorite ? "Added to favorites" : "Removed from favorites");
+      toast.success(
+        isFavorite ? "Added to favorites" : "Removed from favorites",
+      );
       qc.invalidateQueries({ queryKey: ["recipients"] });
     },
     onError: (err) => {
       toast.error("Failed to update favorite", { description: err.message });
+    },
+  });
+}
+
+export function useMakeRecipientBeneficiary() {
+  const qc = useQueryClient();
+  return useMutation<
+    Recipient,
+    Error,
+    { recipientId: string; relationship: BeneficiaryRelationship }
+  >({
+    mutationFn: ({ recipientId, relationship }) =>
+      api.post<Recipient>(`/v1/recipients/${recipientId}/beneficiary`, {
+        relationship,
+      }),
+    onSuccess: (data) => {
+      toast.success("Recipient is now a beneficiary");
+      qc.invalidateQueries({ queryKey: ["recipients"] });
+      qc.invalidateQueries({ queryKey: ["recipients", data.id] });
+      qc.invalidateQueries({ queryKey: ["beneficiaries"] });
+    },
+    onError: (err) => {
+      toast.error("Failed to add as beneficiary", { description: err.message });
     },
   });
 }

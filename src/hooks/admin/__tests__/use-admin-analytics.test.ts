@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { useAdminOverview } from "../use-admin-analytics";
 import {
   setupAdminAuth,
@@ -22,7 +22,9 @@ describe("useAdminOverview", () => {
   it("calls GET /analytics/overview", async () => {
     globalThis.fetch = mockFetchSuccess({ totalCustomers: 15420 });
 
-    const { result } = renderHook(() => useAdminOverview(), { wrapper: createWrapper() });
+    const { result } = renderHook(() => useAdminOverview(), {
+      wrapper: createWrapper(),
+    });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expectAdminCall(globalThis.fetch, "GET", "/analytics/overview");

@@ -12,14 +12,14 @@ type AvatarSize = keyof typeof SIZE_CLASSES;
 interface UserAvatarProps {
   name: string;
   size?: AvatarSize;
-  isNeo?: boolean;
+  isEnviar?: boolean;
   className?: string;
 }
 
 export function UserAvatar({
   name,
   size = "md",
-  isNeo = true,
+  isEnviar = true,
   className,
 }: UserAvatarProps) {
   const initial = (name?.[0] ?? "?").toUpperCase();
@@ -28,7 +28,9 @@ export function UserAvatar({
     <div
       className={cn(
         "flex shrink-0 items-center justify-center rounded-full font-bold",
-        isNeo ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground",
+        isEnviar
+          ? "bg-primary/10 text-primary"
+          : "bg-muted text-muted-foreground",
         SIZE_CLASSES[size],
         className,
       )}

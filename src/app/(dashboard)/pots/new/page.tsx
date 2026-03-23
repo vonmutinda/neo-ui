@@ -3,12 +3,12 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { ArrowLeft } from "lucide-react";
-import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { PageHeader } from "@/components/shared/PageHeader";
 import { useCreatePot } from "@/hooks/use-pots";
 import { useBalances } from "@/hooks/use-balances";
-import { useTelegram } from "@/providers/TelegramProvider";
+
 import { toast } from "sonner";
 import type { SupportedCurrency } from "@/lib/types";
 
@@ -16,7 +16,7 @@ const EMOJIS = ["🎯", "✈️", "🏠", "🚗", "📱", "💰", "🎓", "🏥"
 
 export default function NewPotPage() {
   const router = useRouter();
-  const { haptic } = useTelegram();
+
   const { data: balances } = useBalances();
   const createPot = useCreatePot();
 
@@ -31,7 +31,9 @@ export default function NewPotPage() {
     e.preventDefault();
     if (!name.trim()) return;
 
-    const targetCents = targetAmount ? Math.round(parseFloat(targetAmount) * 100) : undefined;
+    const targetCents = targetAmount
+      ? Math.round(parseFloat(targetAmount) * 100)
+      : undefined;
 
     try {
       await createPot.mutateAsync({
@@ -40,25 +42,15 @@ export default function NewPotPage() {
         targetCents: targetCents && targetCents > 0 ? targetCents : undefined,
         emoji,
       });
-      haptic("medium");
       router.push("/");
     } catch (err) {
-      haptic("heavy");
       toast.error(err instanceof Error ? err.message : "Failed to create pot");
     }
   }
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-3">
-        <Link
-          href="/"
-          className="flex h-10 w-10 items-center justify-center rounded-full transition-colors active:bg-muted"
-        >
-          <ArrowLeft className="h-5 w-5" />
-        </Link>
-        <h1 className="text-xl font-semibold">Create a Pot</h1>
-      </div>
+      <PageHeader title="New Pot" backHref="/" />
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Emoji picker */}
@@ -67,7 +59,7 @@ export default function NewPotPage() {
           animate={{ opacity: 1, y: 0 }}
           className="space-y-2"
         >
-          <label className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+          <label className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
             Icon
           </label>
           <div className="flex flex-wrap gap-2">
@@ -75,11 +67,13 @@ export default function NewPotPage() {
               <button
                 key={e}
                 type="button"
-                onClick={() => { setEmoji(e); haptic("light"); }}
+                onClick={() => {
+                  setEmoji(e);
+                }}
                 className={`flex h-11 w-11 items-center justify-center rounded-xl text-xl transition-all ${
                   emoji === e
                     ? "scale-110 bg-primary/15 ring-2 ring-primary"
-                    : "bg-muted hover:bg-muted/80"
+                    : "border border-border/60 bg-card hover:bg-primary/5"
                 }`}
               >
                 {e}
@@ -95,16 +89,15 @@ export default function NewPotPage() {
           transition={{ delay: 0.05 }}
           className="space-y-2"
         >
-          <label className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+          <label className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
             Name
           </label>
-          <input
+          <Input
             type="text"
             maxLength={50}
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="e.g. Vacation Fund"
-            className="w-full rounded-xl border bg-background px-4 py-3 text-sm outline-none ring-primary focus:ring-2"
           />
         </motion.div>
 
@@ -115,7 +108,7 @@ export default function NewPotPage() {
           transition={{ delay: 0.1 }}
           className="space-y-2"
         >
-          <label className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+          <label className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
             Currency
           </label>
           <div className="flex gap-2">
@@ -124,10 +117,10 @@ export default function NewPotPage() {
                 key={c}
                 type="button"
                 onClick={() => setCurrency(c as SupportedCurrency)}
-                className={`rounded-xl px-4 py-2.5 text-sm font-medium transition-all ${
+                className={`rounded-xl border px-4 py-2.5 text-sm font-medium transition-all ${
                   currency === c
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-muted text-muted-foreground hover:bg-muted/80"
+                    ? "border-primary bg-primary text-primary-foreground"
+                    : "border-border/60 bg-card text-muted-foreground hover:bg-primary/5"
                 }`}
               >
                 {c}
@@ -143,24 +136,22 @@ export default function NewPotPage() {
           transition={{ delay: 0.15 }}
           className="space-y-2"
         >
-          <label className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+          <label className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
             Target amount (optional)
           </label>
-          <input
+          <Input
             type="number"
             min="0"
             step="0.01"
             value={targetAmount}
             onChange={(e) => setTargetAmount(e.target.value)}
             placeholder="0.00"
-            className="w-full rounded-xl border bg-background px-4 py-3 text-sm outline-none ring-primary focus:ring-2"
           />
         </motion.div>
 
         <Button
           type="submit"
-          size="lg"
-          className="h-14 w-full"
+          size="cta"
           disabled={!name.trim() || createPot.isPending}
         >
           {createPot.isPending ? "Creating..." : "Create Pot"}

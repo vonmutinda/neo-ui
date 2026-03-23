@@ -3,13 +3,20 @@
 import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Plus, Minus, Trash2, ArrowDown, ArrowUp } from "lucide-react";
+import { Plus, Minus, Trash2, ArrowDown, ArrowUp } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { PageHeader } from "@/components/shared/PageHeader";
 import { Skeleton } from "@/components/ui/skeleton";
-import { usePot, useAddToPot, useWithdrawFromPot, useArchivePot } from "@/hooks/use-pots";
+import {
+  usePot,
+  useAddToPot,
+  useWithdrawFromPot,
+  useArchivePot,
+} from "@/hooks/use-pots";
 import { usePotTransactions } from "@/hooks/use-pot-transactions";
-import { useTelegram } from "@/providers/TelegramProvider";
+
 import { toast } from "sonner";
 import type { Transaction } from "@/lib/types";
 import { formatMoney } from "@/lib/format";
@@ -19,7 +26,7 @@ type TransferMode = "add" | "withdraw" | null;
 export default function PotDetailPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
-  const { haptic } = useTelegram();
+
   const { data: pot, isLoading } = usePot(id);
   const { data: potTxs, isLoading: txsLoading } = usePotTransactions(id);
   const addToPot = useAddToPot();
@@ -44,7 +51,7 @@ export default function PotDetailPage() {
       <div className="flex flex-col items-center justify-center gap-4 pt-20">
         <p className="text-muted-foreground">Pot not found</p>
         <Link href="/" className="text-sm font-medium text-primary">
-          Back to dashboard
+          Go to dashboard
         </Link>
       </div>
     );
@@ -65,11 +72,9 @@ export default function PotDetailPage() {
       } else {
         await withdrawFromPot.mutateAsync({ id, amountCents: cents });
       }
-      haptic("medium");
       setMode(null);
       setAmount("");
     } catch (err) {
-      haptic("heavy");
       toast.error(err instanceof Error ? err.message : "Transfer failed");
     }
   }
@@ -78,10 +83,8 @@ export default function PotDetailPage() {
     if (!id) return;
     try {
       await archivePot.mutateAsync(id);
-      haptic("medium");
       router.push("/");
     } catch (err) {
-      haptic("heavy");
       toast.error(err instanceof Error ? err.message : "Failed to delete pot");
     }
   }
@@ -91,37 +94,27 @@ export default function PotDetailPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Link
-            href="/"
-            className="flex h-10 w-10 items-center justify-center rounded-full transition-colors active:bg-muted"
+      <PageHeader
+        title={pot.name}
+        backHref="/"
+        rightSlot={
+          <button
+            onClick={() => setConfirmDelete(true)}
+            className="flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
           >
-            <ArrowLeft className="h-5 w-5" />
-          </Link>
-          <div className="flex items-center gap-2">
-            <span className="text-2xl">{pot.emoji ?? "🏦"}</span>
-            <h1 className="text-xl font-semibold">{pot.name}</h1>
-          </div>
-        </div>
-        <button
-          onClick={() => setConfirmDelete(true)}
-          className="flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
-        >
-          <Trash2 className="h-4 w-4" />
-        </button>
-      </div>
+            <Trash2 className="h-4 w-4" />
+          </button>
+        }
+      />
 
       {/* Balance card */}
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="rounded-3xl bg-gradient-to-br from-primary/10 to-primary/5 p-6"
-      >
-        <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+      <div className="rounded-2xl border border-border/60 bg-card p-6">
+        <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
           Current balance
         </p>
-        <p className="mt-1 text-3xl font-bold tabular-nums">{formatMoney(pot.balanceCents, pot.currencyCode)}</p>
+        <p className="mt-1 text-3xl font-bold tabular-nums">
+          {formatMoney(pot.balanceCents, pot.currencyCode)}
+        </p>
 
         {pot.targetCents != null && pot.targetCents > 0 && (
           <div className="mt-4 space-y-1.5">
@@ -141,23 +134,29 @@ export default function PotDetailPage() {
             </div>
           </div>
         )}
-      </motion.div>
+      </div>
 
       {/* Transfer buttons */}
       <div className="flex gap-3">
         <Button
           variant={mode === "add" ? "default" : "outline"}
           size="lg"
-          className="h-12 flex-1 gap-2"
-          onClick={() => { setMode(mode === "add" ? null : "add"); setAmount(""); }}
+          className={`h-12 flex-1 gap-2 rounded-xl ${mode === "add" ? "border border-primary bg-primary text-primary-foreground hover:opacity-90" : "border border-primary text-primary hover:bg-primary/10"}`}
+          onClick={() => {
+            setMode(mode === "add" ? null : "add");
+            setAmount("");
+          }}
         >
           <Plus className="h-4 w-4" /> Add
         </Button>
         <Button
           variant={mode === "withdraw" ? "default" : "outline"}
           size="lg"
-          className="h-12 flex-1 gap-2"
-          onClick={() => { setMode(mode === "withdraw" ? null : "withdraw"); setAmount(""); }}
+          className={`h-12 flex-1 gap-2 rounded-xl ${mode === "withdraw" ? "border border-primary bg-primary text-primary-foreground hover:opacity-90" : "border border-primary text-primary hover:bg-primary/10"}`}
+          onClick={() => {
+            setMode(mode === "withdraw" ? null : "withdraw");
+            setAmount("");
+          }}
         >
           <Minus className="h-4 w-4" /> Withdraw
         </Button>
@@ -173,10 +172,10 @@ export default function PotDetailPage() {
             className="space-y-4 overflow-hidden"
           >
             <div className="space-y-2">
-              <label className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+              <label className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
                 Amount ({pot.currencyCode})
               </label>
-              <input
+              <Input
                 type="number"
                 min="0.01"
                 step="0.01"
@@ -184,12 +183,11 @@ export default function PotDetailPage() {
                 onChange={(e) => setAmount(e.target.value)}
                 autoFocus
                 placeholder="0.00"
-                className="w-full rounded-xl border bg-background px-4 py-3 text-lg font-semibold tabular-nums outline-none ring-primary focus:ring-2"
+                className="text-lg font-semibold tabular-nums"
               />
             </div>
             <Button
-              size="lg"
-              className="h-14 w-full"
+              size="cta"
               onClick={handleTransfer}
               disabled={!amount || parseFloat(amount) <= 0 || isPending}
             >
@@ -205,7 +203,9 @@ export default function PotDetailPage() {
 
       {/* Transactions */}
       <div className="space-y-3">
-        <h2 className="text-base font-semibold">Transactions</h2>
+        <h2 className="text-base font-semibold text-muted-foreground">
+          Transactions
+        </h2>
         {txsLoading ? (
           <div className="space-y-2">
             {[1, 2, 3].map((i) => (
@@ -220,10 +220,12 @@ export default function PotDetailPage() {
             ))}
           </div>
         ) : potTxs && potTxs.length > 0 ? (
-          <div className="space-y-0.5 rounded-2xl border bg-card">
+          <div className="space-y-0.5 overflow-hidden rounded-2xl border border-border/60 bg-card">
             {potTxs.map((tx: Transaction, i: number) => {
               const isAdd = tx.isCredit;
-              const asset = tx.asset ? tx.asset.split("/")[0] : pot.currencyCode;
+              const asset = tx.asset
+                ? tx.asset.split("/")[0]
+                : pot.currencyCode;
               return (
                 <div
                   key={tx.id ? `${tx.id}-${i}` : `pot-tx-${i}`}
@@ -253,7 +255,11 @@ export default function PotDetailPage() {
                       isAdd ? "text-success" : "text-foreground"
                     }`}
                   >
-                    {formatMoney(tx.amountCents ?? 0, asset, isAdd ? true : false)}
+                    {formatMoney(
+                      tx.amountCents ?? 0,
+                      asset,
+                      isAdd ? true : false,
+                    )}
                   </span>
                 </div>
               );

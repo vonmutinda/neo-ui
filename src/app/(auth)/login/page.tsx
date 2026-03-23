@@ -2,12 +2,13 @@
 
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { motion } from "framer-motion";
-import { User, Lock, ArrowRight, Loader2, ShieldCheck } from "lucide-react";
+import { User, Lock, ArrowRight, Loader2 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuthStore } from "@/providers/auth-store";
+import { EnviarLogo } from "@/components/shared/EnviarLogo";
 import { api } from "@/lib/api-client";
 import type { TokenResponse } from "@/lib/types";
 
@@ -58,31 +59,17 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-[72dvh] flex-col">
-      <motion.div
-        className="mb-9 flex flex-col items-center gap-3"
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
-      >
-        <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary shadow-sm">
-          <ShieldCheck className="h-8 w-8 text-primary-foreground" />
-        </div>
-        <h1 className="text-2xl font-bold">Neo</h1>
-        <p className="text-sm text-muted-foreground">
-          Ethiopian Digital Banking
-        </p>
-      </motion.div>
+    <div className="flex min-h-0 flex-col">
+      <div className="mb-8 flex justify-center">
+        <EnviarLogo size="lg" />
+      </div>
 
-      <motion.div
-        initial={{ opacity: 0, x: 30 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.25 }}
-        className="flex flex-1 flex-col"
-      >
-        <div className="flex flex-1 flex-col gap-5">
+      <div className="flex flex-1 flex-col">
+        <div className="flex flex-1 flex-col gap-4">
           <div className="text-center">
-            <h2 className="text-xl font-bold">Welcome back</h2>
+            <h2 className="text-lg font-semibold text-foreground">
+              Welcome back
+            </h2>
             <p className="mt-1 text-sm text-muted-foreground">
               Sign in with your username or phone number
             </p>
@@ -90,27 +77,29 @@ export default function LoginPage() {
 
           <div className="space-y-3">
             <div className="relative">
-              <User className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <User className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-primary/60" />
               <Input
                 type="text"
                 placeholder="Username or phone number"
                 value={identifier}
                 onChange={(e) => setIdentifier(e.target.value)}
-                className="h-13 rounded-[10px] pl-11 text-base"
+                className="h-12 rounded-xl border border-border/60 bg-card pl-10 text-base"
                 autoFocus
                 autoComplete="username"
+                aria-required="true"
               />
             </div>
 
             <div className="relative">
-              <Lock className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Lock className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-primary/60" />
               <Input
                 type="password"
                 placeholder="Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="h-13 rounded-[10px] pl-11 text-base"
+                className="h-12 rounded-xl border border-border/60 bg-card pl-10 text-base"
                 autoComplete="current-password"
+                aria-required="true"
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && formValid && !isSubmitting) {
                     handleLogin();
@@ -120,24 +109,34 @@ export default function LoginPage() {
             </div>
           </div>
 
-          {error && (
-            <p className="text-center text-sm text-destructive">{error}</p>
-          )}
+          <AnimatePresence>
+            {error && (
+              <motion.p
+                initial={{ opacity: 0, y: -4 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -4 }}
+                transition={{ duration: 0.2 }}
+                className="text-center text-sm text-destructive"
+              >
+                {error}
+              </motion.p>
+            )}
+          </AnimatePresence>
         </div>
 
-        <div className="mt-7 space-y-3">
+        <div className="mt-6 space-y-3">
           <Button
             size="lg"
             disabled={!formValid || isSubmitting}
             onClick={handleLogin}
-            className="h-14 w-full rounded-[10px] text-base font-semibold"
+            className="h-12 w-full rounded-xl text-base font-semibold"
           >
             {isSubmitting ? (
               <Loader2 className="h-5 w-5 animate-spin" />
             ) : (
               <>
-                Sign In
-                <ArrowRight className="ml-2 h-5 w-5" />
+                Sign in
+                <ArrowRight className="ml-2 h-4 w-4" />
               </>
             )}
           </Button>
@@ -146,13 +145,13 @@ export default function LoginPage() {
             Don&apos;t have an account?{" "}
             <Link
               href="/register"
-              className="font-medium text-primary underline"
+              className="font-medium text-primary hover:underline"
             >
               Register
             </Link>
           </p>
         </div>
-      </motion.div>
+      </div>
     </div>
   );
 }

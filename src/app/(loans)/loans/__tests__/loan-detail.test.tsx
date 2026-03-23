@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, fireEvent, act } from "@testing-library/react";
+import { render, screen, act } from "@testing-library/react";
 import { createElement, Suspense, type ReactNode } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
@@ -11,15 +11,6 @@ vi.mock("next/link", () => ({
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn(), replace: vi.fn() }),
   usePathname: () => "/loans/loan1",
-}));
-
-vi.mock("framer-motion", () => ({
-  motion: {
-    div: ({ children, ...props }: Record<string, unknown>) =>
-      createElement("div", props, children as ReactNode),
-    circle: (props: Record<string, unknown>) => createElement("circle", props),
-  },
-  AnimatePresence: ({ children }: { children: ReactNode }) => children,
 }));
 
 const mockLoanDetail = vi.fn();
@@ -94,7 +85,7 @@ describe("LoanDetailPage", () => {
       isError: true,
     });
     await renderPage();
-    expect(screen.getByText("Could not load loan details")).toBeTruthy();
+    expect(screen.getByText("Could not load loan")).toBeTruthy();
   });
 
   it("renders active loan with Make Payment button", async () => {
@@ -126,7 +117,7 @@ describe("LoanDetailPage", () => {
       isError: false,
     });
     await renderPage();
-    expect(screen.getByText("Make Payment")).toBeTruthy();
+    expect(screen.getByText("Make payment")).toBeTruthy();
     expect(screen.getByText("Active")).toBeTruthy();
     expect(screen.getByText("29%")).toBeTruthy();
   });
@@ -162,7 +153,7 @@ describe("LoanDetailPage", () => {
     });
     await renderPage();
     expect(screen.getByText("Repaid")).toBeTruthy();
-    expect(screen.queryByText("Make Payment")).toBeNull();
+    expect(screen.queryByText("Make payment")).toBeNull();
   });
 
   it("shows past due warning for overdue loans", async () => {
@@ -186,11 +177,11 @@ describe("LoanDetailPage", () => {
       isError: false,
     });
     await renderPage();
-    expect(screen.getByText("25 days")).toBeTruthy();
-    expect(screen.getByText("Make Payment")).toBeTruthy();
+    expect(screen.getByText(/25 days past due/)).toBeTruthy();
+    expect(screen.getByText("Make payment")).toBeTruthy();
   });
 
-  it("opens repayment sheet when Make Payment is clicked", async () => {
+  it("links to repayment page from Make payment", async () => {
     mockLoanDetail.mockReturnValue({
       data: {
         id: "loan1",
@@ -218,18 +209,9 @@ describe("LoanDetailPage", () => {
       isLoading: false,
       isError: false,
     });
-    mockWalletSummary.mockReturnValue({
-      data: {
-        balances: [
-          { currency: "ETB", display: "Br5,000.00", balanceCents: 500000 },
-        ],
-      },
-      isLoading: false,
-    });
     await renderPage();
-    fireEvent.click(screen.getByText("Make Payment"));
-    expect(screen.getByText("Confirm Payment")).toBeTruthy();
-    expect(screen.getByText("Next Installment")).toBeTruthy();
-    expect(screen.getByText("Full Remaining")).toBeTruthy();
+    const repayLink = screen.getByRole("link", { name: /make payment/i });
+    expect(repayLink).toBeTruthy();
+    expect(repayLink.getAttribute("href")).toBe("/loans/loan1/repay");
   });
 });

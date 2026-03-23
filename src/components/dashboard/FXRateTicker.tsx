@@ -23,61 +23,46 @@ function formatRate(rate: number, to: string): string {
 export function FXRateTicker({ rates, isLoading }: FXRateTickerProps) {
   if (isLoading) {
     return (
-      <div className="space-y-3">
-        <div className="flex items-center gap-2">
-          <Skeleton className="h-3 w-28" />
-        </div>
-        <div className="flex gap-3 overflow-x-auto md:grid md:grid-cols-3">
+      <div className="space-y-2">
+        <div className="flex gap-2 overflow-x-auto md:grid md:grid-cols-3">
           {[0, 1, 2].map((i) => (
-            <Skeleton key={i} className="h-[60px] min-w-[140px] rounded-2xl" />
+            <Skeleton key={i} className="h-[52px] min-w-[120px] rounded-xl" />
           ))}
         </div>
       </div>
     );
   }
 
-  const pills = (rates ?? [])
-    .filter((r) => INTERESTING_PAIRS.some((p) => p.from === r.from && p.to === r.to));
+  const pills = (rates ?? []).filter((r) =>
+    INTERESTING_PAIRS.some((p) => p.from === r.from && p.to === r.to),
+  );
 
   if (pills.length === 0) {
     return (
-      <div className="space-y-3">
-        <h2 className="text-[11px] font-medium uppercase tracking-widest text-muted-foreground">
-          Exchange rates
-        </h2>
-        <p className="text-xs text-muted-foreground">Rates unavailable</p>
-      </div>
+      <p className="text-sm text-muted-foreground">
+        Rates unavailable right now.
+      </p>
     );
   }
 
   return (
-    <div className="space-y-3">
-      <div className="flex items-center gap-2">
-        <h2 className="text-[11px] font-medium uppercase tracking-widest text-muted-foreground">
-          Exchange rates
-        </h2>
-        <span className="flex items-center gap-1 text-[10px] font-medium text-success">
-          <span className="h-1.5 w-1.5 rounded-full bg-success" />
-          Live
-        </span>
-      </div>
-
-      <div className="flex gap-3 overflow-x-auto md:grid md:grid-cols-3">
+    <div className="space-y-2">
+      <div className="flex gap-2 overflow-x-auto md:grid md:grid-cols-3">
         {pills.map((rate, i) => (
           <motion.div
             key={`${rate.from}-${rate.to}`}
-            initial={{ opacity: 0, y: 8 }}
+            initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.06, duration: 0.25 }}
+            transition={{ delay: i * 0.05, duration: 0.2 }}
           >
             <Link
               href={`/convert?from=${rate.from}&to=${rate.to}`}
-              className="flex min-w-[140px] flex-col gap-0.5 rounded-2xl bg-muted dark:border dark:border-border dark:bg-card px-4 py-3 transition-colors active:bg-muted"
+              className="flex min-w-[120px] flex-col gap-0.5 rounded-xl border border-border/60 bg-card px-3 py-2.5 shadow-[0_1px_2px_oklch(0.40_0.06_70/5%)] transition-colors hover:bg-muted/40 hover:border-primary/20 active:bg-muted"
             >
-              <span className="text-sm font-semibold">
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
                 {rate.from}/{rate.to}
               </span>
-              <span className="font-tabular text-lg font-bold">
+              <span className="font-tabular text-base font-bold">
                 {formatRate(rate.mid, rate.to)}
               </span>
             </Link>

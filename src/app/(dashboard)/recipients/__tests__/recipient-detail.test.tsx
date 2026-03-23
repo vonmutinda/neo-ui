@@ -1,6 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, act } from "@testing-library/react";
-import { createElement, Suspense, type ReactNode } from "react";
+import {
+  createElement,
+  Suspense,
+  type ComponentType,
+  type ReactNode,
+} from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 vi.mock("next/link", () => ({
@@ -52,7 +57,12 @@ async function renderPage() {
       createElement(
         Suspense,
         { fallback: createElement("div", null, "loading") },
-        createElement(RecipientDetailPage, { params: paramsPromise }),
+        createElement(
+          RecipientDetailPage as ComponentType<{
+            params: Promise<{ id: string }>;
+          }>,
+          { params: paramsPromise },
+        ),
       ),
       { wrapper },
     );
@@ -93,7 +103,7 @@ describe("RecipientDetailPage", () => {
     mockRecipient.mockReturnValue({
       data: {
         id: "r1",
-        type: "neo_user",
+        type: "enviar_user",
         displayName: "Abebe Bikila",
         username: "abebe",
         countryCode: "251",

@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Enviar — New Transfer</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #F5F5F7; --surface: #FFFFFF;
+    --text-1: #1D1D1F; --text-2: #86868B; --text-3: #C7C7CC;
+    --border: rgba(0,0,0,0.06); --border-strong: rgba(0,0,0,0.12);
+    --blue: #0071E3; --blue-subtle: rgba(0,113,227,0.06);
+    --green: #34C759; --green-subtle: rgba(52,199,89,0.08); --green-text: #248A3D;
+    --orange-subtle: rgba(255,149,0,0.08); --orange-text: #C93400;
+    --r-xs: 8px; --r-sm: 12px; --r-md: 16px; --r-lg: 20px; --r-full: 980px;
+    --shadow-sm: 0 2px 8px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.06);
+    --shadow-md: 0 4px 16px rgba(0,0,0,0.06), 0 1px 4px rgba(0,0,0,0.04);
+    --shadow-lg: 0 8px 32px rgba(0,0,0,0.08), 0 2px 8px rgba(0,0,0,0.04);
+    --sans: 'Inter', -apple-system, sans-serif;
+    --mono: 'JetBrains Mono', monospace;
+    --sidebar-w: 240px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: var(--sans); background: var(--bg); color: var(--text-1); font-size: 15px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+  .app { display: flex; min-height: 100vh; }
+
+  /* Sidebar */
+  .sidebar { width: var(--sidebar-w); background: var(--surface); position: fixed; top: 0; left: 0; bottom: 0; display: flex; flex-direction: column; z-index: 10; box-shadow: 1px 0 0 var(--border); }
+  .sb-top { padding: 24px 20px 20px; }
+  .sb-brand { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
+  .sb-logo { width: 28px; height: 28px; background: var(--text-1); border-radius: var(--r-xs); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 14px; }
+  .sb-name { font-size: 17px; font-weight: 600; letter-spacing: -0.4px; }
+  .sb-switcher { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-radius: var(--r-sm); background: var(--bg); font-size: 13px; font-weight: 500; }
+  .sb-avatar { width: 24px; height: 24px; border-radius: 6px; background: #E8D5F5; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; color: #7C3AED; }
+  .sb-nav { flex: 1; padding: 8px 8px; }
+  .sb-item { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: var(--r-xs); font-size: 14px; color: var(--text-2); cursor: pointer; text-decoration: none; margin-bottom: 1px; }
+  .sb-item--active { color: var(--text-1); font-weight: 500; background: rgba(0,0,0,0.05); }
+  .sb-icon { width: 18px; text-align: center; font-size: 14px; opacity: 0.4; }
+  .sb-item--active .sb-icon { opacity: 0.8; }
+  .sb-badge { margin-left: auto; background: #FF9500; color: white; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: var(--r-full); }
+  .sb-label { padding: 16px 12px 6px; font-size: 11px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: var(--text-3); }
+
+  .main { flex: 1; margin-left: var(--sidebar-w); display: flex; justify-content: center; }
+  .content { padding: 40px 48px; width: 100%; max-width: 960px; }
+
+  /* Back link */
+  .back { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; color: var(--blue); font-weight: 500; cursor: pointer; margin-bottom: 32px; text-decoration: none; }
+  .back:hover { text-decoration: underline; }
+
+  /* Stepper */
+  .stepper { display: flex; align-items: center; gap: 0; margin-bottom: 48px; }
+  .step { display: flex; align-items: center; gap: 8px; }
+  .step__dot {
+    width: 32px; height: 32px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 600;
+    border: 2px solid var(--text-3); color: var(--text-3);
+    transition: all 0.3s;
+  }
+  .step--done .step__dot { background: var(--text-1); border-color: var(--text-1); color: white; }
+  .step--active .step__dot { background: var(--blue); border-color: var(--blue); color: white; }
+  .step__label { font-size: 13px; font-weight: 500; color: var(--text-3); }
+  .step--done .step__label { color: var(--text-2); }
+  .step--active .step__label { color: var(--text-1); }
+  .step__line { width: 48px; height: 2px; background: var(--text-3); margin: 0 12px; }
+  .step--done .step__line { background: var(--text-1); }
+
+  /* Two col layout */
+  .flow { display: grid; grid-template-columns: 1fr 340px; gap: 32px; }
+
+  /* Form card */
+  .fcard {
+    background: var(--surface);
+    border-radius: var(--r-lg);
+    box-shadow: var(--shadow-md);
+    padding: 40px;
+  }
+  .fcard__title { font-size: 24px; font-weight: 600; letter-spacing: -0.5px; margin-bottom: 4px; }
+  .fcard__sub { font-size: 14px; color: var(--text-2); margin-bottom: 36px; }
+
+  /* Resolved recipient */
+  .resolved {
+    display: flex; align-items: center; gap: 14px;
+    padding: 16px 20px;
+    background: var(--green-subtle);
+    border-radius: var(--r-sm);
+    margin-bottom: 32px;
+  }
+  .resolved__avatar {
+    width: 40px; height: 40px; border-radius: 50%;
+    background: var(--green); color: white;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 15px;
+  }
+  .resolved__name { font-size: 15px; font-weight: 500; }
+  .resolved__detail { font-size: 13px; color: var(--green-text); }
+  .resolved__check { margin-left: auto; color: var(--green); font-size: 20px; }
+
+  /* Amount input — hero style */
+  .amount-wrap { text-align: center; margin-bottom: 16px; }
+  .amount-input {
+    font-family: var(--mono);
+    font-size: 48px;
+    font-weight: 600;
+    letter-spacing: -2.5px;
+    border: none;
+    outline: none;
+    text-align: center;
+    width: 100%;
+    background: transparent;
+    color: var(--text-1);
+    caret-color: var(--blue);
+  }
+  .amount-input::placeholder { color: var(--text-3); }
+  .amount-currency {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 8px 16px; border-radius: var(--r-full);
+    background: rgba(0,0,0,0.05);
+    font-size: 14px; font-weight: 600; color: var(--text-2);
+    cursor: pointer; margin-top: 8px;
+  }
+  .amount-avail { font-size: 13px; color: var(--text-2); margin-top: 12px; }
+  .amount-avail strong { font-family: var(--mono); font-weight: 500; color: var(--text-1); }
+
+  /* Fee strip */
+  .fee-strip {
+    display: flex; align-items: center; justify-content: center;
+    gap: 16px; padding: 14px 0;
+    margin: 24px 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+    font-size: 14px; color: var(--text-2);
+  }
+  .fee-strip .mono { font-family: var(--mono); font-weight: 500; color: var(--text-1); }
+  .fee-dot { width: 3px; height: 3px; border-radius: 50%; background: var(--text-3); }
+
+  /* Form fields */
+  .field { margin-bottom: 24px; }
+  .field__label { display: block; font-size: 12px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; color: var(--text-3); margin-bottom: 8px; }
+  .field__input {
+    width: 100%; padding: 14px 18px;
+    border-radius: var(--r-sm); border: 1.5px solid var(--border-strong);
+    font-size: 15px; font-family: var(--sans);
+    background: var(--surface); color: var(--text-1); outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .field__input:focus { border-color: var(--blue); box-shadow: 0 0 0 4px var(--blue-subtle); }
+  .field__input::placeholder { color: var(--text-3); }
+  .field__select {
+    width: 100%; padding: 14px 18px;
+    border-radius: var(--r-sm); border: 1.5px solid var(--border-strong);
+    font-size: 15px; font-family: var(--sans);
+    background: var(--surface); color: var(--text-1);
+    appearance: none; cursor: pointer;
+    background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%23C7C7CC' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 16px center;
+  }
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+  /* Buttons */
+  .btn-row { display: flex; gap: 12px; margin-top: 32px; }
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; font-family: var(--sans); font-size: 15px; font-weight: 500; border: none; cursor: pointer; border-radius: var(--r-full); padding: 14px 32px; transition: all 0.2s; }
+  .btn:active { transform: scale(0.97); }
+  .btn--dark { background: var(--text-1); color: white; flex: 1; }
+  .btn--dark:hover { background: #333; }
+  .btn--ghost { background: transparent; color: var(--text-2); padding: 14px 24px; }
+  .btn--ghost:hover { background: rgba(0,0,0,0.04); }
+
+  /* Summary card */
+  .scard {
+    background: var(--surface);
+    border-radius: var(--r-lg);
+    box-shadow: var(--shadow-sm);
+    padding: 28px;
+    position: sticky;
+    top: 40px;
+  }
+  .scard__title {
+    font-size: 14px; font-weight: 600; letter-spacing: -0.2px;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .scard__row {
+    display: flex; justify-content: space-between;
+    padding: 10px 0;
+  }
+  .scard__label { font-size: 14px; color: var(--text-2); }
+  .scard__value { font-size: 14px; font-weight: 500; text-align: right; }
+  .scard__value--mono { font-family: var(--mono); }
+  .scard__total {
+    display: flex; justify-content: space-between;
+    padding: 16px 0 0; margin-top: 12px;
+    border-top: 2px solid var(--text-1);
+  }
+  .scard__total .scard__label { font-weight: 600; color: var(--text-1); }
+  .scard__total .scard__value { font-family: var(--mono); font-size: 22px; font-weight: 600; letter-spacing: -0.8px; }
+
+  /* Approval warning */
+  .warn {
+    display: flex; align-items: flex-start; gap: 12px;
+    padding: 16px 20px;
+    background: var(--orange-subtle);
+    border-radius: var(--r-sm);
+    margin-top: 20px;
+  }
+  .warn__icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+  .warn__text { font-size: 13px; color: var(--orange-text); line-height: 1.5; }
+  .warn__text strong { font-weight: 600; }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="sb-top">
+      <div class="sb-brand"><div class="sb-logo">E</div><div class="sb-name">Enviar</div></div>
+      <div class="sb-switcher"><div class="sb-avatar">AH</div><span style="flex:1">Addis Hub Trading</span><span style="color:var(--text-3);font-size:10px">&#9662;</span></div>
+    </div>
+    <nav class="sb-nav">
+      <a class="sb-item"><span class="sb-icon">&#9632;</span> Dashboard</a>
+      <a class="sb-item"><span class="sb-icon">&#9671;</span> Wallets</a>
+      <a class="sb-item sb-item--active"><span class="sb-icon">&#8599;</span> Transfers <span class="sb-badge">3</span></a>
+      <a class="sb-item"><span class="sb-icon">&#9776;</span> Payments</a>
+      <a class="sb-item"><span class="sb-icon">&#9744;</span> Invoices</a>
+      <a class="sb-item"><span class="sb-icon">&#9645;</span> Cards</a>
+      <div class="sb-label">Trade</div>
+      <a class="sb-item"><span class="sb-icon">&#8615;</span> Imports</a>
+      <a class="sb-item"><span class="sb-icon">&#8613;</span> Exports</a>
+      <div class="sb-label">Finance</div>
+      <a class="sb-item"><span class="sb-icon">&#9733;</span> Loans</a>
+      <a class="sb-item"><span class="sb-icon">&#9879;</span> Tax</a>
+      <a class="sb-item"><span class="sb-icon">&#128214;</span> Accounting</a>
+      <div class="sb-label">Admin</div>
+      <a class="sb-item"><span class="sb-icon">&#128101;</span> Team</a>
+      <a class="sb-item"><span class="sb-icon">&#9881;</span> Settings</a>
+    </nav>
+  </aside>
+
+  <main class="main">
+    <div class="content">
+      <a class="back">&#8592; Transfers</a>
+
+      <!-- Stepper -->
+      <div class="stepper">
+        <div class="step step--done"><div class="step__dot">&#10003;</div><div class="step__label">Type</div></div>
+        <div class="step__line" style="background:var(--text-1)"></div>
+        <div class="step step--done"><div class="step__dot">&#10003;</div><div class="step__label">Recipient</div></div>
+        <div class="step__line" style="background:var(--text-1)"></div>
+        <div class="step step--active"><div class="step__dot">3</div><div class="step__label">Amount</div></div>
+        <div class="step__line"></div>
+        <div class="step"><div class="step__dot">4</div><div class="step__label">Review</div></div>
+      </div>
+
+      <!-- Flow -->
+      <div class="flow">
+        <!-- Left: Form -->
+        <div class="fcard">
+          <div class="fcard__title">How much?</div>
+          <div class="fcard__sub">Sending to Dashen Bank via EthSwitch</div>
+
+          <!-- Resolved Recipient -->
+          <div class="resolved">
+            <div class="resolved__avatar">DB</div>
+            <div>
+              <div class="resolved__name">Dashen Bank ****4521</div>
+              <div class="resolved__detail">Ato Melaku Tadesse</div>
+            </div>
+            <div class="resolved__check">&#10003;</div>
+          </div>
+
+          <!-- Amount — Apple Card style hero input -->
+          <div class="amount-wrap">
+            <input class="amount-input" type="text" value="125,000" placeholder="0">
+            <div><span class="amount-currency">&#127466;&#127481; ETB &#9662;</span></div>
+            <div class="amount-avail">Available <strong>Br 2,147,320.45</strong></div>
+          </div>
+
+          <!-- Fee -->
+          <div class="fee-strip">
+            <span>Fee <span class="mono">Br 25</span></span>
+            <span class="fee-dot"></span>
+            <span>Total debit <span class="mono">Br 125,025</span></span>
+          </div>
+
+          <!-- Narration -->
+          <div class="field">
+            <label class="field__label">Narration</label>
+            <input class="field__input" value="Supplier payment — March invoice #1042">
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <label class="field__label">Purpose</label>
+              <select class="field__select">
+                <option>Trade</option>
+                <option>General</option>
+                <option>Medical</option>
+              </select>
+            </div>
+            <div class="field">
+              <label class="field__label">Category</label>
+              <select class="field__select">
+                <option>Supplier Payments</option>
+                <option>Rent & Utilities</option>
+                <option>Payroll</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="btn-row">
+            <button class="btn btn--ghost">&#8592; Back</button>
+            <button class="btn btn--dark">Review Transfer &#8594;</button>
+          </div>
+        </div>
+
+        <!-- Right: Summary -->
+        <div>
+          <div class="scard">
+            <div class="scard__title">Summary</div>
+            <div class="scard__row">
+              <span class="scard__label">From</span>
+              <span class="scard__value">Addis Hub Trading<br><span style="font-size:12px;color:var(--text-3)">ETB Primary</span></span>
+            </div>
+            <div class="scard__row">
+              <span class="scard__label">To</span>
+              <span class="scard__value">Dashen ****4521<br><span style="font-size:12px;color:var(--text-3)">Ato Melaku Tadesse</span></span>
+            </div>
+            <div class="scard__row">
+              <span class="scard__label">Route</span>
+              <span class="scard__value">EthSwitch</span>
+            </div>
+            <div class="scard__row">
+              <span class="scard__label">Amount</span>
+              <span class="scard__value scard__value--mono">Br 125,000</span>
+            </div>
+            <div class="scard__row">
+              <span class="scard__label">Fee</span>
+              <span class="scard__value scard__value--mono">Br 25</span>
+            </div>
+            <div class="scard__total">
+              <span class="scard__label">Total</span>
+              <span class="scard__value">Br 125,025</span>
+            </div>
+
+            <div class="warn">
+              <span class="warn__icon">&#9888;</span>
+              <div class="warn__text">
+                <strong>Requires approval</strong><br>
+                Exceeds Br 50,000 threshold. An Admin or Owner must approve.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+</body>
+</html>

@@ -1,129 +1,101 @@
 "use client";
 
-import { useRef, useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import { useEffect } from "react";
 import Link from "next/link";
+import { Plus } from "lucide-react";
 import type { CurrencyBalance, SupportedCurrency } from "@/lib/types";
 import { CurrencyFlag } from "@/components/shared/CurrencyFlag";
-import { cn } from "@/lib/utils";
 import { formatMoney } from "@/lib/format";
 
 interface CurrencyCarouselProps {
   balances: CurrencyBalance[];
   primaryCurrency: SupportedCurrency;
   onActiveCurrencyChange: (currency: SupportedCurrency) => void;
+  onAddAccount?: () => void;
+  showAddCard?: boolean;
 }
+
+const CURRENCY_NAMES: Record<string, string> = {
+  ETB: "Ethiopian Birr",
+  USD: "US Dollar",
+  EUR: "Euro",
+  GBP: "British Pound",
+  KES: "Kenyan Shilling",
+};
+
+/**
+ * Currency tile tints — card/loans design language: border-border, muted/card gradients.
+ */
+const CURRENCY_TINTS: Record<string, string> = {
+  ETB: "from-primary/10 to-primary/5 border-primary/15",
+  USD: "from-blue-500/10 to-blue-500/5 border-blue-500/15",
+  EUR: "from-indigo-500/10 to-indigo-500/5 border-indigo-500/15",
+  GBP: "from-purple-500/10 to-purple-500/5 border-purple-500/15",
+  KES: "from-orange-500/10 to-orange-500/5 border-orange-500/15",
+};
+
+const DEFAULT_TINT = "from-muted/40 to-muted/20 border-border/60";
 
 export function CurrencyCarousel({
   balances,
   primaryCurrency,
   onActiveCurrencyChange,
+  onAddAccount,
+  showAddCard = true,
 }: CurrencyCarouselProps) {
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const [activeIndex, setActiveIndex] = useState(0);
-
   useEffect(() => {
-    const el = scrollRef.current;
-    if (!el) return;
+    onActiveCurrencyChange(primaryCurrency);
+  }, [primaryCurrency, onActiveCurrencyChange]);
 
-    function handleScroll() {
-      if (!el) return;
-      const cardWidth = el.firstElementChild
-        ? (el.firstElementChild as HTMLElement).offsetWidth + 12
-        : 292;
-      const idx = Math.round(el.scrollLeft / cardWidth);
-      setActiveIndex(idx);
+  const showCarousel = balances.length > 0 || showAddCard;
+  if (!showCarousel) return null;
+
+  function handleAddBalance(e: React.MouseEvent) {
+    if (onAddAccount) {
+      e.preventDefault();
+      onAddAccount();
     }
-
-    el.addEventListener("scroll", handleScroll, { passive: true });
-    return () => el.removeEventListener("scroll", handleScroll);
-  }, []);
-
-  useEffect(() => {
-    if (balances[activeIndex]) {
-      const currency = balances[activeIndex].currency;
-      onActiveCurrencyChange(currency);
-    }
-  }, [activeIndex, balances, onActiveCurrencyChange]);
-
-  if (balances.length === 0) return null;
+  }
 
   return (
-    <div className="space-y-3">
-      <div
-        ref={scrollRef}
-        className="-mx-5 flex snap-x snap-mandatory gap-3 overflow-x-auto px-5 md:-mx-0 md:px-0"
-        style={{ scrollbarWidth: "none" }}
-      >
-        {balances.map((bal, i) => {
-          const isPrimary = bal.currency === primaryCurrency;
-          const isActive = i === activeIndex;
-
-          return (
-            <motion.div
-              key={bal.currency}
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: i * 0.06, duration: 0.3 }}
-              className="snap-center"
-            >
-              <Link
-                href={`/balances/${bal.currency}`}
-                className={cn(
-                  "flex min-w-[280px] flex-col gap-4 rounded-2xl p-5 transition-colors active:opacity-90",
-                  isActive
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-muted text-foreground",
-                )}
-              >
-                <div className="flex items-center gap-2.5">
-                  <CurrencyFlag currency={bal.currency} size="sm" />
-                  <span className="text-sm font-semibold">
-                    {bal.name || bal.currency}
-                  </span>
-                  {isPrimary && (
-                    <span
-                      className={cn(
-                        "ml-auto rounded-3xl px-2 py-0.5 text-[10px] font-semibold",
-                        isActive
-                          ? "bg-primary-foreground/20 text-primary-foreground"
-                          : "bg-primary/10 text-primary",
-                      )}
-                    >
-                      Primary
-                    </span>
-                  )}
-                </div>
-                <p className="font-tabular text-3xl font-semibold tracking-tight">
-                  {formatMoney(bal.balanceCents, bal.currency)}
-                </p>
-                <span
-                  className={cn(
-                    "text-xs font-medium",
-                    isActive ? "text-primary-foreground/70" : "text-muted-foreground",
-                  )}
-                >
-                  {bal.currency} balance
-                </span>
-              </Link>
-            </motion.div>
-          );
-        })}
-      </div>
-
-      {/* Dot indicators */}
-      {balances.length > 1 && (
-        <div className="flex justify-center gap-1.5">
-          {balances.map((_, i) => (
-            <div
-              key={i}
-              className={cn(
-                "h-1.5 rounded-full transition-all duration-200",
-                i === activeIndex ? "w-4 bg-primary" : "w-1.5 bg-border",
-              )}
-            />
-          ))}
-        </div>
+    <div
+      className="-mx-4 flex gap-2.5 overflow-x-auto px-4 pb-1 pt-0"
+      style={{ scrollbarWidth: "none" }}
+    >
+      {balances.map((bal) => {
+        const tint = CURRENCY_TINTS[bal.currency] ?? DEFAULT_TINT;
+        return (
+          <Link
+            key={bal.currency}
+            href={`/balances/${bal.currency}`}
+            onClick={() => onActiveCurrencyChange(bal.currency)}
+            className={`flex w-36 min-w-[9rem] shrink-0 flex-col justify-between rounded-xl border bg-gradient-to-br p-3 transition-all active:scale-[0.97] ${tint}`}
+          >
+            <CurrencyFlag currency={bal.currency} size="md" />
+            <div className="mt-3">
+              <p className="font-tabular text-base font-bold tracking-tight text-foreground">
+                {formatMoney(bal.balanceCents, bal.currency)}
+              </p>
+              <p className="mt-0.5 text-[10px] text-muted-foreground">
+                {CURRENCY_NAMES[bal.currency] ?? bal.currency}
+              </p>
+            </div>
+          </Link>
+        );
+      })}
+      {showAddCard && (
+        <Link
+          href="/convert"
+          onClick={handleAddBalance}
+          className="flex w-36 min-w-[9rem] shrink-0 flex-col items-center justify-center gap-1.5 rounded-xl border border-dashed border-border/60 bg-muted/30 p-3 transition-all active:scale-[0.97] hover:bg-muted/50"
+        >
+          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-muted">
+            <Plus className="h-4 w-4 text-muted-foreground" />
+          </div>
+          <p className="text-center text-xs font-medium text-muted-foreground">
+            Add balance
+          </p>
+        </Link>
       )}
     </div>
   );

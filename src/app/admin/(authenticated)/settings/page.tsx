@@ -1,22 +1,70 @@
 "use client";
 
+import { useState } from "react";
 import { useAdminConfig } from "@/hooks/admin/use-admin-config";
 import { useAdminFXRates } from "@/hooks/admin/use-admin-fx-rates";
 import { useAdminFeeSchedules } from "@/hooks/admin/use-admin-fees";
+import {
+  useAdminSystemAccounts,
+  useAdminTopUpCapital,
+} from "@/hooks/admin/use-admin-system-accounts";
 import { StatusBadge } from "@/components/admin/StatusBadge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { formatMoney } from "@/lib/format";
+import { toast } from "sonner";
 
 export default function SettingsPage() {
   const { data: configData, isLoading: configLoading } = useAdminConfig();
   const { data: fxData, isLoading: fxLoading } = useAdminFXRates();
   const { data: feesData, isLoading: feesLoading } = useAdminFeeSchedules();
+  const { data: systemData, isLoading: systemLoading } =
+    useAdminSystemAccounts();
+  const topUp = useAdminTopUpCapital();
 
   const config = configData ?? [];
   const fxRates = fxData ?? [];
   const feeSchedules = feesData ?? [];
+  const pools = systemData?.pools ?? [];
 
   return (
     <div className="space-y-8">
+      {/* Capital Pools */}
+      <section>
+        <h2 className="mb-4 text-lg font-semibold">Capital Pools</h2>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          {systemLoading
+            ? Array.from({ length: 2 }).map((_, i) => (
+                <Skeleton key={i} className="h-40 rounded-2xl" />
+              ))
+            : pools.map((pool) => (
+                <CapitalPoolCard
+                  key={pool.account}
+                  pool={pool}
+                  onTopUp={(amountCents) => {
+                    const poolKey = pool.account.includes("loan_capital")
+                      ? "loan_capital"
+                      : "overdraft_capital";
+                    topUp.mutate(
+                      {
+                        pool: poolKey as "loan_capital" | "overdraft_capital",
+                        amountCents,
+                      },
+                      {
+                        onSuccess: () =>
+                          toast.success(`Topped up ${pool.label}`),
+                        onError: () =>
+                          toast.error(`Failed to top up ${pool.label}`),
+                      },
+                    );
+                  }}
+                  isLoading={topUp.isPending}
+                />
+              ))}
+        </div>
+      </section>
+
       {/* System Config */}
       <section>
         <h2 className="mb-4 text-lg font-semibold">System Config</h2>
@@ -28,7 +76,9 @@ export default function SettingsPage() {
               ))}
             </div>
           ) : config.length === 0 ? (
-            <p className="px-4 py-8 text-center text-muted-foreground">No config entries</p>
+            <p className="px-4 py-8 text-center text-muted-foreground">
+              No config entries
+            </p>
           ) : (
             <table className="w-full text-sm">
               <thead>
@@ -39,10 +89,15 @@ export default function SettingsPage() {
               </thead>
               <tbody>
                 {config.map((entry) => (
-                  <tr key={entry.key} className="border-b border-border last:border-0">
+                  <tr
+                    key={entry.key}
+                    className="border-b border-border last:border-0"
+                  >
                     <td className="px-4 py-3 font-medium">{entry.key}</td>
                     <td className="px-4 py-3 text-muted-foreground">
-                      {typeof entry.value === "object" ? JSON.stringify(entry.value) : String(entry.value)}
+                      {typeof entry.value === "object"
+                        ? JSON.stringify(entry.value)
+                        : String(entry.value)}
                     </td>
                   </tr>
                 ))}
@@ -63,7 +118,9 @@ export default function SettingsPage() {
               ))}
             </div>
           ) : fxRates.length === 0 ? (
-            <p className="px-4 py-8 text-center text-muted-foreground">No FX rates</p>
+            <p className="px-4 py-8 text-center text-muted-foreground">
+              No FX rates
+            </p>
           ) : (
             <table className="w-full text-sm">
               <thead>
@@ -78,7 +135,10 @@ export default function SettingsPage() {
               </thead>
               <tbody>
                 {fxRates.map((rate) => (
-                  <tr key={rate.id} className="border-b border-border last:border-0">
+                  <tr
+                    key={rate.id}
+                    className="border-b border-border last:border-0"
+                  >
                     <td className="px-4 py-3">{rate.fromCurrency}</td>
                     <td className="px-4 py-3">{rate.toCurrency}</td>
                     <td className="px-4 py-3">{rate.midRate}</td>
@@ -104,7 +164,9 @@ export default function SettingsPage() {
               ))}
             </div>
           ) : feeSchedules.length === 0 ? (
-            <p className="px-4 py-8 text-center text-muted-foreground">No fee schedules</p>
+            <p className="px-4 py-8 text-center text-muted-foreground">
+              No fee schedules
+            </p>
           ) : (
             <table className="w-full text-sm">
               <thead>
@@ -118,7 +180,10 @@ export default function SettingsPage() {
               </thead>
               <tbody>
                 {feeSchedules.map((fee) => (
-                  <tr key={fee.id} className="border-b border-border last:border-0">
+                  <tr
+                    key={fee.id}
+                    className="border-b border-border last:border-0"
+                  >
                     <td className="px-4 py-3 font-medium">{fee.name}</td>
                     <td className="px-4 py-3">{fee.feeType}</td>
                     <td className="px-4 py-3">
@@ -130,7 +195,9 @@ export default function SettingsPage() {
                     </td>
                     <td className="px-4 py-3">{fee.currency}</td>
                     <td className="px-4 py-3">
-                      <StatusBadge status={fee.isActive ? "active" : "deactivated"} />
+                      <StatusBadge
+                        status={fee.isActive ? "active" : "deactivated"}
+                      />
                     </td>
                   </tr>
                 ))}
@@ -139,6 +206,74 @@ export default function SettingsPage() {
           )}
         </div>
       </section>
+    </div>
+  );
+}
+
+function CapitalPoolCard({
+  pool,
+  onTopUp,
+  isLoading,
+}: {
+  pool: { label: string; account: string; balanceCents: number; asset: string };
+  onTopUp: (amountCents: number) => void;
+  isLoading: boolean;
+}) {
+  const [open, setOpen] = useState(false);
+  const [amount, setAmount] = useState("");
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    const parsed = parseFloat(amount);
+    if (!parsed || parsed <= 0) {
+      toast.error("Enter a valid amount");
+      return;
+    }
+    onTopUp(Math.round(parsed * 100));
+    setAmount("");
+    setOpen(false);
+  }
+
+  return (
+    <div className="rounded-2xl border border-border bg-card p-5">
+      <p className="text-sm text-muted-foreground">{pool.label}</p>
+      <p className="mt-1 text-2xl font-bold">
+        {formatMoney(pool.balanceCents, pool.asset)}
+      </p>
+      {open ? (
+        <form onSubmit={handleSubmit} className="mt-3 flex items-center gap-2">
+          <Input
+            type="number"
+            step="0.01"
+            min="0.01"
+            placeholder="Amount (ETB)"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            className="w-40"
+            autoFocus
+          />
+          <Button type="submit" size="sm" disabled={isLoading}>
+            {isLoading ? "..." : "Confirm"}
+          </Button>
+          <Button
+            type="button"
+            size="sm"
+            variant="ghost"
+            onClick={() => setOpen(false)}
+          >
+            Cancel
+          </Button>
+        </form>
+      ) : (
+        <Button
+          size="sm"
+          variant="outline"
+          className="mt-3"
+          onClick={() => setOpen(true)}
+        >
+          Top Up
+        </Button>
+      )}
     </div>
   );
 }

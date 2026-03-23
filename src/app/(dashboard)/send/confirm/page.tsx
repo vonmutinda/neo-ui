@@ -2,17 +2,22 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, CheckCircle2, XCircle, User, Building2, Users } from "lucide-react";
+import { CheckCircle2, XCircle, User, Building2 } from "lucide-react";
 import { UserAvatar } from "@/components/shared/UserAvatar";
-import { motion, AnimatePresence } from "framer-motion";
-import Link from "next/link";
+import { SuccessAnimation } from "@/components/shared/SuccessAnimation";
+import { AnimatePresence, motion } from "framer-motion";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { SlideToConfirm } from "@/components/send/SlideToConfirm";
 import { CurrencyFlag } from "@/components/shared/CurrencyFlag";
+import { PageHeader } from "@/components/shared/PageHeader";
 import { useSendStore } from "@/lib/send-store";
-import { useInboundTransfer, useOutboundTransfer, useBatchTransfer } from "@/hooks/use-transfers";
-import { useTelegram } from "@/providers/TelegramProvider";
+import {
+  useInboundTransfer,
+  useOutboundTransfer,
+  useBatchTransfer,
+} from "@/hooks/use-transfers";
+
 import { formatPhoneDisplay } from "@/lib/phone-utils";
 import { formatMoney } from "@/lib/format";
 
@@ -20,7 +25,7 @@ type Stage = "review" | "sending" | "success" | "error";
 
 export default function SendConfirmPage() {
   const router = useRouter();
-  const { haptic } = useTelegram();
+
   const store = useSendStore();
   const inbound = useInboundTransfer();
   const outbound = useOutboundTransfer();
@@ -29,27 +34,34 @@ export default function SendConfirmPage() {
   const [stage, setStage] = useState<Stage>("review");
   const [errorMsg, setErrorMsg] = useState("");
   const [txRef, setTxRef] = useState("");
+  const [showCelebration, setShowCelebration] = useState(false);
 
-  const { isMultiSend, recipients } = store;
+  const { recipients } = store;
+  const isMulti = recipients.length > 1;
+  const primaryRecipient = recipients[0];
 
   const multiTotal = recipients.reduce((sum, r) => sum + r.amountCents, 0);
 
   useEffect(() => {
-    if (isMultiSend) {
-      if (recipients.length < 2) router.replace("/send");
-    } else if (!store.recipientPhone || store.amountCents <= 0) {
+    if (recipients.length < 1 || store.amountCents <= 0) {
       router.replace("/send");
     }
-  }, [store.recipientPhone, store.amountCents, isMultiSend, recipients.length, router]);
+  }, [recipients.length, store.amountCents, router]);
+
+  useEffect(() => {
+    if (stage !== "success") return;
+    setShowCelebration(true); // eslint-disable-line react-hooks/set-state-in-effect -- intentional animation trigger
+    const timeout = window.setTimeout(() => setShowCelebration(false), 1400);
+    return () => window.clearTimeout(timeout);
+  }, [stage]);
 
   const isP2P = store.type === "inbound";
 
   async function handleConfirm() {
     setStage("sending");
-    haptic("medium");
 
     try {
-      if (isMultiSend) {
+      if (isMulti) {
         const result = await batch.mutateAsync({
           currency: store.currency,
           items: recipients.map((r) => ({
@@ -60,14 +72,13 @@ export default function SendConfirmPage() {
         });
         if (result?.receiptId) setTxRef(result.receiptId);
         setStage("success");
-        haptic("heavy");
         return;
       }
 
       let result;
       if (isP2P) {
         result = await inbound.mutateAsync({
-          recipient: store.recipientPhone,
+          recipient: primaryRecipient.phone,
           amountCents: store.amountCents,
           currency: store.currency,
           narration: store.narration || "P2P Transfer",
@@ -76,17 +87,18 @@ export default function SendConfirmPage() {
         result = await outbound.mutateAsync({
           amountCents: store.amountCents,
           currency: store.currency,
-          destPhone: store.recipientPhone,
+          destPhone: primaryRecipient.phone,
           destInstitution: store.destInstitution,
           narration: store.narration || "Transfer",
         });
       }
 
       if (result && typeof result === "object" && "transactionId" in result) {
-        setTxRef((result as unknown as { transactionId: string }).transactionId);
+        setTxRef(
+          (result as unknown as { transactionId: string }).transactionId,
+        );
       }
       setStage("success");
-      haptic("heavy");
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Transfer failed";
       setStage("error");
@@ -108,23 +120,20 @@ export default function SendConfirmPage() {
   const displayAmount = formatMoney(store.amountCents, store.currency);
 
   return (
-    <motion.div
-      className="flex min-h-[calc(100dvh-6rem)] flex-col"
-      initial={{ opacity: 0, x: 20 }}
-      animate={{ opacity: 1, x: 0 }}
-      transition={{ duration: 0.25 }}
-    >
+    <div className="flex min-h-[calc(100dvh-6rem)] flex-col">
+      <SuccessAnimation
+        show={showCelebration}
+        title={isMulti ? "Transfers sent" : "Money sent"}
+        subtitle={
+          isMulti
+            ? `${recipients.length} recipients were paid successfully.`
+            : "Your transfer is complete."
+        }
+      />
+
       {/* Header */}
       {(stage === "review" || stage === "sending") && (
-        <div className="flex items-center gap-3">
-          <Link
-            href="/send/amount"
-            className="flex h-10 w-10 items-center justify-center rounded-full transition-colors active:bg-muted"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </Link>
-          <h1 className="text-xl font-semibold">Confirm Transfer</h1>
-        </div>
+        <PageHeader title="Confirm Transfer" />
       )}
 
       <div className="flex flex-1 flex-col items-center justify-center gap-8 py-10">
@@ -138,9 +147,8 @@ export default function SendConfirmPage() {
               exit={{ opacity: 0, y: -10 }}
               className="flex w-full flex-col items-center gap-6"
             >
-              {isMultiSend ? (
+              {isMulti ? (
                 <>
-                  {/* Multi-send summary */}
                   <div className="text-center">
                     <CurrencyFlag currency={store.currency} size="lg" />
                     <p className="mt-3 font-tabular text-4xl font-bold tracking-tight">
@@ -151,18 +159,21 @@ export default function SendConfirmPage() {
                     </p>
                   </div>
 
-                  {/* Recipient list */}
-                  <div className="w-full rounded-2xl border bg-card p-4">
+                  <div className="w-full rounded-2xl border border-border/60 bg-card p-4">
                     {recipients.map((r, i) => (
                       <div
                         key={r.phone}
                         className={`flex items-center gap-3 py-3 ${
-                          i < recipients.length - 1 ? "border-b border-border/50" : ""
+                          i < recipients.length - 1
+                            ? "border-b border-border/60"
+                            : ""
                         }`}
                       >
                         <UserAvatar name={r.name} className="h-9 w-9" />
                         <div className="min-w-0 flex-1">
-                          <p className="truncate text-sm font-medium">{r.name}</p>
+                          <p className="truncate text-sm font-medium">
+                            {r.name}
+                          </p>
                           <p className="truncate text-xs text-muted-foreground">
                             {formatPhoneDisplay(r.phone)}
                           </p>
@@ -174,13 +185,14 @@ export default function SendConfirmPage() {
                     ))}
                     <div className="mt-2 flex items-center justify-between pt-2">
                       <span className="text-sm text-muted-foreground">Fee</span>
-                      <span className="text-sm font-medium text-emerald-600 dark:text-emerald-400">Free</span>
+                      <span className="text-sm font-medium text-emerald-600">
+                        Free
+                      </span>
                     </div>
                   </div>
                 </>
               ) : (
                 <>
-                  {/* Amount */}
                   <div className="text-center">
                     <CurrencyFlag currency={store.currency} size="lg" />
                     <p className="mt-3 font-tabular text-4xl font-bold tracking-tight">
@@ -191,15 +203,26 @@ export default function SendConfirmPage() {
                     </p>
                   </div>
 
-                  {/* Details card */}
-                  <div className="w-full rounded-2xl border bg-card p-5">
+                  <div className="w-full rounded-2xl border border-border/60 bg-card p-5">
                     <DetailRow
                       label="To"
-                      value={store.recipientName || formatPhoneDisplay(store.recipientPhone)}
-                      icon={isP2P ? <User className="h-4 w-4" /> : <Building2 className="h-4 w-4" />}
+                      value={
+                        primaryRecipient?.name ||
+                        formatPhoneDisplay(primaryRecipient?.phone ?? "")
+                      }
+                      icon={
+                        isP2P ? (
+                          <User className="h-4 w-4" />
+                        ) : (
+                          <Building2 className="h-4 w-4" />
+                        )
+                      }
                     />
-                    {isP2P && store.recipientName && (
-                      <DetailRow label="Phone" value={formatPhoneDisplay(store.recipientPhone)} />
+                    {isP2P && primaryRecipient?.name && (
+                      <DetailRow
+                        label="Phone"
+                        value={formatPhoneDisplay(primaryRecipient.phone)}
+                      />
                     )}
                     {!isP2P && (
                       <DetailRow label="Bank" value={store.destInstitution} />
@@ -222,7 +245,7 @@ export default function SendConfirmPage() {
             </motion.div>
           )}
 
-          {/* Success state */}
+          {/* Success */}
           {stage === "success" && (
             <motion.div
               key="success"
@@ -238,9 +261,11 @@ export default function SendConfirmPage() {
               >
                 <CheckCircle2 className="h-20 w-20 text-emerald-500" />
               </motion.div>
-              {isMultiSend ? (
+              {isMulti ? (
                 <>
-                  <h2 className="text-2xl font-bold">Sent to {recipients.length} recipients</h2>
+                  <h2 className="text-2xl font-bold">
+                    Sent to {recipients.length} recipients
+                  </h2>
                   <p className="font-tabular text-3xl font-semibold">
                     {formatMoney(multiTotal, store.currency)}
                   </p>
@@ -252,7 +277,7 @@ export default function SendConfirmPage() {
                     {displayAmount}
                   </p>
                   <p className="text-sm text-muted-foreground">
-                    to {store.recipientName || store.recipientPhone}
+                    to {primaryRecipient?.name || primaryRecipient?.phone}
                   </p>
                 </>
               )}
@@ -264,7 +289,7 @@ export default function SendConfirmPage() {
             </motion.div>
           )}
 
-          {/* Error state */}
+          {/* Error */}
           {stage === "error" && (
             <motion.div
               key="error"
@@ -282,7 +307,7 @@ export default function SendConfirmPage() {
         </AnimatePresence>
       </div>
 
-      {/* Bottom actions -- single SlideToConfirm with reactive state */}
+      {/* Bottom actions */}
       <div className="space-y-4 pb-6">
         {(stage === "review" || stage === "sending") && (
           <SlideToConfirm
@@ -293,11 +318,7 @@ export default function SendConfirmPage() {
         )}
 
         {stage === "success" && (
-          <Button
-            size="lg"
-            onClick={handleDone}
-            className="h-14 w-full text-base font-semibold"
-          >
+          <Button size="cta" onClick={handleDone}>
             Done
           </Button>
         )}
@@ -306,23 +327,19 @@ export default function SendConfirmPage() {
           <div className="flex gap-3">
             <Button
               variant="outline"
-              size="lg"
+              size="cta"
               onClick={handleDone}
-              className="h-14 flex-1"
+              className="border-primary text-primary hover:bg-primary/10"
             >
               Cancel
             </Button>
-            <Button
-              size="lg"
-              onClick={handleRetry}
-              className="h-14 flex-1"
-            >
+            <Button size="cta" onClick={handleRetry}>
               Retry
             </Button>
           </div>
         )}
       </div>
-    </motion.div>
+    </div>
   );
 }
 
@@ -338,11 +355,11 @@ function DetailRow({
   highlight?: boolean;
 }) {
   return (
-    <div className="flex items-center justify-between border-b border-border/50 py-3 last:border-0">
+    <div className="flex items-center justify-between border-b border-border/60 py-3 last:border-0">
       <span className="text-sm text-muted-foreground">{label}</span>
       <span
         className={`flex items-center gap-1.5 text-sm font-medium ${
-          highlight ? "text-emerald-600 dark:text-emerald-400" : ""
+          highlight ? "text-emerald-600" : ""
         }`}
       >
         {icon}

@@ -4,18 +4,16 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  ArrowLeft,
   ArrowRight,
   ShieldCheck,
   Fingerprint,
   CheckCircle2,
   Loader2,
 } from "lucide-react";
-import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { SuccessAnimation } from "@/components/shared/SuccessAnimation";
 import { useRequestKYCOTP, useVerifyKYC } from "@/hooks/use-kyc";
-import { useTelegram } from "@/providers/TelegramProvider";
 
 type Step = "intro" | "fayda-id" | "otp" | "verifying" | "done";
 
@@ -31,7 +29,7 @@ const OTP_LENGTH = 6;
 
 export default function KYCPage() {
   const router = useRouter();
-  const { haptic } = useTelegram();
+
   const requestOTP = useRequestKYCOTP();
   const verify = useVerifyKYC();
 
@@ -39,6 +37,7 @@ export default function KYCPage() {
   const [faydaId, setFaydaId] = useState("");
   const [otp, setOtp] = useState<string[]>(Array(OTP_LENGTH).fill(""));
   const [error, setError] = useState("");
+  const [showCelebration, setShowCelebration] = useState(false);
   const otpRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   const progress = ((STEP_INDEX[step] + 1) / 5) * 100;
@@ -47,30 +46,31 @@ export default function KYCPage() {
     setError("");
     try {
       await requestOTP.mutateAsync({ faydaId });
-      haptic("medium");
       setStep("otp");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to send OTP");
     }
   }
 
-  const handleVerify = useCallback(async (code: string) => {
-    setError("");
-    setStep("verifying");
-    try {
-      const res = await verify.mutateAsync({ faydaId, otp: code });
-      haptic("heavy");
-      if (res.status === "verified") {
-        setStep("done");
-      } else {
-        setError("Verification failed. Please try again.");
+  const handleVerify = useCallback(
+    async (code: string) => {
+      setError("");
+      setStep("verifying");
+      try {
+        const res = await verify.mutateAsync({ faydaId, otp: code });
+        if (res.status === "verified") {
+          setStep("done");
+        } else {
+          setError("Verification failed. Please try again.");
+          setStep("otp");
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Verification failed");
         setStep("otp");
       }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Verification failed");
-      setStep("otp");
-    }
-  }, [faydaId, haptic, verify]);
+    },
+    [faydaId, verify],
+  );
 
   function handleOtpChange(index: number, value: string) {
     if (!/^\d*$/.test(value)) return;
@@ -101,6 +101,13 @@ export default function KYCPage() {
     }
   }, [step]);
 
+  useEffect(() => {
+    if (step !== "done") return;
+    setShowCelebration(true); // eslint-disable-line react-hooks/set-state-in-effect -- intentional animation trigger
+    const timeout = window.setTimeout(() => setShowCelebration(false), 1400);
+    return () => window.clearTimeout(timeout);
+  }, [step]);
+
   const slideVariants = {
     enter: { opacity: 0, x: 30 },
     center: { opacity: 1, x: 0 },
@@ -109,19 +116,19 @@ export default function KYCPage() {
 
   return (
     <div className="flex min-h-[calc(100dvh-3rem)] flex-col">
+      <SuccessAnimation
+        show={showCelebration}
+        title="Identity verified"
+        subtitle="Your account is now ready for higher-trust features."
+      />
+
       {/* Header */}
-      <div className="flex items-center gap-3">
-        <Link
-          href="/"
-          className="flex h-10 w-10 items-center justify-center rounded-full transition-colors active:bg-muted"
-        >
-          <ArrowLeft className="h-5 w-5" />
-        </Link>
-        <h1 className="text-xl font-semibold">Identity Verification</h1>
-      </div>
+      <h1 className="text-xl font-semibold text-foreground">
+        Identity Verification
+      </h1>
 
       {/* Progress bar */}
-      <div className="mt-4 h-1 overflow-hidden rounded-full bg-muted">
+      <div className="mt-4 h-1 overflow-hidden rounded-full bg-primary/20">
         <motion.div
           className="h-full rounded-full bg-primary"
           initial={{ width: 0 }}
@@ -149,14 +156,16 @@ export default function KYCPage() {
                   <ShieldCheck className="h-10 w-10 text-primary" />
                 </div>
                 <div>
-                  <h2 className="text-2xl font-bold">Verify with Fayda</h2>
+                  <h2 className="text-2xl font-bold text-foreground">
+                    Verify with Fayda
+                  </h2>
                   <p className="mt-2 max-w-xs text-sm text-muted-foreground">
                     We use Ethiopia&apos;s National Digital ID to verify your
                     identity. This unlocks higher transaction limits and full
                     account features.
                   </p>
                 </div>
-                <div className="w-full space-y-3 rounded-2xl border bg-card p-4 text-left text-sm">
+                <div className="w-full space-y-3 rounded-2xl border border-border/60 bg-card p-4 text-left text-sm">
                   <div className="flex items-start gap-3">
                     <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">
                       1
@@ -181,7 +190,7 @@ export default function KYCPage() {
               <Button
                 size="lg"
                 onClick={() => setStep("fayda-id")}
-                className="mt-6 h-14 text-base font-semibold"
+                className="mt-6 h-14 text-base font-semibold rounded-xl border border-primary bg-primary text-primary-foreground hover:opacity-90"
               >
                 Get Started
                 <ArrowRight className="ml-2 h-5 w-5" />
@@ -205,7 +214,9 @@ export default function KYCPage() {
                   <Fingerprint className="h-8 w-8 text-primary" />
                 </div>
                 <div className="text-center">
-                  <h2 className="text-xl font-bold">Enter Fayda ID</h2>
+                  <h2 className="text-xl font-bold text-foreground">
+                    Enter Fayda ID
+                  </h2>
                   <p className="mt-1 text-sm text-muted-foreground">
                     Your 12-digit National Digital ID number
                   </p>
@@ -217,15 +228,15 @@ export default function KYCPage() {
                   placeholder="000 000 000 000"
                   value={faydaId}
                   onChange={(e) =>
-                    setFaydaId(e.target.value.replace(/[^\d]/g, "").slice(0, 12))
+                    setFaydaId(
+                      e.target.value.replace(/[^\d]/g, "").slice(0, 12),
+                    )
                   }
                   className="h-14 text-center text-xl tracking-widest"
                   autoFocus
                 />
 
-                {error && (
-                  <p className="text-sm text-destructive">{error}</p>
-                )}
+                {error && <p className="text-sm text-destructive">{error}</p>}
               </div>
 
               <div className="mt-6 flex gap-3">
@@ -233,7 +244,7 @@ export default function KYCPage() {
                   variant="outline"
                   size="lg"
                   onClick={() => setStep("intro")}
-                  className="h-14 flex-1"
+                  className="h-14 flex-1 rounded-xl border border-primary text-primary hover:bg-primary/10"
                 >
                   Back
                 </Button>
@@ -241,7 +252,7 @@ export default function KYCPage() {
                   size="lg"
                   disabled={faydaId.length < 12 || requestOTP.isPending}
                   onClick={handleRequestOTP}
-                  className="h-14 flex-1 text-base font-semibold"
+                  className="h-14 flex-1 text-base font-semibold rounded-xl border border-primary bg-primary text-primary-foreground hover:opacity-90"
                 >
                   {requestOTP.isPending ? (
                     <Loader2 className="h-5 w-5 animate-spin" />
@@ -269,7 +280,9 @@ export default function KYCPage() {
             >
               <div className="flex flex-1 flex-col items-center gap-6">
                 <div className="text-center">
-                  <h2 className="text-xl font-bold">Enter Verification Code</h2>
+                  <h2 className="text-xl font-bold text-foreground">
+                    Enter Verification Code
+                  </h2>
                   <p className="mt-1 text-sm text-muted-foreground">
                     A 6-digit code was sent to your registered number
                   </p>
@@ -279,21 +292,21 @@ export default function KYCPage() {
                   {otp.map((digit, i) => (
                     <input
                       key={i}
-                      ref={(el) => { otpRefs.current[i] = el; }}
+                      ref={(el) => {
+                        otpRefs.current[i] = el;
+                      }}
                       type="text"
                       inputMode="numeric"
                       maxLength={1}
                       value={digit}
                       onChange={(e) => handleOtpChange(i, e.target.value)}
                       onKeyDown={(e) => handleOtpKeyDown(i, e)}
-                      className="h-14 w-12 rounded-xl border bg-card text-center text-xl font-bold outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/20"
+                      className="h-14 w-12 rounded-xl border border-border/60 bg-card text-center text-xl font-bold outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/20"
                     />
                   ))}
                 </div>
 
-                {error && (
-                  <p className="text-sm text-destructive">{error}</p>
-                )}
+                {error && <p className="text-sm text-destructive">{error}</p>}
 
                 <button
                   onClick={handleRequestOTP}
@@ -311,7 +324,7 @@ export default function KYCPage() {
                   setOtp(Array(OTP_LENGTH).fill(""));
                   setStep("fayda-id");
                 }}
-                className="mt-6 h-14"
+                className="mt-6 h-14 rounded-xl border border-primary text-primary hover:bg-primary/10"
               >
                 Back
               </Button>
@@ -355,7 +368,9 @@ export default function KYCPage() {
                 >
                   <CheckCircle2 className="h-20 w-20 text-success" />
                 </motion.div>
-                <h2 className="text-2xl font-bold">Verified!</h2>
+                <h2 className="text-2xl font-bold text-foreground">
+                  Verified!
+                </h2>
                 <p className="max-w-xs text-sm text-muted-foreground">
                   Your identity has been verified. You now have access to higher
                   transaction limits and full account features.
@@ -365,7 +380,7 @@ export default function KYCPage() {
               <Button
                 size="lg"
                 onClick={() => router.push("/")}
-                className="mt-6 h-14 text-base font-semibold"
+                className="mt-6 h-14 text-base font-semibold rounded-xl border border-primary bg-primary text-primary-foreground hover:opacity-90"
               >
                 Go to Dashboard
               </Button>

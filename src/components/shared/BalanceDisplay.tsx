@@ -20,7 +20,7 @@ export function BalanceDisplay({
   return (
     <div className="flex flex-col items-center gap-1">
       {label && (
-        <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+        <span className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
           {label}
         </span>
       )}

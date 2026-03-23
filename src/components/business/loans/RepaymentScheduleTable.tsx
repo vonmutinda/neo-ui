@@ -67,7 +67,7 @@ export function RepaymentScheduleTable({
 
       {/* Rows */}
       <div className="divide-y divide-border/40">
-        {schedule.map((r, idx) => {
+        {schedule.map((r) => {
           const upcoming = isUpcoming(r.dueDate, r.isPaid);
 
           return (

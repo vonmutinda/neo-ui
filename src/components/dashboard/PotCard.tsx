@@ -9,9 +9,10 @@ import { formatMoney } from "@/lib/format";
 interface PotCardProps {
   pot: Pot;
   index: number;
+  compact?: boolean;
 }
 
-export function PotCard({ pot, index }: PotCardProps) {
+export function PotCard({ pot, index, compact = false }: PotCardProps) {
   const progress =
     pot.targetCents && pot.targetCents > 0
       ? Math.min((pot.balanceCents / pot.targetCents) * 100, 100)
@@ -27,9 +28,19 @@ export function PotCard({ pot, index }: PotCardProps) {
     >
       <Link
         href={`/pots/${pot.id}`}
-        className="flex items-center gap-4 rounded-2xl bg-muted dark:border dark:border-border dark:bg-card p-4 transition-colors active:bg-muted"
+        className={
+          compact
+            ? "flex items-center gap-3 rounded-2xl border border-border/60 bg-card p-3 transition-colors hover:bg-primary/5 active:bg-primary/10"
+            : "flex items-center gap-4 rounded-2xl border border-border/60 bg-card p-4 transition-colors hover:bg-primary/5 active:bg-primary/10"
+        }
       >
-        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xl">
+        <div
+          className={
+            compact
+              ? "flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-base"
+              : "flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xl"
+          }
+        >
           {pot.emoji ?? "🏦"}
         </div>
 

@@ -2,17 +2,17 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { ArrowLeft, Copy, Check, Share2 } from "lucide-react";
+import { Copy, Check, Share2 } from "lucide-react";
 import Link from "next/link";
 import { QRCodeSVG } from "qrcode.react";
 import { Button } from "@/components/ui/button";
+import { PageHeader } from "@/components/shared/PageHeader";
 import { useAuthStore } from "@/providers/auth-store";
-import { useTelegram } from "@/providers/TelegramProvider";
+
 import { useCurrentUser } from "@/hooks/use-user";
 import { toE164, formatPhoneDisplay } from "@/lib/phone-utils";
 
 export default function ReceivePage() {
-  const { haptic } = useTelegram();
   const userId = useAuthStore((s) => s.userId);
   const { data: user, isLoading, error } = useCurrentUser();
   const [copied, setCopied] = useState(false);
@@ -28,20 +28,23 @@ export default function ReceivePage() {
   if (error) {
     return (
       <div className="flex min-h-[calc(100dvh-5rem)] flex-col items-center justify-center gap-4">
-        <p className="text-sm text-muted-foreground">Failed to load your details</p>
-        <Link href="/" className="text-sm font-medium text-primary">Back to dashboard</Link>
+        <p className="text-sm text-muted-foreground">
+          Failed to load your details
+        </p>
+        <Link href="/" className="text-sm font-medium text-primary">
+          Go to dashboard
+        </Link>
       </div>
     );
   }
 
   const rawPhone = toE164(user?.phoneNumber);
   const phone = rawPhone ? formatPhoneDisplay(rawPhone) : "Loading...";
-  const qrPayload = `neo://pay?phone=${encodeURIComponent(rawPhone)}&uid=${userId ?? ""}`;
+  const qrPayload = `enviar://pay?phone=${encodeURIComponent(rawPhone)}&uid=${userId ?? ""}`;
 
   async function handleCopy() {
     try {
       await navigator.clipboard.writeText(phone.replace(/\s/g, ""));
-      haptic("light");
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
@@ -50,12 +53,11 @@ export default function ReceivePage() {
   }
 
   async function handleShare() {
-    haptic("medium");
     if (navigator.share) {
       try {
         await navigator.share({
-          title: "Pay me on Neo",
-          text: `Send money to my Neo account: ${phone}`,
+          title: "Pay me on Enviar",
+          text: `Send money to my Enviar account: ${phone}`,
         });
       } catch {
         /* user cancelled */
@@ -68,15 +70,7 @@ export default function ReceivePage() {
   return (
     <div className="flex min-h-[calc(100dvh-5rem)] flex-col">
       {/* Header */}
-      <div className="flex items-center gap-3">
-        <Link
-          href="/"
-          className="flex h-10 w-10 items-center justify-center rounded-full transition-colors active:bg-muted"
-        >
-          <ArrowLeft className="h-5 w-5" />
-        </Link>
-        <h1 className="text-xl font-semibold">Receive Money</h1>
-      </div>
+      <PageHeader title="Receive" backHref="/" />
 
       <div className="flex flex-1 flex-col items-center justify-center gap-8 pt-8">
         {/* QR Code */}
@@ -84,7 +78,7 @@ export default function ReceivePage() {
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.4, type: "spring" }}
-          className="rounded-2xl bg-muted dark:bg-card dark:border dark:border-border p-6"
+          className="rounded-2xl border border-border/60 bg-primary/5 p-6"
         >
           <QRCodeSVG
             value={qrPayload}
@@ -103,7 +97,7 @@ export default function ReceivePage() {
           transition={{ delay: 0.15, duration: 0.3 }}
           className="flex flex-col items-center gap-2"
         >
-          <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+          <span className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
             Your phone number
           </span>
           <span className="font-tabular text-2xl font-bold tracking-wide">
@@ -125,7 +119,7 @@ export default function ReceivePage() {
             variant="outline"
             size="lg"
             onClick={handleCopy}
-            className="h-14 flex-1 gap-2"
+            className="h-14 flex-1 gap-2 rounded-xl border border-primary text-primary hover:bg-primary/10"
           >
             {copied ? (
               <>
@@ -140,20 +134,17 @@ export default function ReceivePage() {
             )}
           </Button>
 
-          <Button
-            size="lg"
-            onClick={handleShare}
-            className="h-14 flex-1 gap-2"
-          >
+          <Button size="cta" onClick={handleShare} className="flex-1 gap-2">
             <Share2 className="h-5 w-5" />
             Share
           </Button>
         </motion.div>
 
         {/* Info card */}
-        <div className="w-full rounded-2xl bg-muted dark:bg-card dark:border dark:border-border p-4">
-          <p className="text-center text-sm text-muted-foreground">
-            Transfers from Neo users are <span className="font-medium text-success">instant and free</span>.
+        <div className="w-full rounded-2xl border border-border/60 bg-primary/5 p-4">
+          <p className="text-center text-sm text-foreground/80">
+            Transfers from Enviar users are{" "}
+            <span className="font-medium text-success">instant and free</span>.
             External bank transfers via EthSwitch may take a few minutes.
           </p>
         </div>

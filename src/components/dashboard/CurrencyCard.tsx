@@ -27,7 +27,7 @@ export function CurrencyCard({
       <Link
         href={`/balances/${balance.currency}`}
         className={cn(
-          "flex items-center gap-4 rounded-2xl bg-muted dark:border dark:border-border dark:bg-card p-4 transition-colors active:bg-muted",
+          "flex items-center gap-4 rounded-2xl bg-muted p-4 transition-colors active:bg-muted",
           isPrimary && "ring-2 ring-primary/20",
         )}
       >

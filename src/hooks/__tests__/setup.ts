@@ -21,8 +21,10 @@ export function createWrapper() {
   const qc = new QueryClient({
     defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
   });
-  return ({ children }: { children: ReactNode }) =>
+  const Wrapper = ({ children }: { children: ReactNode }) =>
     createElement(QueryClientProvider, { client: qc }, children);
+  Wrapper.displayName = "TestWrapper";
+  return Wrapper;
 }
 
 export function mockFetchSuccess(data: unknown, status = 200) {
@@ -62,10 +64,7 @@ export function expectApiCall(
   expect(opts.headers.get("X-Request-Id")).toBeTruthy();
 }
 
-export function expectApiCallBody(
-  fetchMock: AnyMock,
-  expectedBody: unknown,
-) {
+export function expectApiCallBody(fetchMock: AnyMock, expectedBody: unknown) {
   const [, opts] = fetchMock.mock.calls[0];
   expect(JSON.parse(opts.body)).toEqual(expectedBody);
 }

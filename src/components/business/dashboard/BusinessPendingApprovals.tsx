@@ -88,30 +88,38 @@ export function BusinessPendingApprovals({
               </p>
 
               {/* Actions */}
-              <div className="flex shrink-0 gap-1.5">
-                <button
-                  onClick={() => onApprove?.(t.id)}
-                  className={cn(
-                    "flex h-8 w-8 items-center justify-center rounded-full",
-                    "bg-success/10 text-success-foreground",
-                    "transition-all hover:bg-success hover:text-white",
-                    "active:scale-90",
+              {(onApprove || onReject) && (
+                <div className="flex shrink-0 gap-1.5">
+                  {onApprove && (
+                    <button
+                      type="button"
+                      onClick={() => onApprove(t.id)}
+                      className={cn(
+                        "flex h-8 w-8 items-center justify-center rounded-full",
+                        "bg-success/10 text-success-foreground",
+                        "transition-all hover:bg-success hover:text-white",
+                        "active:scale-90",
+                      )}
+                    >
+                      <Check className="h-4 w-4" />
+                    </button>
                   )}
-                >
-                  <Check className="h-4 w-4" />
-                </button>
-                <button
-                  onClick={() => onReject?.(t.id)}
-                  className={cn(
-                    "flex h-8 w-8 items-center justify-center rounded-full",
-                    "bg-destructive/8 text-destructive",
-                    "transition-all hover:bg-destructive hover:text-white",
-                    "active:scale-90",
+                  {onReject && (
+                    <button
+                      type="button"
+                      onClick={() => onReject(t.id)}
+                      className={cn(
+                        "flex h-8 w-8 items-center justify-center rounded-full",
+                        "bg-destructive/8 text-destructive",
+                        "transition-all hover:bg-destructive hover:text-white",
+                        "active:scale-90",
+                      )}
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
                   )}
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              </div>
+                </div>
+              )}
             </div>
           );
         })}

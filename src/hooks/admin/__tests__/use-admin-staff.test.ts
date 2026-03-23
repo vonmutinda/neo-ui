@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import {
   useAdminStaffList,
   useAdminStaffMember,
@@ -36,15 +36,21 @@ describe("useAdminStaffList", () => {
     );
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expectAdminCall(globalThis.fetch, "GET", "/staff?role=customer_support&is_active=true");
+    expectAdminCall(
+      globalThis.fetch,
+      "GET",
+      "/staff?role=customer_support&is_active=true",
+    );
   });
 });
 
 describe("useAdminStaffMember", () => {
   it("calls GET /staff/{id}", async () => {
-    globalThis.fetch = mockFetchSuccess({ id: "s1", email: "staff@neo.et" });
+    globalThis.fetch = mockFetchSuccess({ id: "s1", email: "staff@enviar.et" });
 
-    const { result } = renderHook(() => useAdminStaffMember("s1"), { wrapper: createWrapper() });
+    const { result } = renderHook(() => useAdminStaffMember("s1"), {
+      wrapper: createWrapper(),
+    });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expectAdminCall(globalThis.fetch, "GET", "/staff/s1");
@@ -55,9 +61,11 @@ describe("useAdminCreateStaff", () => {
   it("calls POST /staff with staff data", async () => {
     globalThis.fetch = mockFetchSuccess({ id: "s2" });
 
-    const { result } = renderHook(() => useAdminCreateStaff(), { wrapper: createWrapper() });
+    const { result } = renderHook(() => useAdminCreateStaff(), {
+      wrapper: createWrapper(),
+    });
     result.current.mutate({
-      email: "new@neo.et",
+      email: "new@enviar.et",
       fullName: "New Staff",
       role: "customer_support",
       department: "Operations",
@@ -67,7 +75,7 @@ describe("useAdminCreateStaff", () => {
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expectAdminCall(globalThis.fetch, "POST", "/staff");
     expectAdminCallBody(globalThis.fetch, {
-      email: "new@neo.et",
+      email: "new@enviar.et",
       fullName: "New Staff",
       role: "customer_support",
       department: "Operations",
@@ -80,7 +88,9 @@ describe("useAdminUpdateStaff", () => {
   it("calls PATCH /staff/{id} with updated fields", async () => {
     globalThis.fetch = mockFetchSuccess({ id: "s1" });
 
-    const { result } = renderHook(() => useAdminUpdateStaff(), { wrapper: createWrapper() });
+    const { result } = renderHook(() => useAdminUpdateStaff(), {
+      wrapper: createWrapper(),
+    });
     result.current.mutate({ id: "s1", role: "customer_support_lead" });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
@@ -93,7 +103,9 @@ describe("useAdminDeactivateStaff", () => {
   it("calls DELETE /staff/{id}", async () => {
     globalThis.fetch = mockFetchSuccess(null);
 
-    const { result } = renderHook(() => useAdminDeactivateStaff(), { wrapper: createWrapper() });
+    const { result } = renderHook(() => useAdminDeactivateStaff(), {
+      wrapper: createWrapper(),
+    });
     result.current.mutate("s1");
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));

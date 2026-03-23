@@ -1,5 +1,9 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { useAdminFlags, useAdminCreateFlag, useAdminResolveFlag } from "../use-admin-flags";
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import {
+  useAdminFlags,
+  useAdminCreateFlag,
+  useAdminResolveFlag,
+} from "../use-admin-flags";
 import {
   setupAdminAuth,
   clearAdminAuth,
@@ -30,7 +34,11 @@ describe("useAdminFlags", () => {
     );
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expectAdminCall(globalThis.fetch, "GET", "/flags?severity=critical&is_resolved=false");
+    expectAdminCall(
+      globalThis.fetch,
+      "GET",
+      "/flags?severity=critical&is_resolved=false",
+    );
   });
 });
 
@@ -38,7 +46,9 @@ describe("useAdminCreateFlag", () => {
   it("calls POST /flags with flag data", async () => {
     globalThis.fetch = mockFetchSuccess({ id: "f1" });
 
-    const { result } = renderHook(() => useAdminCreateFlag(), { wrapper: createWrapper() });
+    const { result } = renderHook(() => useAdminCreateFlag(), {
+      wrapper: createWrapper(),
+    });
     result.current.mutate({
       userId: "u1",
       flagType: "suspicious_activity",
@@ -61,11 +71,18 @@ describe("useAdminResolveFlag", () => {
   it("calls POST /flags/{id}/resolve with note", async () => {
     globalThis.fetch = mockFetchSuccess(null);
 
-    const { result } = renderHook(() => useAdminResolveFlag(), { wrapper: createWrapper() });
-    result.current.mutate({ id: "f1", resolutionNote: "Verified legitimate activity" });
+    const { result } = renderHook(() => useAdminResolveFlag(), {
+      wrapper: createWrapper(),
+    });
+    result.current.mutate({
+      id: "f1",
+      resolutionNote: "Verified legitimate activity",
+    });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expectAdminCall(globalThis.fetch, "POST", "/flags/f1/resolve");
-    expectAdminCallBody(globalThis.fetch, { resolutionNote: "Verified legitimate activity" });
+    expectAdminCallBody(globalThis.fetch, {
+      resolutionNote: "Verified legitimate activity",
+    });
   });
 });

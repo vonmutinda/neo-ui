@@ -2,21 +2,21 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
 import {
   Phone,
   User,
   Lock,
   ArrowRight,
   Loader2,
-  ShieldCheck,
   Eye,
   EyeOff,
 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuthStore } from "@/providers/auth-store";
+import { EnviarLogo } from "@/components/shared/EnviarLogo";
 import { api } from "@/lib/api-client";
 import type { TokenResponse } from "@/lib/types";
 
@@ -87,34 +87,18 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="flex min-h-[72dvh] flex-col">
-      <motion.div
-        className="mb-7 flex flex-col items-center gap-3"
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
-      >
-        <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary shadow-sm">
-          <ShieldCheck className="h-8 w-8 text-primary-foreground" />
-        </div>
-        <h1 className="text-2xl font-bold">Neo</h1>
-        <p className="text-sm text-muted-foreground">Create your account</p>
-      </motion.div>
+    <div className="flex min-h-0 flex-col">
+      <div className="mb-6 flex flex-col items-center gap-3">
+        <EnviarLogo size="lg" />
+        <p className="text-xs text-muted-foreground">Create your account</p>
+      </div>
 
-      <motion.div
-        initial={{ opacity: 0, x: 30 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.25 }}
-        className="flex flex-1 flex-col"
-      >
-        <div className="flex flex-1 flex-col gap-4">
+      <div className="flex flex-1 flex-col">
+        <div className="flex flex-1 flex-col gap-3">
           {/* Phone */}
           <div className="relative">
-            <div className="pointer-events-none absolute left-4 top-1/2 flex -translate-y-1/2 items-center gap-1.5">
-              <span className="text-lg">🇪🇹</span>
-              <span className="text-sm font-medium text-muted-foreground">
-                +251
-              </span>
+            <div className="pointer-events-none absolute left-3.5 top-1/2 flex -translate-y-1/2 items-center gap-1.5">
+              <span className="text-muted-foreground">+251</span>
             </div>
             <Input
               type="tel"
@@ -122,27 +106,29 @@ export default function RegisterPage() {
               placeholder="9XX XXX XXXX"
               value={formatPhoneDisplay(phone)}
               onChange={(e) => handlePhoneChange(e.target.value)}
-              className="h-13 rounded-[10px] pl-[5.5rem] text-base tracking-wide"
+              className="h-12 rounded-xl border border-border/60 bg-card pl-14 text-base"
               autoFocus
+              aria-required="true"
             />
-            <Phone className="absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Phone className="absolute right-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-primary/60" />
           </div>
 
           {/* Username */}
           <div className="relative">
-            <User className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <User className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-primary/60" />
             <Input
               type="text"
               placeholder="Username"
               value={username}
               onChange={(e) => setUsername(e.target.value.replace(/\s/g, ""))}
-              className="h-13 rounded-[10px] pl-11 text-base"
+              className="h-12 rounded-xl border border-border/60 bg-card pl-10 pr-12 text-base"
               autoComplete="username"
               maxLength={30}
+              aria-required="true"
             />
             {username.length > 0 && (
               <span
-                className={`absolute right-4 top-1/2 -translate-y-1/2 text-xs ${usernameValid ? "text-success" : "text-muted-foreground"}`}
+                className={`absolute right-3.5 top-1/2 -translate-y-1/2 text-xs ${usernameValid ? "text-primary/80" : "text-muted-foreground"}`}
               >
                 {username.length}/30
               </span>
@@ -151,19 +137,20 @@ export default function RegisterPage() {
 
           {/* Password */}
           <div className="relative">
-            <Lock className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Lock className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-primary/60" />
             <Input
               type={showPassword ? "text" : "password"}
               placeholder="Password (min 8 characters)"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="h-13 rounded-[10px] pl-11 pr-11 text-base"
+              className="h-12 rounded-xl border border-border/60 bg-card pl-10 pr-10 text-base"
               autoComplete="new-password"
+              aria-required="true"
             />
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground"
+              className="absolute right-3.5 top-1/2 -translate-y-1/2 rounded-full p-1.5 text-primary/60 hover:bg-muted hover:text-primary"
             >
               {showPassword ? (
                 <EyeOff className="h-4 w-4" />
@@ -175,14 +162,15 @@ export default function RegisterPage() {
 
           {/* Confirm Password */}
           <div className="relative">
-            <Lock className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Lock className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-primary/60" />
             <Input
               type={showPassword ? "text" : "password"}
               placeholder="Confirm password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              className="h-13 rounded-[10px] pl-11 text-base"
+              className="h-12 rounded-xl border border-border/60 bg-card pl-10 text-base"
               autoComplete="new-password"
+              aria-required="true"
               onKeyDown={(e) => {
                 if (e.key === "Enter" && formValid && !isSubmitting) {
                   handleRegister();
@@ -190,37 +178,50 @@ export default function RegisterPage() {
               }}
             />
             {confirmPassword.length > 0 && !passwordsMatch && (
-              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-destructive">
+              <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs text-destructive">
                 Mismatch
               </span>
             )}
           </div>
 
-          {error && (
-            <p className="text-center text-sm text-destructive">{error}</p>
-          )}
+          <AnimatePresence>
+            {error && (
+              <motion.p
+                initial={{ opacity: 0, y: -4 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -4 }}
+                transition={{ duration: 0.2 }}
+                className="text-center text-sm text-destructive"
+              >
+                {error}
+              </motion.p>
+            )}
+          </AnimatePresence>
         </div>
 
-        <div className="mt-7 space-y-3">
+        <div className="mt-5 space-y-3">
           <Button
             size="lg"
             disabled={!formValid || isSubmitting}
             onClick={handleRegister}
-            className="h-14 w-full rounded-[10px] text-base font-semibold"
+            className="h-12 w-full rounded-xl text-base font-semibold"
           >
             {isSubmitting ? (
               <Loader2 className="h-5 w-5 animate-spin" />
             ) : (
               <>
-                Create Account
-                <ArrowRight className="ml-2 h-5 w-5" />
+                Create account
+                <ArrowRight className="ml-2 h-4 w-4" />
               </>
             )}
           </Button>
 
           <p className="text-center text-sm text-muted-foreground">
             Already have an account?{" "}
-            <Link href="/login" className="font-medium text-primary underline">
+            <Link
+              href="/login"
+              className="font-medium text-primary hover:underline"
+            >
               Sign in
             </Link>
           </p>
@@ -236,7 +237,7 @@ export default function RegisterPage() {
             </Link>
           </p>
         </div>
-      </motion.div>
+      </div>
     </div>
   );
 }

@@ -3,6 +3,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { api } from "@/lib/api-client";
+import { paginatedListFromResponse } from "@/lib/api-paginated-list";
 import type {
   PaymentRequest,
   CreatePaymentRequestBody,
@@ -13,22 +14,28 @@ import type {
 } from "@/lib/types";
 
 export function useSentRequests(limit = 20, offset = 0) {
-  return useQuery<PaymentRequest[]>({
+  return useQuery({
     queryKey: ["payment-requests", "sent", limit, offset],
-    queryFn: () =>
-      api.get<PaymentRequest[]>(
+    queryFn: async () => {
+      const res = await api.get<unknown>(
         `/v1/payment-requests/sent?limit=${limit}&offset=${offset}`,
-      ),
+      );
+      return paginatedListFromResponse<PaymentRequest>(res);
+    },
+    select: (data: unknown) => paginatedListFromResponse<PaymentRequest>(data),
   });
 }
 
 export function useReceivedRequests(limit = 20, offset = 0) {
-  return useQuery<PaymentRequest[]>({
+  return useQuery({
     queryKey: ["payment-requests", "received", limit, offset],
-    queryFn: () =>
-      api.get<PaymentRequest[]>(
+    queryFn: async () => {
+      const res = await api.get<unknown>(
         `/v1/payment-requests/received?limit=${limit}&offset=${offset}`,
-      ),
+      );
+      return paginatedListFromResponse<PaymentRequest>(res);
+    },
+    select: (data: unknown) => paginatedListFromResponse<PaymentRequest>(data),
   });
 }
 
@@ -52,8 +59,7 @@ export function usePaymentRequest(id: string) {
 export function useCreatePaymentRequest() {
   const qc = useQueryClient();
   return useMutation<PaymentRequest, Error, CreatePaymentRequestBody>({
-    mutationFn: (req) =>
-      api.post<PaymentRequest>("/v1/payment-requests", req),
+    mutationFn: (req) => api.post<PaymentRequest>("/v1/payment-requests", req),
     onSuccess: () => {
       toast.success("Request sent", {
         description: "They'll be notified to pay you",
@@ -69,8 +75,7 @@ export function useCreatePaymentRequest() {
 export function usePayRequest() {
   const qc = useQueryClient();
   return useMutation<void, Error, string>({
-    mutationFn: (id) =>
-      api.post<void>(`/v1/payment-requests/${id}/pay`, {}),
+    mutationFn: (id) => api.post<void>(`/v1/payment-requests/${id}/pay`, {}),
     onSuccess: () => {
       toast.success("Payment sent", {
         description: "The request has been fulfilled",
@@ -86,7 +91,11 @@ export function usePayRequest() {
 
 export function useDeclineRequest() {
   const qc = useQueryClient();
-  return useMutation<void, Error, { id: string; body?: DeclinePaymentRequestBody }>({
+  return useMutation<
+    void,
+    Error,
+    { id: string; body?: DeclinePaymentRequestBody }
+  >({
     mutationFn: ({ id, body }) =>
       api.post<void>(`/v1/payment-requests/${id}/decline`, body ?? {}),
     onSuccess: () => {
@@ -102,8 +111,7 @@ export function useDeclineRequest() {
 export function useCancelRequest() {
   const qc = useQueryClient();
   return useMutation<void, Error, string>({
-    mutationFn: (id) =>
-      api.delete<void>(`/v1/payment-requests/${id}`),
+    mutationFn: (id) => api.delete<void>(`/v1/payment-requests/${id}`),
     onSuccess: () => {
       toast.success("Request cancelled");
       qc.invalidateQueries({ queryKey: ["payment-requests"] });
@@ -117,8 +125,7 @@ export function useCancelRequest() {
 export function useRemindRequest() {
   const qc = useQueryClient();
   return useMutation<void, Error, string>({
-    mutationFn: (id) =>
-      api.post<void>(`/v1/payment-requests/${id}/remind`, {}),
+    mutationFn: (id) => api.post<void>(`/v1/payment-requests/${id}/remind`, {}),
     onSuccess: () => {
       toast.success("Reminder sent");
       qc.invalidateQueries({ queryKey: ["payment-requests"] });
@@ -131,7 +138,11 @@ export function useRemindRequest() {
 
 export function useCreateBatchPaymentRequest() {
   const qc = useQueryClient();
-  return useMutation<BatchPaymentRequestResponse, Error, BatchPaymentRequestBody>({
+  return useMutation<
+    BatchPaymentRequestResponse,
+    Error,
+    BatchPaymentRequestBody
+  >({
     mutationFn: (req) =>
       api.post<BatchPaymentRequestResponse>("/v1/payment-requests/batch", req),
     onSuccess: (result) => {

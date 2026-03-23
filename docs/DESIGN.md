@@ -119,33 +119,39 @@ ThemeProvider (next-themes)
 | `/business/accounting`     | Statements & reports (generate, download, report types)                                               |
 | `/business/[...slug]`      | Catch-all for remaining unimplemented routes                                                          |
 
-**RBAC:** 25+ granular permissions (`biz:transfers:initiate:external`, `biz:invoices:manage`, etc.) control what each member can see/do. System roles: Owner, Admin, Finance Manager, Accountant, Viewer. Custom roles supported.
+**RBAC:** 25+ granular permissions (`biz:transfers:initiate:external`, `biz:invoices:manage`, etc.) control what each member can see/do. System roles: Owner, Admin, Finance Manager, Accountant, Viewer. Custom roles supported. The UI loads the signed-in member’s permissions via `useMyPermissions` (`GET /v1/business/{id}/members/me/permissions`). `BusinessQuickActions` hides shortcuts the user lacks; **Needs Approval** approve/reject requires `biz:transfers:approve`; **New Transfer** requires internal or external initiate permission; **New Invoice**, **New Batch Payment**, **New Import**, **New Export** require `biz:invoices:manage`, `biz:batch:create`, `biz:imports:manage`, and `biz:exports:manage` respectively; the loans eligibility CTA to view the offer requires `biz:loans:apply`. Shared helper: `useBusinessPermissionCheck` in `src/hooks/business/use-business-members.ts`.
 
 ### 3.3 Admin App
 
 **Shell:** `AdminSidebar` + `AdminHeader` + `AdminAuthGuard`
 **Runs on:** `:3001` via `ADMIN_DEV=1` env var
 
-| Route                                             | Purpose                                                          |
-| ------------------------------------------------- | ---------------------------------------------------------------- |
-| `/admin/login`                                    | Admin login                                                      |
-| `/admin`                                          | Dashboard (stats, KYC breakdown, recent flags, recon exceptions) |
-| `/admin/customers`, `/admin/customers/[id]`       | Customer management                                              |
-| `/admin/businesses`, `/admin/businesses/[id]`     | Business management                                              |
-| `/admin/transactions`, `/admin/transactions/[id]` | Transaction inspection                                           |
-| `/admin/loans`, `/admin/loans/[id]`               | Loan administration                                              |
-| `/admin/cards`, `/admin/cards/[id]`               | Card management                                                  |
-| `/admin/cards/simulator`                          | Card payment simulator (dev/staging)                             |
-| `/admin/kyb`, `/admin/kyb/[id]`                   | KYB application review                                           |
-| `/admin/compliance`                               | Compliance dashboard                                             |
-| `/admin/rules`                                    | System rules/limits                                              |
-| `/admin/currencies`                               | Currency configuration                                           |
-| `/admin/reconciliation`                           | Bank reconciliation                                              |
-| `/admin/staff`                                    | Staff management                                                 |
-| `/admin/audit`                                    | Audit logs                                                       |
-| `/admin/map`                                      | Money flow visualization                                         |
-| `/admin/settings`                                 | Admin settings                                                   |
-| `/admin/flags`                                    | Compliance flags                                                 |
+| Route                                                 | Purpose                                                          |
+| ----------------------------------------------------- | ---------------------------------------------------------------- |
+| `/admin/login`                                        | Admin login                                                      |
+| `/admin`                                              | Dashboard (stats, KYC breakdown, recent flags, recon exceptions) |
+| `/admin/customers`, `/admin/customers/[id]`           | Customer management                                              |
+| `/admin/businesses`, `/admin/businesses/[id]`         | Business management                                              |
+| `/admin/transactions`, `/admin/transactions/[id]`     | Transaction inspection                                           |
+| `/admin/loans`, `/admin/loans/[id]`                   | Loan administration                                              |
+| `/admin/cards`, `/admin/cards/[id]`                   | Card management                                                  |
+| `/admin/cards/simulator`                              | Card payment simulator (dev/staging)                             |
+| `/admin/kyb`, `/admin/kyb/[id]`                       | KYB application review                                           |
+| `/admin/compliance`                                   | Compliance dashboard                                             |
+| `/admin/rules`                                        | System rules/limits                                              |
+| `/admin/currencies`                                   | Currency configuration                                           |
+| `/admin/reconciliation`                               | Bank reconciliation                                              |
+| `/admin/imports`, `/admin/imports/[id]`               | Trade finance imports (ops)                                      |
+| `/admin/exports`, `/admin/exports/[id]`               | Trade finance exports (ops)                                      |
+| `/admin/batch-payments`, `/admin/batch-payments/[id]` | Batch payment monitoring                                         |
+| `/admin/billers`                                      | Biller configuration                                             |
+| `/admin/fees`                                         | Fee schedules                                                    |
+| `/admin/capital`                                      | System / capital accounts                                        |
+| `/admin/staff`                                        | Staff management                                                 |
+| `/admin/audit`                                        | Audit logs                                                       |
+| `/admin/map`                                          | Money flow visualization                                         |
+| `/admin/settings`                                     | Admin settings                                                   |
+| `/admin/flags`                                        | Compliance flags                                                 |
 
 ---
 
@@ -275,49 +281,68 @@ Subtle colored backgrounds at ~6-8% opacity for contextual tinting.
 
 ### 5.2 Business App (23 hooks)
 
-| Feature                               | Hook(s)                                                                                                   | Status |
-| ------------------------------------- | --------------------------------------------------------------------------------------------------------- | ------ |
-| Business dashboard                    | `use-business-wallets`, `use-business-transfers`                                                          | Done   |
-| Create business                       | `use-business`                                                                                            | Done   |
-| Wallets & balances                    | `use-business-wallets`, `use-business-transactions`, `use-business-wallet-manage`                         | Done   |
-| Transfers (list, initiate, detail)    | `use-business-transfers`, `use-business-transfer-detail`, `use-initiate-transfer`, `use-execute-transfer` | Done   |
-| Transfer approval workflow            | `use-business-transfers` (approve/reject)                                                                 | Done   |
-| Team members & roles                  | `use-business-members`, `use-manage-members`, `use-business-roles`                                        | Done   |
-| Invoices (list, create, detail)       | `use-invoices`, `use-invoice-detail`, `use-create-invoice`                                                | Done   |
-| Batch payments (list, create, detail) | `use-batch-payments`                                                                                      | Done   |
-| Business cards (physical + virtual)   | `use-business-cards`                                                                                      | Done   |
-| Settings (profile, KYB, policies)     | `use-business-settings`                                                                                   | Done   |
-| Trade finance — Imports               | `use-imports`                                                                                             | Done   |
-| Trade finance — Exports               | `use-exports`                                                                                             | Done   |
-| Business loans                        | `use-business-loans`                                                                                      | Done   |
-| Tax categories & pots                 | `use-categories`                                                                                          | Done   |
-| Documents                             | `use-documents`                                                                                           | Done   |
-| Statements & accounting               | `use-statements`                                                                                          | Done   |
+| Feature                                              | Hook(s)                                                                                                   | Status |
+| ---------------------------------------------------- | --------------------------------------------------------------------------------------------------------- | ------ |
+| Business dashboard                                   | `use-business-wallets`, `use-business-transfers`                                                          | Done   |
+| Create business                                      | `use-business`                                                                                            | Done   |
+| Wallets & balances                                   | `use-business-wallets`, `use-business-transactions`, `use-business-wallet-manage`                         | Done   |
+| Transfers (list, initiate, detail)                   | `use-business-transfers`, `use-business-transfer-detail`, `use-initiate-transfer`, `use-execute-transfer` | Done   |
+| Transfer approval workflow                           | `use-business-transfers` (approve/reject)                                                                 | Done   |
+| Team members & roles                                 | `use-business-members`, `use-manage-members`, `use-business-roles`                                        | Done   |
+| Invoices (list, create, detail)                      | `use-invoices`, `use-invoice-detail`, `use-create-invoice`                                                | Done   |
+| Batch payments (list, create, detail)                | `use-batch-payments`                                                                                      | Done   |
+| Business cards (physical + virtual)                  | `use-business-cards`                                                                                      | Done   |
+| Settings (profile, KYB, policies)                    | `use-business-settings`                                                                                   | Done   |
+| Trade finance — Imports                              | `use-imports`                                                                                             | Done   |
+| Import document management                           | `use-imports` (attach/remove docs)                                                                        | Done   |
+| Import FX conversion                                 | `use-imports` (convert)                                                                                   | Done   |
+| Import status updates                                | `use-imports` (advance status)                                                                            | Done   |
+| Trade finance — Exports                              | `use-exports`                                                                                             | Done   |
+| Business loans                                       | `use-business-loans`                                                                                      | Done   |
+| Business KYB                                         | `use-business-settings` (status check, submit)                                                            | Done   |
+| Business currency conversion                         | `use-business-wallets`                                                                                    | Done   |
+| Tax categories & pots                                | `use-categories`                                                                                          | Done   |
+| Tax summary & labeled transactions                   | `use-categories`                                                                                          | Done   |
+| Documents                                            | `use-documents`                                                                                           | Done   |
+| Accounting reports (P&L, balance sheet, tax, export) | `use-statements`                                                                                          | Done   |
 
 ### 5.3 Admin App (20 hooks, 23+ routes)
 
-| Feature                              | Hook(s)                    | Status |
-| ------------------------------------ | -------------------------- | ------ |
-| Admin auth                           | `use-admin-auth`           | Done   |
-| Dashboard (stats, KYC, flags, recon) | `use-admin-analytics`      | Done   |
-| Customer management                  | `use-admin-customers`      | Done   |
-| Transaction management               | `use-admin-transactions`   | Done   |
-| Loan management                      | `use-admin-loans`          | Done   |
-| Card management                      | `use-admin-cards`          | Done   |
-| Card simulator                       | `use-admin-card-simulator` | Done   |
-| Business management                  | `use-admin-businesses`     | Done   |
-| KYB review                           | `use-admin-kyb`            | Done   |
-| Compliance                           | —                          | Done   |
-| System rules                         | `use-admin-rules`          | Done   |
-| Currency config                      | `use-admin-currencies`     | Done   |
-| Reconciliation                       | `use-admin-recon`          | Done   |
-| Staff management                     | `use-admin-staff`          | Done   |
-| Audit logs                           | `use-admin-audit`          | Done   |
-| Money flow map                       | `use-admin-money-flow-map` | Done   |
-| Flags                                | `use-admin-flags`          | Done   |
-| Settings                             | `use-admin-config`         | Done   |
-| FX rates                             | `use-admin-fx-rates`       | Done   |
-| Fee management                       | `use-admin-fees`           | Done   |
+| Feature                              | Hook(s)                     | Status  |
+| ------------------------------------ | --------------------------- | ------- |
+| Admin auth                           | `use-admin-auth`            | Done    |
+| Dashboard (stats, KYC, flags, recon) | `use-admin-analytics`       | Done    |
+| Customer management                  | `use-admin-customers`       | Done    |
+| Transaction management               | `use-admin-transactions`    | Done    |
+| Loan management                      | `use-admin-loans`           | Done    |
+| Card management                      | `use-admin-cards`           | Done    |
+| Card simulator                       | `use-admin-card-simulator`  | Done    |
+| Business management                  | `use-admin-businesses`      | Done    |
+| KYB review                           | `use-admin-kyb`             | Done    |
+| Compliance                           | —                           | Done    |
+| System rules                         | `use-admin-rules`           | Done    |
+| Currency config                      | `use-admin-currencies`      | Done    |
+| Reconciliation                       | `use-admin-recon`           | Done    |
+| Staff management                     | `use-admin-staff`           | Done    |
+| Audit logs                           | `use-admin-audit`           | Done    |
+| Money flow map                       | `use-admin-money-flow-map`  | Done    |
+| Flags                                | `use-admin-flags`           | Done    |
+| Settings                             | `use-admin-config`          | Done    |
+| FX rates                             | `use-admin-fx-rates`        | Done    |
+| Fee management                       | `use-admin-fees`            | Done    |
+| Trade finance imports (ops)          | `use-admin-imports`         | Done    |
+| Trade finance exports (ops)          | `use-admin-exports`         | Done    |
+| Batch payment monitoring             | `use-admin-batch-payments`  | Done    |
+| Biller management                    | `use-admin-billers`         | Done    |
+| Capital / system accounts            | `use-admin-system-accounts` | Done    |
+| Business cards viewing               | `use-admin-businesses`      | Done    |
+| Business transfers (pending filter)  | `use-admin-businesses`      | Done    |
+| Invoice viewing                      | `use-admin-businesses`      | Done    |
+| RM assignment & workload             | `use-admin-customers`       | Planned |
+| Compliance report generation         | —                           | Planned |
+| Customer deposit, note, KYC override | `use-admin-customers`       | Done    |
+| Customer flags                       | `use-admin-flags`           | Done    |
+| Bill payment detail view             | —                           | Planned |
 
 ---
 
@@ -404,26 +429,33 @@ Subtle colored backgrounds at ~6-8% opacity for contextual tinting.
 - KYB multi-level verification with document upload
 - Compliance-grade screening before account activation
 
-### Phase 5: Business App Buildout
+### Phase 5: Business App Buildout — Done
 
 - Implement all planned business features (invoices, batch payments, trade finance, etc.)
 - RBAC-driven UI (show/hide based on 25+ permissions)
 - Approval workflows for transfers and batch payments
 
-### Phase 6: Admin — Trade Finance
+### Phase 6: Admin — Trade Finance & Business Oversight
 
-- Admin import request management (list, review, approve/reject, advance status)
-- Admin export request management (same lifecycle)
-- Admin KYB application review (already partially built)
+- Admin import/export request review with approve/reject and status advancement
+- Admin business-cards, business-transfers, and invoices views
+- RM (relationship manager) assignment and workload management
+- KYB submission review and approval workflow
 
-### Phase 7: Form Validation & API Error Handling
+### Phase 7: Admin — Reports & Detailed Views
 
-- Display backend validation errors inline on form fields (map API error responses to field-level messages)
-- Client-side validation with consistent patterns (required fields, format checks, min/max)
-- Standardized error toast with detail extraction from API envelope (`{ error: "..." }`)
-- Form-level error banners for non-field-specific errors
+- Generate compliance reports, transaction exports, customer summaries
+- Detailed user action views: payment requests with full details, transfer approval history, challenge/confirmation details
+- Bill payments admin page
 
-### Phase 8: Polish & Production
+### Phase 8: Form Validation & API Error Handling
+
+- Backend validation error mapping to inline field errors
+- Client-side Zod validation schemas
+- Standardized error toasts with detail extraction from API envelope
+- Form-level error summaries for non-field-specific errors
+
+### Phase 9: Polish & Production
 
 - Accessibility audit (WCAG 2.1 AA)
 - Performance optimization (bundle splitting, lazy loading)
@@ -432,7 +464,32 @@ Subtle colored backgrounds at ~6-8% opacity for contextual tinting.
 
 ---
 
-## 9. Conventions
+## 9. Known Gaps & Remaining Work
+
+**Test failures (pre-existing):**
+
+- `split-request.test`, `recipient-detail.test`, `loan-detail.test` — TS type errors, not yet fixed
+
+**Personal app — missing features:**
+
+- Batch payment requests and batch transfers
+- Payment request reminders
+- Pending count badge on requests
+- Overdraft opt-out setting
+
+**Admin app — not yet built (Phase 7):**
+
+- Report generation pages (compliance report, transaction exports, customer summaries)
+- Detailed user action views (payment request details, transfer approval history, challenge/confirmation details)
+- Bill payment admin detail page
+
+**Cross-cutting — not yet implemented (Phase 8):**
+
+- Form validation (Zod schemas, inline field errors from backend, form-level error summaries)
+
+---
+
+## 10. Conventions
 
 ### File Organization
 

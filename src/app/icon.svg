@@ -1,0 +1,5 @@
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Naked arrow favicon -->
+  <path d="M16 28V12" stroke="#C99A20" stroke-width="2.8" stroke-linecap="round"/>
+  <path d="M8 19L16 9L24 19" stroke="#C99A20" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

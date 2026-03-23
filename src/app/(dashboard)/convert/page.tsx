@@ -3,9 +3,9 @@
 import { useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, ArrowDown, Check, Loader2 } from "lucide-react";
-import Link from "next/link";
+import { ArrowDown, Check, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { PageHeader } from "@/components/shared/PageHeader";
 import { CurrencyFlag } from "@/components/shared/CurrencyFlag";
 import { useBalances } from "@/hooks/use-balances";
 import { useExchangeRate, useConvert } from "@/hooks/use-convert";
@@ -14,15 +14,26 @@ import type { SupportedCurrency } from "@/lib/types";
 
 type Step = "amount" | "review" | "success";
 
-const CURRENCIES: SupportedCurrency[] = ["ETB", "USD", "EUR"];
+const CURRENCIES: SupportedCurrency[] = [
+  "ETB",
+  "USD",
+  "EUR",
+  "GBP",
+  "AED",
+  "SAR",
+  "CNY",
+  "KES",
+];
 
 export default function ConvertPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  const fromParam = (searchParams.get("from")?.toUpperCase() ?? "ETB") as SupportedCurrency;
+  const fromParam = (searchParams.get("from")?.toUpperCase() ??
+    "ETB") as SupportedCurrency;
 
-  const [fromCurrency, setFromCurrency] = useState<SupportedCurrency>(fromParam);
+  const [fromCurrency, setFromCurrency] =
+    useState<SupportedCurrency>(fromParam);
   const [toCurrency, setToCurrency] = useState<SupportedCurrency>(
     CURRENCIES.find((c) => c !== fromParam) ?? "USD",
   );
@@ -35,7 +46,10 @@ export default function ConvertPage() {
   } | null>(null);
 
   const { data: balances } = useBalances();
-  const { data: rateData, isLoading: rateLoading } = useExchangeRate(fromCurrency, toCurrency);
+  const { data: rateData, isLoading: rateLoading } = useExchangeRate(
+    fromCurrency,
+    toCurrency,
+  );
   const convertMutation = useConvert();
 
   const displayRate = rateData?.mid ?? 0;
@@ -46,11 +60,14 @@ export default function ConvertPage() {
   const receiveDisplay = (receiveCents / 100).toFixed(2);
 
   const fromBalance = balances?.find((b) => b.currencyCode === fromCurrency);
-  const hasEnough = fromBalance ? amountCents <= fromBalance.balanceCents : false;
+  const hasEnough = fromBalance
+    ? amountCents <= fromBalance.balanceCents
+    : false;
 
   const targetCurrencies = CURRENCIES.filter((c) => c !== fromCurrency);
 
-  const canProceed = amountCents > 0 && hasEnough && askRate > 0 && !rateLoading;
+  const canProceed =
+    amountCents > 0 && hasEnough && askRate > 0 && !rateLoading;
   const buttonLabel = rateLoading
     ? "Loading rate..."
     : !hasEnough && amountCents > 0
@@ -80,30 +97,14 @@ export default function ConvertPage() {
   }
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
-      className="space-y-8"
-    >
+    <div className="space-y-8">
       {/* Header */}
-      <div className="flex items-center gap-3">
-        <Link
-          href={step === "review" ? "#" : `/balances/${fromCurrency}`}
-          onClick={(e) => {
-            if (step === "review") {
-              e.preventDefault();
-              setStep("amount");
-            }
-          }}
-          className="flex h-10 w-10 items-center justify-center rounded-full transition-colors active:bg-muted"
-        >
-          <ArrowLeft className="h-5 w-5" />
-        </Link>
-        <h1 className="text-xl font-semibold">
-          {step === "success" ? "Conversion complete" : `Convert ${fromCurrency}`}
-        </h1>
-      </div>
+      <PageHeader
+        title={
+          step === "success" ? "Conversion complete" : `Convert ${fromCurrency}`
+        }
+        backHref="/"
+      />
 
       <AnimatePresence mode="wait">
         {step === "amount" && (
@@ -116,10 +117,10 @@ export default function ConvertPage() {
           >
             {/* From */}
             <div className="space-y-2">
-              <label className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+              <label className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
                 From
               </label>
-              <div className="flex items-center gap-3 rounded-2xl border bg-card p-4">
+              <div className="flex items-center gap-3 rounded-2xl border border-border/60 bg-card p-4">
                 <CurrencyFlag currency={fromCurrency} size="md" />
                 <div className="flex-1">
                   <select
@@ -128,13 +129,17 @@ export default function ConvertPage() {
                       const val = e.target.value as SupportedCurrency;
                       setFromCurrency(val);
                       if (val === toCurrency) {
-                        setToCurrency(CURRENCIES.find((c) => c !== val) ?? "ETB");
+                        setToCurrency(
+                          CURRENCIES.find((c) => c !== val) ?? "ETB",
+                        );
                       }
                     }}
                     className="bg-transparent text-sm font-medium outline-none"
                   >
                     {CURRENCIES.map((c) => (
-                      <option key={c} value={c}>{c}</option>
+                      <option key={c} value={c}>
+                        {c}
+                      </option>
                     ))}
                   </select>
                   {fromBalance && (
@@ -158,25 +163,29 @@ export default function ConvertPage() {
 
             {/* Arrow */}
             <div className="flex justify-center">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full border bg-card">
-                <ArrowDown className="h-5 w-5 text-muted-foreground" />
+              <div className="flex h-10 w-10 items-center justify-center rounded-full border border-border/60 bg-primary/5">
+                <ArrowDown className="h-5 w-5 text-primary" />
               </div>
             </div>
 
             {/* To */}
             <div className="space-y-2">
-              <label className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+              <label className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
                 To
               </label>
-              <div className="flex items-center gap-3 rounded-2xl border bg-card p-4">
+              <div className="flex items-center gap-3 rounded-2xl border border-border/60 bg-card p-4">
                 <CurrencyFlag currency={toCurrency} size="md" />
                 <select
                   value={toCurrency}
-                  onChange={(e) => setToCurrency(e.target.value as SupportedCurrency)}
+                  onChange={(e) =>
+                    setToCurrency(e.target.value as SupportedCurrency)
+                  }
                   className="bg-transparent text-sm font-medium outline-none"
                 >
                   {targetCurrencies.map((c) => (
-                    <option key={c} value={c}>{c}</option>
+                    <option key={c} value={c}>
+                      {c}
+                    </option>
                   ))}
                 </select>
                 <span className="ml-auto text-2xl font-bold tabular-nums text-muted-foreground">
@@ -194,8 +203,7 @@ export default function ConvertPage() {
 
             {/* Review button */}
             <Button
-              size="lg"
-              className="h-14 w-full"
+              size="cta"
               disabled={!canProceed}
               onClick={() => setStep("review")}
             >
@@ -212,19 +220,23 @@ export default function ConvertPage() {
             exit={{ opacity: 0, x: -20 }}
             className="space-y-6"
           >
-            <div className="rounded-2xl border bg-card p-6">
-              <h2 className="mb-4 text-center text-lg font-semibold">
+            <div className="rounded-2xl border border-border/60 bg-card p-6">
+              <h2 className="mb-4 text-center text-lg font-semibold text-foreground">
                 Convert {amount} {fromCurrency} to {toCurrency}
               </h2>
               <div className="space-y-3">
                 <div className="flex items-center justify-between py-2">
-                  <span className="text-sm text-muted-foreground">You send</span>
+                  <span className="text-sm text-muted-foreground">
+                    You send
+                  </span>
                   <span className="text-sm font-semibold tabular-nums">
                     {amountNum.toFixed(2)} {fromCurrency}
                   </span>
                 </div>
                 <div className="flex items-center justify-between py-2">
-                  <span className="text-sm text-muted-foreground">Exchange rate</span>
+                  <span className="text-sm text-muted-foreground">
+                    Exchange rate
+                  </span>
                   <span className="text-sm font-medium">
                     1 {fromCurrency} = {displayRate.toFixed(4)} {toCurrency}
                   </span>
@@ -241,8 +253,7 @@ export default function ConvertPage() {
             </div>
 
             <Button
-              size="lg"
-              className="h-14 w-full"
+              size="cta"
               onClick={handleConvert}
               disabled={convertMutation.isPending}
             >
@@ -276,13 +287,14 @@ export default function ConvertPage() {
                 {(result.toAmountCents / 100).toFixed(2)} {toCurrency}
               </p>
               <p className="mt-1 text-sm text-muted-foreground">
-                Converted from {amount} {fromCurrency} at {result.rate.toFixed(4)}
+                Converted from {amount} {fromCurrency} at{" "}
+                {result.rate.toFixed(4)}
               </p>
             </div>
 
             <Button
-              size="lg"
-              className="h-12 w-full max-w-xs"
+              size="cta"
+              className="max-w-xs"
               onClick={() => router.push(`/balances/${fromCurrency}`)}
             >
               Done
@@ -290,6 +302,6 @@ export default function ConvertPage() {
           </motion.div>
         )}
       </AnimatePresence>
-    </motion.div>
+    </div>
   );
 }

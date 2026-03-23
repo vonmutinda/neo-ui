@@ -12,7 +12,7 @@ export function AdminAuthGuard({ children }: { children: React.ReactNode }) {
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
-    setHydrated(true);
+    setHydrated(true); // eslint-disable-line react-hooks/set-state-in-effect -- SSR hydration guard
   }, []);
 
   useEffect(() => {

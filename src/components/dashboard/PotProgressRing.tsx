@@ -51,7 +51,7 @@ export function PotProgressRing({ percent, size = 40 }: PotProgressRingProps) {
         y="50%"
         dominantBaseline="central"
         textAnchor="middle"
-        className="fill-foreground text-[9px] font-bold"
+        className="fill-foreground text-[10px] font-bold"
       >
         {Math.round(clamped)}%
       </text>

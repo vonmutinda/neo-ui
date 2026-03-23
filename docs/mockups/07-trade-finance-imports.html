@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Enviar — Import Detail</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #F5F5F7; --surface: #FFFFFF;
+    --text-1: #1D1D1F; --text-2: #86868B; --text-3: #C7C7CC;
+    --border: rgba(0,0,0,0.06); --border-strong: rgba(0,0,0,0.12);
+    --blue: #0071E3; --blue-subtle: rgba(0,113,227,0.06);
+    --green: #34C759; --green-subtle: rgba(52,199,89,0.08); --green-text: #248A3D;
+    --red-subtle: rgba(255,59,48,0.08); --red-text: #D70015;
+    --orange-subtle: rgba(255,149,0,0.08); --orange-text: #C93400;
+    --teal: #5AC8FA; --teal-subtle: rgba(90,200,250,0.1); --teal-text: #0E7490;
+    --r-xs: 8px; --r-sm: 12px; --r-md: 16px; --r-lg: 20px; --r-full: 980px;
+    --shadow-sm: 0 2px 8px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.06);
+    --shadow-md: 0 4px 16px rgba(0,0,0,0.06), 0 1px 4px rgba(0,0,0,0.04);
+    --sans: 'Inter', -apple-system, sans-serif;
+    --mono: 'JetBrains Mono', monospace;
+    --sidebar-w: 240px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: var(--sans); background: var(--bg); color: var(--text-1); font-size: 15px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+  .app { display: flex; min-height: 100vh; }
+
+  .sidebar { width: var(--sidebar-w); background: var(--surface); position: fixed; top: 0; left: 0; bottom: 0; z-index: 10; box-shadow: 1px 0 0 var(--border); }
+  .sb-top { padding: 24px 20px 20px; }
+  .sb-brand { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
+  .sb-logo { width: 28px; height: 28px; background: var(--text-1); border-radius: var(--r-xs); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 14px; }
+  .sb-name { font-size: 17px; font-weight: 600; letter-spacing: -0.4px; }
+  .sb-switcher { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-radius: var(--r-sm); background: var(--bg); font-size: 13px; font-weight: 500; }
+  .sb-avatar { width: 24px; height: 24px; border-radius: 6px; background: #E8D5F5; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; color: #7C3AED; }
+  .sb-nav { flex: 1; padding: 8px 8px; }
+  .sb-item { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: var(--r-xs); font-size: 14px; color: var(--text-2); cursor: pointer; text-decoration: none; margin-bottom: 1px; }
+  .sb-item--active { color: var(--text-1); font-weight: 500; background: rgba(0,0,0,0.05); }
+  .sb-icon { width: 18px; text-align: center; font-size: 14px; opacity: 0.4; }
+  .sb-item--active .sb-icon { opacity: 0.8; }
+  .sb-badge { margin-left: auto; background: #FF9500; color: white; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: var(--r-full); }
+  .sb-label { padding: 16px 12px 6px; font-size: 11px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: var(--text-3); }
+
+  .main { flex: 1; margin-left: var(--sidebar-w); }
+  .content { padding: 40px 48px; max-width: 1000px; }
+
+  .back { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; color: var(--blue); font-weight: 500; cursor: pointer; margin-bottom: 28px; text-decoration: none; }
+  .pill { display: inline-flex; align-items: center; padding: 4px 12px; border-radius: var(--r-full); font-size: 12px; font-weight: 600; }
+  .pill--teal { background: var(--teal-subtle); color: var(--teal-text); }
+  .pill--green { background: var(--green-subtle); color: var(--green-text); }
+  .pill--orange { background: var(--orange-subtle); color: var(--orange-text); }
+  .pill--neutral { background: rgba(0,0,0,0.05); color: var(--text-2); }
+  .btn { display: inline-flex; align-items: center; gap: 6px; font-family: var(--sans); font-size: 14px; font-weight: 500; border: none; cursor: pointer; border-radius: var(--r-full); padding: 10px 22px; transition: all 0.2s; }
+  .btn:active { transform: scale(0.97); }
+  .btn--blue { background: var(--blue); color: white; }
+  .btn--outline { background: transparent; color: var(--text-1); box-shadow: inset 0 0 0 1.5px var(--border-strong); font-size: 13px; }
+  .btn--danger { background: transparent; color: var(--red-text); box-shadow: inset 0 0 0 1.5px var(--border-strong); font-size: 13px; }
+
+  /* Page header */
+  .page-head { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 32px; }
+  .page-title { font-size: 28px; font-weight: 600; letter-spacing: -0.8px; display: flex; align-items: center; gap: 12px; }
+  .page-sub { font-size: 14px; color: var(--text-2); margin-top: 4px; }
+  .head-actions { display: flex; gap: 8px; }
+
+  /* Alert banner */
+  .alert { display: flex; align-items: center; gap: 14px; padding: 18px 24px; background: var(--blue-subtle); border-radius: var(--r-md); margin-bottom: 32px; }
+  .alert__icon { font-size: 20px; flex-shrink: 0; }
+  .alert__text { font-size: 14px; color: var(--blue); flex: 1; line-height: 1.5; }
+  .alert__text strong { font-weight: 600; }
+
+  /* Timeline — horizontal pill steps */
+  .timeline {
+    display: flex; align-items: center; gap: 0;
+    padding: 28px 32px;
+    background: var(--surface);
+    border-radius: var(--r-md);
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 24px;
+    overflow-x: auto;
+  }
+  .tl-step { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+  .tl-dot {
+    width: 28px; height: 28px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700;
+    border: 2px solid var(--text-3); color: var(--text-3);
+    background: var(--surface);
+  }
+  .tl-step--done .tl-dot { background: var(--text-1); border-color: var(--text-1); color: white; }
+  .tl-step--active .tl-dot { background: var(--blue); border-color: var(--blue); color: white; box-shadow: 0 0 0 4px var(--blue-subtle); }
+  .tl-label { font-size: 12px; color: var(--text-3); font-weight: 500; }
+  .tl-step--done .tl-label { color: var(--text-2); }
+  .tl-step--active .tl-label { color: var(--text-1); font-weight: 600; }
+  .tl-line { width: 32px; height: 2px; background: var(--text-3); margin: 0 6px; flex-shrink: 0; }
+  .tl-step--done + .tl-line { background: var(--text-1); }
+
+  /* FX Conversion hero */
+  .fx-card {
+    background: var(--surface); border-radius: var(--r-md); box-shadow: var(--shadow-md);
+    padding: 32px; margin-bottom: 24px;
+  }
+  .fx-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+  .fx-title { font-size: 18px; font-weight: 600; letter-spacing: -0.3px; }
+  .fx-rate { font-family: var(--mono); font-size: 13px; color: var(--text-2); }
+  .fx-amounts { display: flex; align-items: center; gap: 20px; }
+  .fx-box { flex: 1; padding: 24px; background: var(--bg); border-radius: var(--r-sm); text-align: center; }
+  .fx-box__label { font-size: 11px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: var(--text-3); }
+  .fx-box__value { font-family: var(--mono); font-size: 28px; font-weight: 600; letter-spacing: -1.2px; margin-top: 6px; }
+  .fx-arrow { font-size: 24px; color: var(--text-3); flex-shrink: 0; }
+  .fx-foot { display: flex; align-items: center; gap: 12px; margin-top: 20px; }
+  .fx-avail { font-size: 13px; color: var(--text-2); }
+
+  /* Detail grid */
+  .details { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+  .detail-card { background: var(--surface); border-radius: var(--r-md); box-shadow: var(--shadow-sm); }
+  .detail-card__head { padding: 16px 24px; border-bottom: 1px solid var(--border); font-size: 13px; font-weight: 600; letter-spacing: -0.2px; }
+  .detail-card__body { padding: 4px 0; }
+  .d-row { display: flex; justify-content: space-between; padding: 11px 24px; }
+  .d-label { font-size: 14px; color: var(--text-2); }
+  .d-value { font-size: 14px; font-weight: 450; text-align: right; max-width: 200px; }
+  .d-value--mono { font-family: var(--mono); font-weight: 500; }
+
+  /* Documents */
+  .docs-card { background: var(--surface); border-radius: var(--r-md); box-shadow: var(--shadow-sm); overflow: hidden; }
+  .docs-head { padding: 16px 24px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); }
+  .docs-title { font-size: 13px; font-weight: 600; }
+  .doc-row { display: flex; align-items: center; gap: 14px; padding: 14px 24px; border-bottom: 1px solid var(--border); }
+  .doc-row:last-child { border-bottom: none; }
+  .doc-icon { width: 32px; height: 32px; border-radius: var(--r-xs); display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 800; flex-shrink: 0; }
+  .doc-icon--pdf { background: var(--red-subtle); color: var(--red-text); }
+  .doc-icon--empty { background: rgba(0,0,0,0.04); color: var(--text-3); }
+  .doc-info { flex: 1; }
+  .doc-name { font-size: 14px; font-weight: 450; }
+  .doc-meta { font-size: 12px; color: var(--text-3); }
+  .doc-row--missing { opacity: 0.5; }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="sb-top">
+      <div class="sb-brand"><div class="sb-logo">E</div><div class="sb-name">Enviar</div></div>
+      <div class="sb-switcher"><div class="sb-avatar">AH</div><span style="flex:1">Addis Hub Trading</span><span style="color:var(--text-3);font-size:10px">&#9662;</span></div>
+    </div>
+    <nav class="sb-nav">
+      <a class="sb-item"><span class="sb-icon">&#9632;</span> Dashboard</a>
+      <a class="sb-item"><span class="sb-icon">&#9671;</span> Wallets</a>
+      <a class="sb-item"><span class="sb-icon">&#8599;</span> Transfers <span class="sb-badge">3</span></a>
+      <a class="sb-item"><span class="sb-icon">&#9776;</span> Payments</a>
+      <a class="sb-item"><span class="sb-icon">&#9744;</span> Invoices</a>
+      <a class="sb-item"><span class="sb-icon">&#9645;</span> Cards</a>
+      <div class="sb-label">Trade</div>
+      <a class="sb-item sb-item--active"><span class="sb-icon">&#8615;</span> Imports</a>
+      <a class="sb-item"><span class="sb-icon">&#8613;</span> Exports</a>
+      <div class="sb-label">Finance</div>
+      <a class="sb-item"><span class="sb-icon">&#9733;</span> Loans</a>
+      <a class="sb-item"><span class="sb-icon">&#9879;</span> Tax</a>
+      <a class="sb-item"><span class="sb-icon">&#128214;</span> Accounting</a>
+      <div class="sb-label">Admin</div>
+      <a class="sb-item"><span class="sb-icon">&#128101;</span> Team</a>
+      <a class="sb-item"><span class="sb-icon">&#9881;</span> Settings</a>
+    </nav>
+  </aside>
+
+  <main class="main">
+    <div class="content">
+      <a class="back">&#8592; Imports</a>
+
+      <div class="page-head">
+        <div>
+          <div class="page-title">IMP-2026-0034 <span class="pill pill--teal">Forex Allocated</span></div>
+          <div class="page-sub">Shenzhen Huawei Imports Ltd &middot; China &middot; Mar 5, 2026</div>
+        </div>
+        <div class="head-actions">
+          <button class="btn btn--outline">Attach Doc</button>
+          <button class="btn btn--danger">Cancel</button>
+        </div>
+      </div>
+
+      <!-- Alert -->
+      <div class="alert">
+        <span class="alert__icon">&#9432;</span>
+        <div class="alert__text"><strong>Forex allocated.</strong> Execute the FX conversion to proceed. Rate: 1 USD = 57.32 ETB.</div>
+      </div>
+
+      <!-- Timeline -->
+      <div class="timeline">
+        <div class="tl-step tl-step--done"><div class="tl-dot">&#10003;</div><div class="tl-label">Draft</div></div>
+        <div class="tl-line" style="background:var(--text-1)"></div>
+        <div class="tl-step tl-step--done"><div class="tl-dot">&#10003;</div><div class="tl-label">Submitted</div></div>
+        <div class="tl-line" style="background:var(--text-1)"></div>
+        <div class="tl-step tl-step--done"><div class="tl-dot">&#10003;</div><div class="tl-label">Bank Review</div></div>
+        <div class="tl-line" style="background:var(--text-1)"></div>
+        <div class="tl-step tl-step--active"><div class="tl-dot">4</div><div class="tl-label">FX Allocated</div></div>
+        <div class="tl-line"></div>
+        <div class="tl-step"><div class="tl-dot">5</div><div class="tl-label">Payment</div></div>
+        <div class="tl-line"></div>
+        <div class="tl-step"><div class="tl-dot">6</div><div class="tl-label">Shipped</div></div>
+        <div class="tl-line"></div>
+        <div class="tl-step"><div class="tl-dot">7</div><div class="tl-label">Customs</div></div>
+        <div class="tl-line"></div>
+        <div class="tl-step"><div class="tl-dot">8</div><div class="tl-label">Done</div></div>
+      </div>
+
+      <!-- FX Conversion -->
+      <div class="fx-card">
+        <div class="fx-head">
+          <div class="fx-title">Execute FX Conversion</div>
+          <div class="fx-rate">1 USD = 57.32 ETB &middot; Allocated Mar 18</div>
+        </div>
+        <div class="fx-amounts">
+          <div class="fx-box">
+            <div class="fx-box__label">You Pay</div>
+            <div class="fx-box__value">Br 870,720</div>
+          </div>
+          <div class="fx-arrow">&#8594;</div>
+          <div class="fx-box">
+            <div class="fx-box__label">Supplier Receives</div>
+            <div class="fx-box__value">$15,200</div>
+          </div>
+        </div>
+        <div class="fx-foot">
+          <button class="btn btn--blue">Execute Conversion</button>
+          <span class="fx-avail">Available: Br 2,147,320</span>
+        </div>
+      </div>
+
+      <!-- Details -->
+      <div class="details">
+        <div class="detail-card">
+          <div class="detail-card__head">Supplier & Goods</div>
+          <div class="detail-card__body">
+            <div class="d-row"><span class="d-label">Supplier</span><span class="d-value">Shenzhen Huawei Imports</span></div>
+            <div class="d-row"><span class="d-label">Country</span><span class="d-value">&#127464;&#127475; China</span></div>
+            <div class="d-row"><span class="d-label">Goods</span><span class="d-value">Industrial safety equipment</span></div>
+            <div class="d-row"><span class="d-label">HS Code</span><span class="d-value d-value--mono">6506.10.10</span></div>
+          </div>
+        </div>
+        <div class="detail-card">
+          <div class="detail-card__head">Financials</div>
+          <div class="detail-card__body">
+            <div class="d-row"><span class="d-label">Amount</span><span class="d-value d-value--mono">$15,200</span></div>
+            <div class="d-row"><span class="d-label">Method</span><span class="d-value"><span class="pill pill--teal" style="font-size:11px">Letter of Credit</span></span></div>
+            <div class="d-row"><span class="d-label">FX Rate</span><span class="d-value d-value--mono">57.32 ETB/USD</span></div>
+            <div class="d-row"><span class="d-label">ETB Equiv.</span><span class="d-value d-value--mono">Br 870,720</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Documents -->
+      <div class="docs-card">
+        <div class="docs-head">
+          <div class="docs-title">Documents (4 of 6)</div>
+          <button class="btn btn--outline" style="padding:6px 16px;font-size:12px;">&#43; Attach</button>
+        </div>
+        <div class="doc-row">
+          <div class="doc-icon doc-icon--pdf">PDF</div>
+          <div class="doc-info"><div class="doc-name">Proforma Invoice</div><div class="doc-meta">2.1 MB &middot; Mar 5</div></div>
+          <span class="pill pill--green" style="font-size:11px">Verified</span>
+        </div>
+        <div class="doc-row">
+          <div class="doc-icon doc-icon--pdf">PDF</div>
+          <div class="doc-info"><div class="doc-name">Import License</div><div class="doc-meta">1.4 MB &middot; Mar 5</div></div>
+          <span class="pill pill--green" style="font-size:11px">Verified</span>
+        </div>
+        <div class="doc-row">
+          <div class="doc-icon doc-icon--pdf">PDF</div>
+          <div class="doc-info"><div class="doc-name">Bank Permit</div><div class="doc-meta">890 KB &middot; Mar 8</div></div>
+          <span class="pill pill--green" style="font-size:11px">Verified</span>
+        </div>
+        <div class="doc-row">
+          <div class="doc-icon doc-icon--pdf">PDF</div>
+          <div class="doc-info"><div class="doc-name">Insurance Certificate</div><div class="doc-meta">560 KB &middot; Mar 10</div></div>
+          <span class="pill pill--green" style="font-size:11px">Verified</span>
+        </div>
+        <div class="doc-row doc-row--missing">
+          <div class="doc-icon doc-icon--empty">&mdash;</div>
+          <div class="doc-info"><div class="doc-name">Letter of Credit</div><div class="doc-meta">Not uploaded</div></div>
+          <span class="pill pill--orange" style="font-size:11px">Required</span>
+          <button class="btn btn--blue" style="padding:6px 16px;font-size:12px;">Upload</button>
+        </div>
+        <div class="doc-row doc-row--missing">
+          <div class="doc-icon doc-icon--empty">&mdash;</div>
+          <div class="doc-info"><div class="doc-name">Bill of Lading</div><div class="doc-meta">Pending shipment</div></div>
+          <span class="pill pill--neutral" style="font-size:11px">Later</span>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+</body>
+</html>

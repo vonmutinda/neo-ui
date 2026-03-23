@@ -2,7 +2,7 @@
 
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard,
   Users,
@@ -17,9 +17,21 @@ import {
   LogOut,
   ChevronDown,
   MapPin,
+  Building2,
+  ShieldCheck,
+  Coins,
+  Scale,
+  FileCheck,
+  Cpu,
+  Ship,
+  Package,
+  ListOrdered,
+  Receipt,
+  PiggyBank,
 } from "lucide-react";
 import { useAdminAuthStore } from "@/providers/admin-auth-store";
 import { cn } from "@/lib/utils";
+import { EnviarLogo } from "@/components/shared/EnviarLogo";
 import { useState } from "react";
 
 interface NavItem {
@@ -31,32 +43,156 @@ interface NavItem {
 
 const MAIN_NAV: NavItem[] = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/admin/customers", label: "Customers", icon: Users, permission: "users:read" },
-  { href: "/admin/transactions", label: "Transactions", icon: ArrowLeftRight, permission: "transactions:read" },
+  {
+    href: "/admin/customers",
+    label: "Customers",
+    icon: Users,
+    permission: "users:read",
+  },
+  {
+    href: "/admin/businesses",
+    label: "Businesses",
+    icon: Building2,
+    permission: "users:read",
+  },
+  {
+    href: "/admin/transactions",
+    label: "Transactions",
+    icon: ArrowLeftRight,
+    permission: "transactions:read",
+  },
 ];
 
 const FINANCE_NAV: NavItem[] = [
-  { href: "/admin/loans", label: "Loans", icon: Landmark, permission: "loans:read" },
-  { href: "/admin/cards", label: "Cards", icon: CreditCard, permission: "cards:read" },
-  { href: "/admin/reconciliation", label: "Reconciliation", icon: RefreshCw, permission: "recon:read" },
+  {
+    href: "/admin/loans",
+    label: "Loans",
+    icon: Landmark,
+    permission: "loans:read",
+  },
+  {
+    href: "/admin/cards",
+    label: "Cards",
+    icon: CreditCard,
+    permission: "cards:read",
+  },
+  {
+    href: "/admin/cards/simulator",
+    label: "Card Simulator",
+    icon: Cpu,
+    permission: "cards:read",
+  },
+  {
+    href: "/admin/currencies",
+    label: "Currencies",
+    icon: Coins,
+    permission: "config:manage",
+  },
+  {
+    href: "/admin/reconciliation",
+    label: "Reconciliation",
+    icon: RefreshCw,
+    permission: "recon:read",
+  },
+  {
+    href: "/admin/imports",
+    label: "Imports",
+    icon: Ship,
+    permission: "users:read",
+  },
+  {
+    href: "/admin/exports",
+    label: "Exports",
+    icon: Package,
+    permission: "users:read",
+  },
+  {
+    href: "/admin/batch-payments",
+    label: "Batch payments",
+    icon: ListOrdered,
+    permission: "users:read",
+  },
+  {
+    href: "/admin/billers",
+    label: "Billers",
+    icon: Building2,
+    permission: "config:manage",
+  },
+  {
+    href: "/admin/fees",
+    label: "Fees",
+    icon: Receipt,
+    permission: "config:manage",
+  },
+  {
+    href: "/admin/capital",
+    label: "Capital",
+    icon: PiggyBank,
+    permission: "system:accounts",
+  },
 ];
 
 const COMPLIANCE_NAV: NavItem[] = [
-  { href: "/admin/audit", label: "Audit Log", icon: ScrollText, permission: "audit:read" },
-  { href: "/admin/flags", label: "Flags", icon: Flag, permission: "flags:manage" },
-  { href: "/admin/map", label: "Money flow map", icon: MapPin, permission: "analytics:read" },
+  {
+    href: "/admin/kyb",
+    label: "KYB Review",
+    icon: ShieldCheck,
+    permission: "users:read",
+  },
+  {
+    href: "/admin/rules",
+    label: "Rules",
+    icon: Scale,
+    permission: "config:manage",
+  },
+  {
+    href: "/admin/compliance",
+    label: "Compliance",
+    icon: FileCheck,
+    permission: "audit:read",
+  },
+  {
+    href: "/admin/audit",
+    label: "Audit Log",
+    icon: ScrollText,
+    permission: "audit:read",
+  },
+  {
+    href: "/admin/flags",
+    label: "Flags",
+    icon: Flag,
+    permission: "flags:manage",
+  },
+  {
+    href: "/admin/map",
+    label: "Money flow map",
+    icon: MapPin,
+    permission: "analytics:read",
+  },
 ];
 
 const SYSTEM_NAV: NavItem[] = [
-  { href: "/admin/staff", label: "Staff", icon: UserCog, permission: "staff:manage" },
-  { href: "/admin/settings", label: "Settings", icon: Settings, permission: "config:manage" },
+  {
+    href: "/admin/staff",
+    label: "Staff",
+    icon: UserCog,
+    permission: "staff:manage",
+  },
+  {
+    href: "/admin/settings",
+    label: "Settings",
+    icon: Settings,
+    permission: "config:manage",
+  },
 ];
 
 function NavSection({ title, items }: { title: string; items: NavItem[] }) {
   const pathname = usePathname();
   const hasPermission = useAdminAuthStore((s) => s.hasPermission);
 
-  const visible = items.filter((item) => !item.permission || hasPermission(item.permission));
+  const visible = items.filter(
+    (item) => !item.permission || hasPermission(item.permission),
+  );
   if (visible.length === 0) return null;
 
   return (
@@ -65,9 +201,10 @@ function NavSection({ title, items }: { title: string; items: NavItem[] }) {
         {title}
       </p>
       {visible.map((item) => {
-        const active = item.href === "/admin"
-          ? pathname === "/admin"
-          : pathname.startsWith(item.href);
+        const active =
+          item.href === "/admin"
+            ? pathname === "/admin"
+            : pathname.startsWith(item.href);
         const Icon = item.icon;
 
         return (
@@ -81,13 +218,15 @@ function NavSection({ title, items }: { title: string; items: NavItem[] }) {
                 : "text-muted-foreground hover:bg-muted hover:text-foreground",
             )}
           >
-            {active && (
-              <motion.div
-                layoutId="admin-sidebar-indicator"
-                className="absolute left-0 top-1/2 h-6 w-[3px] -translate-y-1/2 rounded-full bg-primary"
-                transition={{ type: "spring", stiffness: 400, damping: 30 }}
-              />
-            )}
+            <AnimatePresence>
+              {active && (
+                <motion.div
+                  layoutId="admin-sidebar-indicator"
+                  className="absolute left-0 top-1/2 h-6 w-[3px] -translate-y-1/2 rounded-full bg-primary"
+                  transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                />
+              )}
+            </AnimatePresence>
             <Icon className="h-[18px] w-[18px]" />
             <span>{item.label}</span>
           </Link>
@@ -108,23 +247,22 @@ export function AdminSidebar() {
     router.push("/admin/login");
   }
 
-  const initials = staff?.fullName
-    ?.split(" ")
-    .map((n) => n[0])
-    .join("")
-    .toUpperCase()
-    .slice(0, 2) ?? "SA";
+  const initials =
+    staff?.fullName
+      ?.split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2) ?? "SA";
 
   return (
     <aside className="fixed inset-y-0 left-0 z-30 flex w-64 flex-col border-r border-border bg-card">
       <div className="px-5 py-5">
-        <Link href="/admin" className="flex items-center gap-2.5">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-sm font-bold text-primary-foreground">
-            N
-          </div>
-          <div>
-            <span className="text-base font-bold tracking-tight">Neo Admin</span>
-          </div>
+        <Link href="/admin" className="inline-flex items-center gap-2.5">
+          <EnviarLogo size="md" />
+          <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            Admin
+          </span>
         </Link>
       </div>
 
@@ -145,26 +283,36 @@ export function AdminSidebar() {
           </div>
           <div className="flex-1 text-left">
             <p className="truncate text-sm font-medium">{staff?.fullName}</p>
-            <p className="truncate text-xs text-muted-foreground capitalize">{staff?.role?.replace(/_/g, " ")}</p>
+            <p className="truncate text-xs text-muted-foreground capitalize">
+              {staff?.role?.replace(/_/g, " ")}
+            </p>
           </div>
-          <ChevronDown className={cn("h-4 w-4 text-muted-foreground transition-transform", showMenu && "rotate-180")} />
+          <ChevronDown
+            className={cn(
+              "h-4 w-4 text-muted-foreground transition-transform",
+              showMenu && "rotate-180",
+            )}
+          />
         </button>
 
-        {showMenu && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            className="overflow-hidden"
-          >
-            <button
-              onClick={handleLogout}
-              className="mt-1 flex w-full items-center gap-2.5 rounded-md px-5 py-2 text-sm text-destructive transition-colors hover:bg-destructive/10"
+        <AnimatePresence>
+          {showMenu && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              className="overflow-hidden"
             >
-              <LogOut className="h-4 w-4" />
-              Log out
-            </button>
-          </motion.div>
-        )}
+              <button
+                onClick={handleLogout}
+                className="mt-1 flex w-full items-center gap-2.5 rounded-md px-5 py-2 text-sm text-destructive transition-colors hover:bg-destructive/10"
+              >
+                <LogOut className="h-4 w-4" />
+                Log out
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </aside>
   );

@@ -1,6 +1,13 @@
 "use client";
 
-import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from "react-leaflet";
+import {
+  MapContainer,
+  TileLayer,
+  Marker,
+  Popup,
+  Polyline,
+  useMap,
+} from "react-leaflet";
 import L from "leaflet";
 import { useEffect } from "react";
 import type { MoneyFlowPoint, MoneyFlowFlow } from "@/lib/admin-types";
@@ -11,26 +18,39 @@ import "leaflet/dist/leaflet.css";
 const DEFAULT_CENTER: [number, number] = [9.145, 40.4897]; // Ethiopia
 const DEFAULT_ZOOM = 6;
 
-function FitBounds({ points, flows }: { points: MoneyFlowPoint[]; flows: MoneyFlowFlow[] }) {
+function FitBounds({
+  points,
+  flows,
+}: {
+  points: MoneyFlowPoint[];
+  flows: MoneyFlowFlow[];
+}) {
   const map = useMap();
   useEffect(() => {
     const all: [number, number][] = [
       ...points.map((p) => [p.lat, p.lon] as [number, number]),
-      ...flows.flatMap((f) => [[f.from.lat, f.from.lon] as [number, number], [f.to.lat, f.to.lon] as [number, number]]),
+      ...flows.flatMap((f) => [
+        [f.from.lat, f.from.lon] as [number, number],
+        [f.to.lat, f.to.lon] as [number, number],
+      ]),
     ];
     if (all.length === 0) return;
     if (all.length === 1) {
       map.setView(all[0], 10);
       return;
     }
-    map.fitBounds(all as L.LatLngBoundsLiteral, { padding: [40, 40], maxZoom: 12 });
+    map.fitBounds(all as L.LatLngBoundsLiteral, {
+      padding: [40, 40],
+      maxZoom: 12,
+    });
   }, [map, points, flows]);
   return null;
 }
 
 const defaultIcon = L.icon({
   iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-  iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
+  iconRetinaUrl:
+    "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
   shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
   iconSize: [25, 41],
   iconAnchor: [12, 41],
@@ -63,17 +83,27 @@ export function MoneyFlowMap({
         />
         {hasData && <FitBounds points={points} flows={flows} />}
         {points.map((p) => (
-          <Marker key={p.transactionId} position={[p.lat, p.lon]} icon={defaultIcon}>
+          <Marker
+            key={p.transactionId}
+            position={[p.lat, p.lon]}
+            icon={defaultIcon}
+          >
             <Popup>
               <div className="text-sm">
-                <p className="font-semibold">{formatMoney(p.amountCents, p.currency)}</p>
-                <p className="text-muted-foreground capitalize">{p.type.replace(/_/g, " ")}</p>
+                <p className="font-semibold">
+                  {formatMoney(p.amountCents, p.currency)}
+                </p>
+                <p className="text-muted-foreground capitalize">
+                  {p.type.replace(/_/g, " ")}
+                </p>
                 {(p.city || p.country) && (
                   <p className="text-xs text-muted-foreground">
                     {[p.city, p.country].filter(Boolean).join(", ")}
                   </p>
                 )}
-                <p className="text-xs text-muted-foreground">{p.createdAt.slice(0, 10)}</p>
+                <p className="text-xs text-muted-foreground">
+                  {p.createdAt.slice(0, 10)}
+                </p>
               </div>
             </Popup>
           </Marker>
@@ -85,7 +115,7 @@ export function MoneyFlowMap({
               [f.from.lat, f.from.lon],
               [f.to.lat, f.to.lon],
             ]}
-            pathOptions={{ color: "hsl(var(--primary))", weight: 2, opacity: 0.7 }}
+            pathOptions={{ color: "#A07D20", weight: 2, opacity: 0.7 }}
           />
         ))}
       </MapContainer>

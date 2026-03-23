@@ -46,20 +46,12 @@ export function SlideToConfirm({
     return () => window.removeEventListener("resize", measureTrack);
   }, [measureTrack]);
 
-  const bgOpacity = useTransform(
-    x,
-    [0, maxTravel * 0.7 || 1],
-    [0, 1],
-  );
-  const labelOpacity = useTransform(
-    x,
-    [0, maxTravel * 0.35 || 1],
-    [1, 0],
-  );
+  const bgOpacity = useTransform(x, [0, maxTravel * 0.7 || 1], [0, 1]);
+  const labelOpacity = useTransform(x, [0, maxTravel * 0.35 || 1], [1, 0]);
 
   useEffect(() => {
     if (!isSuccess && !isPending && confirmed) {
-      setConfirmed(false);
+      setConfirmed(false); // eslint-disable-line react-hooks/set-state-in-effect -- reset slider on failure
       animate(x, 0, { type: "spring", stiffness: 400, damping: 30 });
     }
   }, [isSuccess, isPending, confirmed, x]);
@@ -70,7 +62,10 @@ export function SlideToConfirm({
     const currentX = x.get();
     const threshold = maxTravel * CONFIRM_THRESHOLD;
 
-    if (currentX >= threshold || (info.velocity.x > 500 && currentX > maxTravel * 0.4)) {
+    if (
+      currentX >= threshold ||
+      (info.velocity.x > 500 && currentX > maxTravel * 0.4)
+    ) {
       animate(x, maxTravel, { duration: 0.12, ease: "easeOut" });
       setConfirmed(true);
       onConfirm();
@@ -139,9 +134,7 @@ export function SlideToConfirm({
           <div className="flex h-8 w-8 items-center justify-center rounded-full bg-success text-success-foreground">
             <Check className="h-5 w-5" />
           </div>
-          <span className="ml-2 text-sm font-semibold text-success">
-            Sent!
-          </span>
+          <span className="ml-2 text-sm font-semibold text-success">Sent!</span>
         </motion.div>
       )}
     </div>

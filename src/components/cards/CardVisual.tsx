@@ -1,83 +1,52 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { Wifi, Snowflake } from "lucide-react";
 import type { Card, CardType } from "@/lib/types";
 
-const TYPE_GRADIENT: Record<CardType, string> = {
-  virtual:
-    "from-emerald-600 via-emerald-500 to-teal-400 dark:from-emerald-700 dark:via-emerald-600 dark:to-teal-500",
-  physical:
-    "from-slate-800 via-slate-700 to-slate-600 dark:from-slate-900 dark:via-slate-800 dark:to-slate-700",
-  ephemeral:
-    "from-violet-600 via-purple-500 to-fuchsia-400 dark:from-violet-700 dark:via-purple-600 dark:to-fuchsia-500",
+const TYPE_SURFACE: Record<CardType, string> = {
+  virtual: "bg-neutral-800 text-white",
+  physical: "bg-neutral-700 text-white",
+  ephemeral: "bg-neutral-600 text-white",
 };
 
 const TYPE_LABEL: Record<CardType, string> = {
-  virtual: "Virtual Card",
-  physical: "Physical Card",
-  ephemeral: "Disposable Card",
+  virtual: "Virtual",
+  physical: "Physical",
+  ephemeral: "Disposable",
 };
 
-export function CardVisual({
-  card,
-  compact,
-}: {
-  card: Card;
-  compact?: boolean;
-}) {
+export function CardVisual({ card }: { card: Card; compact?: boolean }) {
   const isFrozen = card.status === "frozen";
-  const h = compact ? "h-44" : "h-52";
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      className={`relative overflow-hidden rounded-2xl bg-gradient-to-br ${TYPE_GRADIENT[card.type]} ${h} w-full p-5 text-white shadow-lg`}
+    <div
+      className={`relative flex min-h-0 flex-col overflow-hidden rounded-sm p-4 aspect-[1.586/1] w-full ${TYPE_SURFACE[card.type]}`}
     >
       {isFrozen && (
-        <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-          <div className="flex items-center gap-2 rounded-full bg-white/20 px-4 py-2 text-sm font-semibold">
-            <Snowflake className="h-4 w-4" />
+        <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/50">
+          <span className="text-xs font-medium tracking-widest uppercase text-white/90">
             Frozen
-          </div>
+          </span>
         </div>
       )}
 
-      <div className="flex items-start justify-between">
-        <span className="text-xs font-medium uppercase tracking-wider opacity-80">
+      <div className="flex shrink-0 items-start justify-between">
+        <span className="text-[10px] font-medium uppercase tracking-widest text-white/70">
           {TYPE_LABEL[card.type]}
         </span>
-        {card.allowContactless && (
-          <Wifi className="h-5 w-5 rotate-90 opacity-60" />
-        )}
       </div>
 
-      <div className="mt-auto pt-10">
-        <p className="font-tabular text-lg tracking-[0.2em] opacity-90">
-          •••• •••• •••• {card.lastFour}
+      <div className="min-h-0 flex-1 flex flex-col justify-end pt-2">
+        <p className="font-mono text-sm tracking-[0.2em] text-white/95">
+          ···· ···· ···· {card.lastFour}
         </p>
       </div>
 
-      <div className="mt-3 flex items-end justify-between">
-        <div>
-          <p className="text-[10px] uppercase tracking-wider opacity-60">
-            Expires
-          </p>
-          <p className="font-tabular text-sm">
-            {String(card.expiryMonth).padStart(2, "0")}/{card.expiryYear}
-          </p>
-        </div>
-        <div className="text-right">
-          <p className="text-[10px] uppercase tracking-wider opacity-60">
-            Neo
-          </p>
-          <p className="text-sm font-bold tracking-wider">VISA</p>
-        </div>
+      <div className="mt-2 flex shrink-0 items-end justify-between text-[10px] uppercase tracking-wider text-white/60">
+        <span>
+          {String(card.expiryMonth).padStart(2, "0")}/{card.expiryYear}
+        </span>
+        <span className="font-medium tracking-widest">VISA</span>
       </div>
-
-      <div className="pointer-events-none absolute -right-8 -top-8 h-32 w-32 rounded-full bg-white/10" />
-      <div className="pointer-events-none absolute -bottom-6 -left-6 h-24 w-24 rounded-full bg-white/5" />
-    </motion.div>
+    </div>
   );
 }

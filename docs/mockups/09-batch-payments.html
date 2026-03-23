@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Enviar — Batch Payment</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #F5F5F7; --surface: #FFFFFF;
+    --text-1: #1D1D1F; --text-2: #86868B; --text-3: #C7C7CC;
+    --border: rgba(0,0,0,0.06); --border-strong: rgba(0,0,0,0.12);
+    --blue: #0071E3; --blue-subtle: rgba(0,113,227,0.06);
+    --green: #34C759; --green-subtle: rgba(52,199,89,0.08); --green-text: #248A3D;
+    --red: #FF3B30; --red-subtle: rgba(255,59,48,0.08); --red-text: #D70015;
+    --orange: #FF9500; --orange-subtle: rgba(255,149,0,0.08); --orange-text: #C93400;
+    --r-xs: 8px; --r-sm: 12px; --r-md: 16px; --r-lg: 20px; --r-full: 980px;
+    --shadow-sm: 0 2px 8px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.06);
+    --shadow-md: 0 4px 16px rgba(0,0,0,0.06), 0 1px 4px rgba(0,0,0,0.04);
+    --sans: 'Inter', -apple-system, sans-serif;
+    --mono: 'JetBrains Mono', monospace;
+    --sidebar-w: 240px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: var(--sans); background: var(--bg); color: var(--text-1); font-size: 15px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+  .app { display: flex; min-height: 100vh; }
+  .sidebar { width: var(--sidebar-w); background: var(--surface); position: fixed; top: 0; left: 0; bottom: 0; z-index: 10; box-shadow: 1px 0 0 var(--border); }
+  .sb-top { padding: 24px 20px 20px; }
+  .sb-brand { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
+  .sb-logo { width: 28px; height: 28px; background: var(--text-1); border-radius: var(--r-xs); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 14px; }
+  .sb-name { font-size: 17px; font-weight: 600; letter-spacing: -0.4px; }
+  .sb-switcher { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-radius: var(--r-sm); background: var(--bg); font-size: 13px; font-weight: 500; }
+  .sb-avatar { width: 24px; height: 24px; border-radius: 6px; background: #E8D5F5; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; color: #7C3AED; }
+  .sb-nav { flex: 1; padding: 8px 8px; }
+  .sb-item { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: var(--r-xs); font-size: 14px; color: var(--text-2); cursor: pointer; text-decoration: none; margin-bottom: 1px; }
+  .sb-item--active { color: var(--text-1); font-weight: 500; background: rgba(0,0,0,0.05); }
+  .sb-icon { width: 18px; text-align: center; font-size: 14px; opacity: 0.4; }
+  .sb-item--active .sb-icon { opacity: 0.8; }
+  .sb-badge { margin-left: auto; background: #FF9500; color: white; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: var(--r-full); }
+  .sb-label { padding: 16px 12px 6px; font-size: 11px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: var(--text-3); }
+
+  .main { flex: 1; margin-left: var(--sidebar-w); }
+  .content { padding: 40px 48px; max-width: 1100px; }
+  .back { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; color: var(--blue); font-weight: 500; cursor: pointer; margin-bottom: 28px; text-decoration: none; }
+  .pill { display: inline-flex; align-items: center; padding: 4px 12px; border-radius: var(--r-full); font-size: 12px; font-weight: 600; }
+  .pill--green { background: var(--green-subtle); color: var(--green-text); }
+  .pill--orange { background: var(--orange-subtle); color: var(--orange-text); }
+  .pill--red { background: var(--red-subtle); color: var(--red-text); }
+  .pill--neutral { background: rgba(0,0,0,0.05); color: var(--text-2); }
+  .btn { display: inline-flex; align-items: center; gap: 6px; font-family: var(--sans); font-size: 13px; font-weight: 500; border: none; cursor: pointer; border-radius: var(--r-full); padding: 8px 18px; transition: all 0.2s; }
+  .btn--outline { background: transparent; color: var(--text-1); box-shadow: inset 0 0 0 1.5px var(--border-strong); }
+
+  .page-head { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 32px; }
+  .page-title { font-size: 28px; font-weight: 600; letter-spacing: -0.8px; display: flex; align-items: center; gap: 12px; }
+  .page-sub { font-size: 14px; color: var(--text-2); margin-top: 4px; }
+
+  /* Meta strip */
+  .meta-strip {
+    display: flex; gap: 32px;
+    padding: 20px 28px;
+    background: var(--surface);
+    border-radius: var(--r-md);
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 24px;
+  }
+  .meta__label { font-size: 11px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; color: var(--text-3); }
+  .meta__value { font-size: 15px; font-weight: 500; margin-top: 2px; }
+  .meta__value--mono { font-family: var(--mono); font-weight: 600; }
+
+  /* Progress hero */
+  .progress-card {
+    background: var(--surface);
+    border-radius: var(--r-md);
+    box-shadow: var(--shadow-md);
+    padding: 28px 32px;
+    margin-bottom: 24px;
+  }
+  .prog-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+  .prog-title { font-size: 16px; font-weight: 600; }
+  .prog-count { font-family: var(--mono); font-size: 14px; color: var(--text-2); }
+  .prog-bar { height: 8px; background: rgba(0,0,0,0.06); border-radius: 4px; overflow: hidden; margin-bottom: 12px; display: flex; }
+  .prog-fill--green { background: var(--green); }
+  .prog-fill--red { background: var(--red); }
+  .prog-fill--orange { background: var(--orange); }
+  .prog-legend { display: flex; gap: 24px; }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-2); }
+  .legend-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+  /* Metrics */
+  .metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
+  .metric { background: var(--surface); border-radius: var(--r-md); box-shadow: var(--shadow-sm); padding: 20px 24px; }
+  .metric__label { font-size: 12px; color: var(--text-2); }
+  .metric__value { font-family: var(--mono); font-size: 24px; font-weight: 600; letter-spacing: -0.8px; margin-top: 4px; }
+  .metric__sub { font-size: 12px; color: var(--text-3); margin-top: 4px; }
+
+  /* Table */
+  .tcard { background: var(--surface); border-radius: var(--r-md); box-shadow: var(--shadow-sm); overflow: hidden; }
+  .tcard__head { padding: 16px 24px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); }
+  .tcard__title { font-size: 14px; font-weight: 600; }
+  .tbl { width: 100%; border-collapse: collapse; }
+  .tbl th { text-align: left; padding: 10px 20px; font-size: 11px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; color: var(--text-3); border-bottom: 1px solid var(--border); }
+  .tbl td { padding: 13px 20px; font-size: 14px; border-bottom: 1px solid var(--border); }
+  .tbl tr:last-child td { border-bottom: none; }
+  .tbl tr:hover td { background: rgba(0,0,0,0.015); }
+  .mono { font-family: var(--mono); font-weight: 500; letter-spacing: -0.3px; }
+  .muted { color: var(--text-2); }
+  .sm { font-size: 13px; }
+  .error-msg { font-size: 12px; color: var(--red-text); }
+  .tx-link { font-family: var(--mono); font-size: 12px; color: var(--blue); text-decoration: none; }
+
+  .pag { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; border-top: 1px solid var(--border); }
+  .pag__info { font-size: 13px; color: var(--text-2); }
+  .pag__btns { display: flex; gap: 4px; }
+  .pag__btn { width: 32px; height: 32px; border-radius: var(--r-xs); border: none; background: transparent; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 13px; font-weight: 500; color: var(--text-2); }
+  .pag__btn--active { background: var(--text-1); color: white; }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="sb-top">
+      <div class="sb-brand"><div class="sb-logo">E</div><div class="sb-name">Enviar</div></div>
+      <div class="sb-switcher"><div class="sb-avatar">AH</div><span style="flex:1">Addis Hub Trading</span><span style="color:var(--text-3);font-size:10px">&#9662;</span></div>
+    </div>
+    <nav class="sb-nav">
+      <a class="sb-item"><span class="sb-icon">&#9632;</span> Dashboard</a>
+      <a class="sb-item"><span class="sb-icon">&#9671;</span> Wallets</a>
+      <a class="sb-item"><span class="sb-icon">&#8599;</span> Transfers <span class="sb-badge">3</span></a>
+      <a class="sb-item sb-item--active"><span class="sb-icon">&#9776;</span> Payments</a>
+      <a class="sb-item"><span class="sb-icon">&#9744;</span> Invoices</a>
+      <a class="sb-item"><span class="sb-icon">&#9645;</span> Cards</a>
+      <div class="sb-label">Trade</div>
+      <a class="sb-item"><span class="sb-icon">&#8615;</span> Imports</a>
+      <a class="sb-item"><span class="sb-icon">&#8613;</span> Exports</a>
+      <div class="sb-label">Finance</div>
+      <a class="sb-item"><span class="sb-icon">&#9733;</span> Loans</a>
+      <a class="sb-item"><span class="sb-icon">&#9879;</span> Tax</a>
+      <a class="sb-item"><span class="sb-icon">&#128214;</span> Accounting</a>
+      <div class="sb-label">Admin</div>
+      <a class="sb-item"><span class="sb-icon">&#128101;</span> Team</a>
+      <a class="sb-item"><span class="sb-icon">&#9881;</span> Settings</a>
+    </nav>
+  </aside>
+
+  <main class="main">
+    <div class="content">
+      <a class="back">&#8592; Batch Payments</a>
+
+      <div class="page-head">
+        <div>
+          <div class="page-title">March Payroll <span class="pill pill--orange">Processing</span></div>
+          <div class="page-sub">34 recipients &middot; ETB &middot; Created Mar 19 by Sara M.</div>
+        </div>
+      </div>
+
+      <!-- Meta strip -->
+      <div class="meta-strip">
+        <div><div class="meta__label">Total</div><div class="meta__value meta__value--mono">Br 890,450</div></div>
+        <div><div class="meta__label">Items</div><div class="meta__value">34</div></div>
+        <div><div class="meta__label">Created</div><div class="meta__value">Sara Mekonnen</div></div>
+        <div><div class="meta__label">Approved</div><div class="meta__value">Abebe Kebede</div></div>
+        <div><div class="meta__label">Approved At</div><div class="meta__value">Mar 19, 15:30</div></div>
+      </div>
+
+      <!-- Progress -->
+      <div class="progress-card">
+        <div class="prog-head">
+          <div class="prog-title">Progress</div>
+          <div class="prog-count">28 / 34</div>
+        </div>
+        <div class="prog-bar">
+          <div class="prog-fill--green" style="width:76.5%"></div>
+          <div class="prog-fill--red" style="width:5.9%"></div>
+          <div class="prog-fill--orange" style="width:17.6%"></div>
+        </div>
+        <div class="prog-legend">
+          <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div> Completed (26)</div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div> Failed (2)</div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--orange)"></div> Processing (6)</div>
+        </div>
+      </div>
+
+      <!-- Metrics -->
+      <div class="metrics">
+        <div class="metric"><div class="metric__label">Completed</div><div class="metric__value" style="color:var(--green-text)">26</div><div class="metric__sub">Br 712,300</div></div>
+        <div class="metric"><div class="metric__label">Processing</div><div class="metric__value" style="color:var(--orange-text)">6</div><div class="metric__sub">Br 142,150</div></div>
+        <div class="metric"><div class="metric__label">Failed</div><div class="metric__value" style="color:var(--red-text)">2</div><div class="metric__sub">Br 36,000</div></div>
+        <div class="metric"><div class="metric__label">Fees</div><div class="metric__value">Br 850</div><div class="metric__sub">Br 25 avg</div></div>
+      </div>
+
+      <!-- Items -->
+      <div class="tcard">
+        <div class="tcard__head">
+          <div class="tcard__title">Payment Items</div>
+          <button class="btn btn--outline">&#8681; Export</button>
+        </div>
+        <table class="tbl">
+          <thead><tr><th>#</th><th>Recipient</th><th>Bank</th><th style="text-align:right">Amount</th><th>Status</th><th>Ref</th></tr></thead>
+          <tbody>
+            <tr><td class="muted sm">1</td><td>Alemayehu Tadesse</td><td class="muted sm">CBE ****1234</td><td class="mono" style="text-align:right">Br 32,000</td><td><span class="pill pill--green">Done</span></td><td><a class="tx-link">TXN-A1B2</a></td></tr>
+            <tr><td class="muted sm">2</td><td>Bethlehem Hailu</td><td class="muted sm">Dashen ****5678</td><td class="mono" style="text-align:right">Br 28,500</td><td><span class="pill pill--green">Done</span></td><td><a class="tx-link">TXN-C3D4</a></td></tr>
+            <tr><td class="muted sm">3</td><td>Chala Bekele</td><td class="muted sm">Awash ****9012</td><td class="mono" style="text-align:right">Br 25,000</td><td><span class="pill pill--green">Done</span></td><td><a class="tx-link">TXN-E5F6</a></td></tr>
+            <tr><td class="muted sm">4</td><td>Dereje Alemu</td><td class="muted sm">Abyssinia ****3456</td><td class="mono" style="text-align:right">Br 30,000</td><td><span class="pill pill--orange">Processing</span></td><td class="muted sm">&mdash;</td></tr>
+            <tr><td class="muted sm">5</td><td>Eyob Worku</td><td class="muted sm">Wegagen ****7890</td><td class="mono" style="text-align:right">Br 22,000</td><td><span class="pill pill--red">Failed</span></td><td><span class="error-msg">Invalid account</span></td></tr>
+            <tr><td class="muted sm">6</td><td>Fasika Getachew</td><td class="muted sm">CBE ****2345</td><td class="mono" style="text-align:right">Br 35,000</td><td><span class="pill pill--green">Done</span></td><td><a class="tx-link">TXN-G7H8</a></td></tr>
+            <tr><td class="muted sm">7</td><td>Girma Desta</td><td class="muted sm">Telebirr ****6789</td><td class="mono" style="text-align:right">Br 14,000</td><td><span class="pill pill--red">Failed</span></td><td><span class="error-msg">Unreachable</span></td></tr>
+            <tr><td class="muted sm">8</td><td>Helen Fikru</td><td class="muted sm">NIB ****0123</td><td class="mono" style="text-align:right">Br 27,500</td><td><span class="pill pill--orange">Processing</span></td><td class="muted sm">&mdash;</td></tr>
+          </tbody>
+        </table>
+        <div class="pag">
+          <div class="pag__info">1 &ndash; 8 of 34</div>
+          <div class="pag__btns">
+            <div class="pag__btn" style="opacity:0.3">&#8249;</div>
+            <div class="pag__btn pag__btn--active">1</div>
+            <div class="pag__btn">2</div>
+            <div class="pag__btn">3</div>
+            <div class="pag__btn">4</div>
+            <div class="pag__btn">&#8250;</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+</body>
+</html>

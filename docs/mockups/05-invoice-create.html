@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Enviar — Create Invoice</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #F5F5F7; --surface: #FFFFFF;
+    --text-1: #1D1D1F; --text-2: #86868B; --text-3: #C7C7CC;
+    --border: rgba(0,0,0,0.06); --border-strong: rgba(0,0,0,0.12);
+    --blue: #0071E3; --blue-subtle: rgba(0,113,227,0.06);
+    --green-text: #248A3D;
+    --r-xs: 8px; --r-sm: 12px; --r-md: 16px; --r-lg: 20px; --r-full: 980px;
+    --shadow-sm: 0 2px 8px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.06);
+    --shadow-md: 0 4px 16px rgba(0,0,0,0.06), 0 1px 4px rgba(0,0,0,0.04);
+    --shadow-lg: 0 8px 32px rgba(0,0,0,0.08), 0 2px 8px rgba(0,0,0,0.04);
+    --sans: 'Inter', -apple-system, sans-serif;
+    --mono: 'JetBrains Mono', monospace;
+    --sidebar-w: 240px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: var(--sans); background: var(--bg); color: var(--text-1); font-size: 15px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+  .app { display: flex; min-height: 100vh; }
+
+  .sidebar { width: var(--sidebar-w); background: var(--surface); position: fixed; top: 0; left: 0; bottom: 0; display: flex; flex-direction: column; z-index: 10; box-shadow: 1px 0 0 var(--border); }
+  .sb-top { padding: 24px 20px 20px; }
+  .sb-brand { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
+  .sb-logo { width: 28px; height: 28px; background: var(--text-1); border-radius: var(--r-xs); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 14px; }
+  .sb-name { font-size: 17px; font-weight: 600; letter-spacing: -0.4px; }
+  .sb-switcher { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-radius: var(--r-sm); background: var(--bg); font-size: 13px; font-weight: 500; }
+  .sb-avatar { width: 24px; height: 24px; border-radius: 6px; background: #E8D5F5; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; color: #7C3AED; }
+  .sb-nav { flex: 1; padding: 8px 8px; }
+  .sb-item { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: var(--r-xs); font-size: 14px; color: var(--text-2); cursor: pointer; text-decoration: none; margin-bottom: 1px; }
+  .sb-item--active { color: var(--text-1); font-weight: 500; background: rgba(0,0,0,0.05); }
+  .sb-icon { width: 18px; text-align: center; font-size: 14px; opacity: 0.4; }
+  .sb-item--active .sb-icon { opacity: 0.8; }
+  .sb-badge { margin-left: auto; background: #FF9500; color: white; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: var(--r-full); }
+  .sb-label { padding: 16px 12px 6px; font-size: 11px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: var(--text-3); }
+
+  .main { flex: 1; margin-left: var(--sidebar-w); }
+  .content { padding: 40px 48px; }
+
+  .back { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; color: var(--blue); font-weight: 500; cursor: pointer; margin-bottom: 32px; text-decoration: none; }
+
+  /* Split: Form | Preview */
+  .split { display: grid; grid-template-columns: 1fr 440px; gap: 32px; max-width: 1200px; }
+
+  /* Form card */
+  .fcard { background: var(--surface); border-radius: var(--r-lg); box-shadow: var(--shadow-md); padding: 40px; }
+  .fcard__title { font-size: 24px; font-weight: 600; letter-spacing: -0.5px; margin-bottom: 36px; }
+
+  .section-label { font-size: 12px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: var(--text-3); margin-bottom: 16px; margin-top: 32px; display: flex; align-items: center; gap: 8px; }
+  .section-label::before { content: ''; width: 3px; height: 12px; background: var(--text-1); border-radius: 2px; }
+
+  .field { margin-bottom: 20px; }
+  .field__label { display: block; font-size: 12px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; color: var(--text-3); margin-bottom: 8px; }
+  .field__input { width: 100%; padding: 14px 18px; border-radius: var(--r-sm); border: 1.5px solid var(--border-strong); font-size: 15px; font-family: var(--sans); background: var(--surface); color: var(--text-1); outline: none; transition: all 0.2s; }
+  .field__input:focus { border-color: var(--blue); box-shadow: 0 0 0 4px var(--blue-subtle); }
+  .field__select { width: 100%; padding: 14px 18px; border-radius: var(--r-sm); border: 1.5px solid var(--border-strong); font-size: 15px; font-family: var(--sans); background: var(--surface); color: var(--text-1); appearance: none; cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%23C7C7CC' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 16px center; }
+  .field__textarea { width: 100%; padding: 14px 18px; border-radius: var(--r-sm); border: 1.5px solid var(--border-strong); font-size: 15px; font-family: var(--sans); background: var(--surface); color: var(--text-1); outline: none; resize: vertical; min-height: 80px; transition: all 0.2s; }
+  .field__textarea:focus { border-color: var(--blue); box-shadow: 0 0 0 4px var(--blue-subtle); }
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+  /* Line items — clean borderless rows */
+  .lines { margin-bottom: 16px; }
+  .lines__head { display: grid; grid-template-columns: 1fr 70px 120px 100px 32px; gap: 8px; padding: 0 0 8px; }
+  .lines__head span { font-size: 11px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; color: var(--text-3); }
+  .line { display: grid; grid-template-columns: 1fr 70px 120px 100px 32px; gap: 8px; align-items: center; margin-bottom: 8px; }
+  .line__input { padding: 10px 14px; border-radius: var(--r-xs); border: 1.5px solid var(--border-strong); font-size: 14px; font-family: var(--sans); background: var(--surface); outline: none; transition: border-color 0.2s; }
+  .line__input:focus { border-color: var(--blue); }
+  .line__input--mono { font-family: var(--mono); text-align: right; font-size: 13px; }
+  .line__input--qty { text-align: center; }
+  .line__total { font-family: var(--mono); font-size: 14px; font-weight: 500; text-align: right; letter-spacing: -0.3px; }
+  .line__rm { width: 32px; height: 32px; border-radius: 50%; border: none; background: transparent; color: var(--text-3); cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; transition: all 0.12s; }
+  .line__rm:hover { background: rgba(255,59,48,0.08); color: #D70015; }
+
+  .add-line { display: flex; align-items: center; justify-content: center; gap: 6px; padding: 12px; border-radius: var(--r-sm); border: 1.5px dashed var(--border-strong); font-size: 14px; font-weight: 500; color: var(--blue); cursor: pointer; transition: all 0.15s; background: transparent; width: 100%; font-family: var(--sans); }
+  .add-line:hover { background: var(--blue-subtle); border-color: var(--blue); }
+
+  /* Totals */
+  .totals { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; margin-top: 24px; }
+  .total-row { display: flex; gap: 32px; align-items: center; }
+  .total-label { font-size: 14px; color: var(--text-2); width: 80px; text-align: right; }
+  .total-value { font-family: var(--mono); font-weight: 500; width: 120px; text-align: right; }
+  .total-row--grand { border-top: 2px solid var(--text-1); padding-top: 12px; margin-top: 6px; }
+  .total-row--grand .total-label { font-weight: 600; color: var(--text-1); }
+  .total-row--grand .total-value { font-size: 24px; font-weight: 600; letter-spacing: -0.8px; }
+
+  .btn-row { display: flex; gap: 12px; margin-top: 36px; }
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; font-family: var(--sans); font-size: 15px; font-weight: 500; border: none; cursor: pointer; border-radius: var(--r-full); padding: 14px 32px; transition: all 0.2s; }
+  .btn:active { transform: scale(0.97); }
+  .btn--dark { background: var(--text-1); color: white; flex: 1; }
+  .btn--dark:hover { background: #333; }
+  .btn--outline { background: transparent; color: var(--text-1); box-shadow: inset 0 0 0 1.5px var(--border-strong); }
+
+  /* Preview — looks like a real invoice */
+  .preview { position: sticky; top: 40px; }
+  .preview__label { font-size: 12px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: var(--text-3); margin-bottom: 12px; }
+  .preview__card { background: var(--surface); border-radius: var(--r-lg); box-shadow: var(--shadow-lg); padding: 36px; }
+
+  .inv__head { display: flex; justify-content: space-between; margin-bottom: 32px; }
+  .inv__brand { font-size: 20px; font-weight: 700; letter-spacing: -0.5px; }
+  .inv__brand-sub { font-size: 11px; color: var(--text-2); margin-top: 4px; line-height: 1.6; }
+  .inv__num { text-align: right; }
+  .inv__num-label { font-size: 10px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: var(--text-3); }
+  .inv__num-value { font-family: var(--mono); font-size: 18px; font-weight: 600; margin-top: 2px; }
+  .inv__badge { display: inline-block; padding: 3px 10px; border-radius: var(--r-full); font-size: 10px; font-weight: 600; background: rgba(0,0,0,0.05); color: var(--text-2); margin-top: 6px; }
+
+  .inv__parties { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px; }
+  .inv__party-label { font-size: 10px; font-weight: 600; letter-spacing: 0.8px; text-transform: uppercase; color: var(--text-3); margin-bottom: 4px; }
+  .inv__party-name { font-size: 14px; font-weight: 500; }
+  .inv__party-detail { font-size: 12px; color: var(--text-2); line-height: 1.6; }
+
+  .inv__dates { display: flex; gap: 28px; margin-bottom: 24px; padding: 12px 16px; background: var(--bg); border-radius: var(--r-xs); }
+  .inv__date-label { font-size: 10px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; color: var(--text-3); }
+  .inv__date-value { font-size: 13px; font-weight: 500; margin-top: 2px; }
+
+  .inv__tbl { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+  .inv__tbl th { text-align: left; padding: 8px 0; font-size: 10px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; color: var(--text-3); border-bottom: 1px solid var(--border); }
+  .inv__tbl td { padding: 10px 0; font-size: 12px; border-bottom: 1px solid var(--border); }
+  .inv__tbl .right { text-align: right; }
+  .inv__tbl .mono { font-family: var(--mono); font-weight: 500; font-size: 12px; }
+
+  .inv__totals { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+  .inv__total-row { display: flex; gap: 20px; font-size: 12px; }
+  .inv__total-label { color: var(--text-2); width: 60px; text-align: right; }
+  .inv__total-value { font-family: var(--mono); font-weight: 500; width: 90px; text-align: right; }
+  .inv__total-row--grand { border-top: 2px solid var(--text-1); padding-top: 8px; margin-top: 4px; }
+  .inv__total-row--grand .inv__total-label { font-weight: 600; color: var(--text-1); }
+  .inv__total-row--grand .inv__total-value { font-size: 16px; font-weight: 600; }
+
+  .inv__notes { margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--border); }
+  .inv__notes-label { font-size: 10px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; color: var(--text-3); margin-bottom: 4px; }
+  .inv__notes-text { font-size: 11px; color: var(--text-2); line-height: 1.6; }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="sb-top">
+      <div class="sb-brand"><div class="sb-logo">E</div><div class="sb-name">Enviar</div></div>
+      <div class="sb-switcher"><div class="sb-avatar">AH</div><span style="flex:1">Addis Hub Trading</span><span style="color:var(--text-3);font-size:10px">&#9662;</span></div>
+    </div>
+    <nav class="sb-nav">
+      <a class="sb-item"><span class="sb-icon">&#9632;</span> Dashboard</a>
+      <a class="sb-item"><span class="sb-icon">&#9671;</span> Wallets</a>
+      <a class="sb-item"><span class="sb-icon">&#8599;</span> Transfers <span class="sb-badge">3</span></a>
+      <a class="sb-item"><span class="sb-icon">&#9776;</span> Payments</a>
+      <a class="sb-item sb-item--active"><span class="sb-icon">&#9744;</span> Invoices</a>
+      <a class="sb-item"><span class="sb-icon">&#9645;</span> Cards</a>
+      <div class="sb-label">Trade</div>
+      <a class="sb-item"><span class="sb-icon">&#8615;</span> Imports</a>
+      <a class="sb-item"><span class="sb-icon">&#8613;</span> Exports</a>
+      <div class="sb-label">Finance</div>
+      <a class="sb-item"><span class="sb-icon">&#9733;</span> Loans</a>
+      <a class="sb-item"><span class="sb-icon">&#9879;</span> Tax</a>
+      <a class="sb-item"><span class="sb-icon">&#128214;</span> Accounting</a>
+      <div class="sb-label">Admin</div>
+      <a class="sb-item"><span class="sb-icon">&#128101;</span> Team</a>
+      <a class="sb-item"><span class="sb-icon">&#9881;</span> Settings</a>
+    </nav>
+  </aside>
+
+  <main class="main">
+    <div class="content">
+      <a class="back">&#8592; Invoices</a>
+
+      <div class="split">
+        <!-- Form -->
+        <div class="fcard">
+          <div class="fcard__title">New Invoice</div>
+
+          <div class="section-label" style="margin-top:0">Customer</div>
+          <div class="field-row">
+            <div class="field"><label class="field__label">Name</label><input class="field__input" value="Habesha Trading PLC"></div>
+            <div class="field"><label class="field__label">Email</label><input class="field__input" value="accounts@habeshatrading.com"></div>
+          </div>
+          <div class="field-row">
+            <div class="field"><label class="field__label">Phone</label><input class="field__input" value="+251 91 234 5678"></div>
+            <div class="field"><label class="field__label">Currency</label><select class="field__select"><option>ETB</option><option>USD</option><option>EUR</option></select></div>
+          </div>
+
+          <div class="section-label">Line Items</div>
+          <div class="lines">
+            <div class="lines__head">
+              <span>Description</span>
+              <span style="text-align:center">Qty</span>
+              <span style="text-align:right">Price</span>
+              <span style="text-align:right">Total</span>
+              <span></span>
+            </div>
+            <div class="line">
+              <input class="line__input" value="Industrial safety equipment — Lot A">
+              <input class="line__input line__input--qty" value="50">
+              <input class="line__input line__input--mono" value="2,400">
+              <div class="line__total">Br 120,000</div>
+              <button class="line__rm">&#10005;</button>
+            </div>
+            <div class="line">
+              <input class="line__input" value="Shipping (Djibouti–Addis)">
+              <input class="line__input line__input--qty" value="1">
+              <input class="line__input line__input--mono" value="35,000">
+              <div class="line__total">Br 35,000</div>
+              <button class="line__rm">&#10005;</button>
+            </div>
+            <div class="line">
+              <input class="line__input" value="Customs clearance">
+              <input class="line__input line__input--qty" value="1">
+              <input class="line__input line__input--mono" value="25,000">
+              <div class="line__total">Br 25,000</div>
+              <button class="line__rm">&#10005;</button>
+            </div>
+          </div>
+          <button class="add-line">&#43; Add Line</button>
+
+          <div class="totals">
+            <div class="total-row"><span class="total-label">Subtotal</span><span class="total-value">Br 180,000</span></div>
+            <div class="total-row"><span class="total-label">Tax</span><span class="total-value">Br 0</span></div>
+            <div class="total-row total-row--grand"><span class="total-label">Total</span><span class="total-value">Br 180,000</span></div>
+          </div>
+
+          <div class="section-label">Details</div>
+          <div class="field-row">
+            <div class="field"><label class="field__label">Issue Date</label><input class="field__input" type="date" value="2026-03-22"></div>
+            <div class="field"><label class="field__label">Due Date</label><input class="field__input" type="date" value="2026-04-21"></div>
+          </div>
+          <div class="field">
+            <label class="field__label">Notes</label>
+            <textarea class="field__textarea">Payment due within 30 days. Bank transfer to Addis Hub Trading — CBE Account 1000123456789.</textarea>
+          </div>
+
+          <div class="btn-row">
+            <button class="btn btn--outline">Save Draft</button>
+            <button class="btn btn--dark">Send Invoice</button>
+          </div>
+        </div>
+
+        <!-- Preview -->
+        <div class="preview">
+          <div class="preview__label">Live Preview</div>
+          <div class="preview__card">
+            <div class="inv__head">
+              <div>
+                <div class="inv__brand">Addis Hub Trading</div>
+                <div class="inv__brand-sub">PLC &middot; TIN 0012345678<br>Addis Ababa, Ethiopia</div>
+              </div>
+              <div class="inv__num">
+                <div class="inv__num-label">Invoice</div>
+                <div class="inv__num-value">INV-0048</div>
+                <div class="inv__badge">Draft</div>
+              </div>
+            </div>
+
+            <div class="inv__parties">
+              <div><div class="inv__party-label">Bill To</div><div class="inv__party-name">Habesha Trading PLC</div><div class="inv__party-detail">accounts@habeshatrading.com</div></div>
+              <div><div class="inv__party-label">From</div><div class="inv__party-name">Addis Hub Trading PLC</div><div class="inv__party-detail">info@addishub.com</div></div>
+            </div>
+
+            <div class="inv__dates">
+              <div><div class="inv__date-label">Issued</div><div class="inv__date-value">Mar 22, 2026</div></div>
+              <div><div class="inv__date-label">Due</div><div class="inv__date-value">Apr 21, 2026</div></div>
+              <div><div class="inv__date-label">Currency</div><div class="inv__date-value">ETB</div></div>
+            </div>
+
+            <table class="inv__tbl">
+              <thead><tr><th>Description</th><th class="right">Qty</th><th class="right">Price</th><th class="right">Total</th></tr></thead>
+              <tbody>
+                <tr><td>Industrial safety equipment</td><td class="right mono">50</td><td class="right mono">Br 2,400</td><td class="right mono">Br 120,000</td></tr>
+                <tr><td>Shipping (Djibouti–Addis)</td><td class="right mono">1</td><td class="right mono">Br 35,000</td><td class="right mono">Br 35,000</td></tr>
+                <tr><td>Customs clearance</td><td class="right mono">1</td><td class="right mono">Br 25,000</td><td class="right mono">Br 25,000</td></tr>
+              </tbody>
+            </table>
+
+            <div class="inv__totals">
+              <div class="inv__total-row"><span class="inv__total-label">Subtotal</span><span class="inv__total-value">Br 180,000</span></div>
+              <div class="inv__total-row"><span class="inv__total-label">Tax</span><span class="inv__total-value">Br 0</span></div>
+              <div class="inv__total-row inv__total-row--grand"><span class="inv__total-label">Total</span><span class="inv__total-value">Br 180,000</span></div>
+            </div>
+
+            <div class="inv__notes">
+              <div class="inv__notes-label">Notes</div>
+              <div class="inv__notes-text">Payment due within 30 days. Bank transfer to Addis Hub Trading — CBE Account 1000123456789.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+</body>
+</html>

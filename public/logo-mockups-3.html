@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Enviar — Designer Lens</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800&family=Inter:wght@300;400;500;600;700;800&family=SF+Pro+Display:wght@300;400;500;600;700&family=Manrope:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: #F5EDE3;
+    color: #2A1F14;
+    padding: 40px 20px 100px;
+    min-height: 100vh;
+  }
+
+  .header { text-align: center; margin-bottom: 56px; }
+  .header h1 { font-size: 28px; font-weight: 700; letter-spacing: -0.5px; }
+  .header p { margin-top: 8px; font-size: 14px; color: #8A7A6A; max-width: 540px; margin-left: auto; margin-right: auto; line-height: 1.5; }
+  .header .vol { display: inline-block; margin-top: 12px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: #9A7830; background: rgba(180,130,50,0.1); padding: 4px 12px; border-radius: 20px; }
+
+  /* Designer section */
+  .designer-section {
+    max-width: 1200px; margin: 0 auto 60px;
+  }
+  .designer-header {
+    display: flex; align-items: baseline; gap: 16px;
+    margin-bottom: 8px; padding-bottom: 12px;
+    border-bottom: 2px solid rgba(154,120,48,0.2);
+  }
+  .designer-header h2 {
+    font-size: 20px; font-weight: 800; letter-spacing: -0.3px;
+    color: #2A1F14;
+  }
+  .designer-header .subtitle {
+    font-size: 11px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 1.5px; color: #9A7830;
+  }
+  .philosophy {
+    font-size: 12px; color: #8A7A6A; line-height: 1.6;
+    max-width: 680px; margin: 12px 0 24px;
+    padding-left: 16px; border-left: 3px solid rgba(154,120,48,0.2);
+    font-style: italic;
+  }
+
+  .grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+    gap: 24px;
+  }
+  .grid.triple { grid-template-columns: repeat(3, 1fr); }
+
+  .card {
+    background: #FDFAF6; border-radius: 24px;
+    border: 1px solid rgba(90,70,50,0.07);
+    box-shadow: 0 1px 3px rgba(90,70,50,0.05), 0 8px 28px rgba(90,70,50,0.07);
+    overflow: hidden; transition: transform 0.2s;
+  }
+  .card:hover { transform: translateY(-3px); }
+
+  .display {
+    display: flex; align-items: center; justify-content: center;
+    padding: 44px 32px; min-height: 180px;
+  }
+  .display.dark { background: #1A150F; }
+  .display.night { background: #0D0B08; }
+  .display.rich { background: linear-gradient(135deg, #2A1F14, #1A150F); }
+  .display.warm { background: linear-gradient(135deg, #FAF5EE, #F0E8DA); }
+  .display.cream { background: #FAF5EE; }
+  .display.slate { background: #2C2720; }
+  .display.pure-white { background: #FFFFFF; }
+  .display.apple-gray { background: #F5F5F7; }
+  .display.wise-green { background: #9FE870; }
+  .display.wise-navy { background: #163300; }
+  .display.braun-white { background: #FAFAF8; border-bottom: 1px solid #E8E4DE; }
+  .display.braun-black { background: #1C1C1C; }
+  .display.dionisio-blend { background: linear-gradient(145deg, #F5EDE3 0%, #D4C4A8 40%, #8A7A6A 100%); }
+  .display.dionisio-layer { background: linear-gradient(170deg, #2A1F14 0%, #4A3F34 50%, #C99A20 100%); }
+  .display.dionisio-organic { background: linear-gradient(135deg, #E8DED0 0%, #C4B8A4 50%, #9A8A6A 100%); }
+
+  .info {
+    padding: 18px 24px 20px; border-top: 1px solid rgba(90,70,50,0.05);
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .info h3 { font-size: 14px; font-weight: 700; }
+  .info p { font-size: 11px; color: #8A7A6A; margin-top: 2px; }
+  .tag {
+    font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px;
+    padding: 3px 8px; border-radius: 5px;
+    background: rgba(180,130,50,0.08); color: #9A7830; white-space: nowrap;
+  }
+
+  /* Phone mockups */
+  .phones-label {
+    max-width: 1200px; margin: 0 auto 18px;
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 2px; color: #9A7830;
+    padding-bottom: 8px; border-bottom: 1px solid rgba(154,120,48,0.15);
+  }
+  .phones {
+    display: flex; gap: 32px; justify-content: center; flex-wrap: wrap;
+    max-width: 1200px; margin: 0 auto 60px;
+  }
+  .phone {
+    width: 260px; background: #1A150F; border-radius: 36px;
+    padding: 16px 12px; box-shadow: 0 8px 40px rgba(0,0,0,0.18);
+  }
+  .phone.light-frame { background: #E8E4DE; }
+  .phone.green-frame { background: #163300; }
+  .screen { background: #F5EDE3; border-radius: 26px; overflow: hidden; }
+  .screen.white { background: #FFFFFF; }
+  .screen.dark-screen { background: #0D0B08; }
+  .screen.wise-screen { background: #9FE870; }
+  .sbar { display: flex; justify-content: space-between; padding: 10px 16px 6px; font-size: 10px; font-weight: 600; color: #2A1F14; }
+  .sbar.light { color: #F5EDE3; }
+  .sbar.dark-text { color: #163300; }
+  .splash { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 64px 20px 80px; gap: 14px; }
+  .splash .sub { font-size: 12px; color: #8A7A6A; font-weight: 500; }
+  .pcap { text-align: center; margin-top: 12px; font-size: 11px; color: #8A7A6A; font-weight: 500; }
+
+  @media (max-width: 1100px) {
+    .grid.triple { grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Enviar — Through Designer Eyes</h1>
+  <p>What if Enviar's logo was designed by iconic designers and brands? Each section applies a distinct design philosophy to the same identity.</p>
+  <span class="vol">Volume 3 — Designer Lens</span>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- DIETER RAMS -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div class="designer-section">
+  <div class="designer-header">
+    <h2>Dieter Rams</h2>
+    <span class="subtitle">Braun · Vitsœ · 10 Principles</span>
+  </div>
+  <p class="philosophy">"Good design is as little design as possible. Less, but better — because it concentrates on the essential aspects, and the products are not burdened with non-essentials."</p>
+
+  <div class="grid triple">
+
+    <!-- Rams 1: Pure function — stripped to bare geometric essence -->
+    <div class="card">
+      <div class="display braun-white">
+        <svg width="300" height="64" viewBox="0 0 300 64" fill="none">
+          <!-- Perfect square, single radius, no gradient — just flat -->
+          <rect width="52" height="52" x="2" y="6" rx="4" fill="#2A2420"/>
+          <!-- One line. One chevron. Nothing else. -->
+          <path d="M27 44V24" stroke="#F5F0E8" stroke-width="2.4" stroke-linecap="round"/>
+          <path d="M19 32L27 22L35 32" stroke="#F5F0E8" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+          <!-- Wordmark: Helvetica-like, precise spacing -->
+          <text x="70" y="42" font-family="'Inter', sans-serif" font-size="30" font-weight="500" fill="#2A2420" letter-spacing="1.5">enviar</text>
+        </svg>
+      </div>
+      <div class="info">
+        <div><h3>Wenig</h3><p>Square. Arrow. Nothing more.</p></div>
+        <span class="tag">Essential</span>
+      </div>
+    </div>
+
+    <!-- Rams 2: Grid-aligned, almost technical drawing feel -->
+    <div class="card">
+      <div class="display braun-black">
+        <svg width="300" height="64" viewBox="0 0 300 64" fill="none">
+          <!-- Thin ruled circle — like a Braun dial -->
+          <circle cx="28" cy="32" r="24" fill="none" stroke="#E8E0D4" stroke-width="1"/>
+          <!-- Minimal arrow centered, precise -->
+          <path d="M28 42V22" stroke="#E8E0D4" stroke-width="1.8" stroke-linecap="round"/>
+          <path d="M22 28L28 20L34 28" stroke="#E8E0D4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          <!-- Small tick marks at compass points like a clock -->
+          <line x1="28" y1="8" x2="28" y2="11" stroke="#E8E0D4" stroke-width="0.8" opacity="0.4"/>
+          <line x1="28" y1="53" x2="28" y2="56" stroke="#E8E0D4" stroke-width="0.8" opacity="0.4"/>
+          <line x1="4" y1="32" x2="7" y2="32" stroke="#E8E0D4" stroke-width="0.8" opacity="0.4"/>
+          <line x1="49" y1="32" x2="52" y2="32" stroke="#E8E0D4" stroke-width="0.8" opacity="0.4"/>
+          <text x="68" y="40" font-family="'Inter', sans-serif" font-size="26" font-weight="400" fill="#E8E0D4" letter-spacing="3">enviar</text>
+        </svg>
+      </div>
+      <div class="info">
+        <div><h3>Instrument</h3><p>Precision dial — like a Braun clock face</p></div>
+        <span class="tag">Systematic</span>
+      </div>
+    </div>
+
+    <!-- Rams 3: Typography-first, function over decoration -->
+    <div class="card">
+      <div class="display braun-white">
+        <svg width="300" height="56" viewBox="0 0 300 56" fill="none">
+          <!-- Just the word, a dot, and a line. Braun catalog style. -->
+          <text x="0" y="38" font-family="'Inter', sans-serif" font-size="32" font-weight="300" fill="#2A2420" letter-spacing="4">enviar</text>
+          <!-- Functional underline — like a Braun product label -->
+          <line x1="0" y1="48" x2="178" y2="48" stroke="#2A2420" stroke-width="0.8"/>
+          <!-- Small dot accent — the only "decoration" -->
+          <circle cx="190" cy="48" r="2.5" fill="#C99A20"/>
+        </svg>
+      </div>
+      <div class="info">
+        <div><h3>Label</h3><p>Product typography — catalog precision</p></div>
+        <span class="tag">Honest</span>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- DIONISIO GONZÁLEZ -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div class="designer-section">
+  <div class="designer-header">
+    <h2>Dionisio González</h2>
+    <span class="subtitle">Architecture · Digital Collage · Surreal Structures</span>
+  </div>
+  <p class="philosophy">"The merging of incompatible realities — organic and geometric, decay and precision, the found and the fabricated — creates something that belongs to neither world but speaks to both."</p>
+
+  <div class="grid triple">
+
+    <!-- Dionisio 1: Layered planes, architectural transparency -->
+    <div class="card">
+      <div class="display dionisio-blend">
+        <svg width="300" height="70" viewBox="0 0 300 70" fill="none">
+          <!-- Overlapping transparent planes — architectural collage -->
+          <rect width="44" height="44" x="6" y="13" rx="2" fill="#2A1F14" opacity="0.7"/>
+          <rect width="44" height="44" x="12" y="7" rx="2" fill="#C99A20" opacity="0.5"/>
+          <rect width="44" height="44" x="0" y="19" rx="2" fill="#F5EDE3" opacity="0.3"/>
+          <!-- Arrow emerging from the layers -->
+          <path d="M28 50V26" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+          <path d="M20 34L28 24L36 34" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <text x="72" y="44" font-family="'Space Grotesk', sans-serif" font-size="32" font-weight="500" fill="#2A1F14" letter-spacing="-0.5">enviar</text>
+        </svg>
+      </div>
+      <div class="info">
+        <div><h3>Strata</h3><p>Overlapping planes — architecture of transfer</p></div>
+        <span class="tag">Collage</span>
+      </div>
+    </div>
+
+    <!-- Dionisio 2: Fragmented icon, deconstructed form -->
+    <div class="card">
+      <div class="display dionisio-layer">
+        <svg width="300" height="68" viewBox="0 0 300 68" fill="none">
+          <!-- Deconstructed square — sliced and offset -->
+          <rect width="24" height="52" x="0" y="8" rx="3" fill="#C99A20" opacity="0.8"/>
+          <rect width="24" height="52" x="22" y="12" rx="3" fill="#D4A830" opacity="0.5"/>
+          <rect width="16" height="36" x="10" y="16" rx="2" fill="#F5EDE3" opacity="0.15"/>
+          <!-- Arrow sliced across fragments -->
+          <path d="M18 52V28" stroke="#F5EDE3" stroke-width="2.2" stroke-linecap="round"/>
+          <path d="M10 36L18 26L26 36" stroke="#F5EDE3" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+          <!-- Wordmark with mixed weights — collage typography -->
+          <text x="58" y="44" font-family="'Space Grotesk', sans-serif" font-size="30" font-weight="300" fill="#F5EDE3" letter-spacing="0.5">en</text>
+          <text x="100" y="44" font-family="'Space Grotesk', sans-serif" font-size="30" font-weight="700" fill="#D4A830" letter-spacing="0.5">viar</text>
+        </svg>
+      </div>
+      <div class="info">
+        <div><h3>Fragment</h3><p>Deconstructed — sliced across realities</p></div>
+        <span class="tag">Surreal</span>
+      </div>
+    </div>
+
+    <!-- Dionisio 3: Organic meets geometric, impossible structure -->
+    <div class="card">
+      <div class="display dionisio-organic">
+        <svg width="300" height="68" viewBox="0 0 300 68" fill="none">
+          <!-- Impossible architectural shape — Penrose-inspired -->
+          <path d="M28 8L48 52H8L28 8Z" fill="none" stroke="#2A1F14" stroke-width="1.8"/>
+          <!-- Inner inverted triangle creating impossible space -->
+          <path d="M28 44L38 24H18L28 44Z" fill="#2A1F14" opacity="0.12"/>
+          <!-- Organic curve cutting through the geometry -->
+          <path d="M6 34C14 20 24 40 34 26C40 18 48 30 52 28" stroke="#C99A20" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+          <!-- Dot where organic meets geometric -->
+          <circle cx="28" cy="32" r="3" fill="#C99A20"/>
+          <text x="66" y="44" font-family="'Space Grotesk', sans-serif" font-size="30" font-weight="500" fill="#2A1F14" letter-spacing="1">enviar</text>
+        </svg>
+      </div>
+      <div class="info">
+        <div><h3>Merge</h3><p>Organic curve through rigid geometry</p></div>
+        <span class="tag">Tension</span>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- APPLE -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div class="designer-section">
+  <div class="designer-header">
+    <h2>Apple</h2>
+    <span class="subtitle">Jony Ive · SF Pro · Human Interface</span>
+  </div>
+  <p class="philosophy">"Simplicity isn't just a visual style. It's not just minimalism or the absence of clutter. It involves digging through the depth of the complexity."</p>
+
+  <div class="grid triple">
+
+    <!-- Apple 1: SF Symbols style, perfect geometry, light -->
+    <div class="card">
+      <div class="display apple-gray">
+        <svg width="300" height="64" viewBox="0 0 300 64" fill="none">
+          <!-- Superellipse (squircle) — Apple's signature shape -->
+          <path d="M4 20C4 9 9 4 20 4H36C47 4 52 9 52 20V44C52 55 47 60 36 60H20C9 60 4 55 4 44V20Z" fill="#1D1D1F"/>
+          <!-- SF-Symbols-style arrow: thin, optically perfect -->
+          <path d="M28 44V22" stroke="white" stroke-width="2" stroke-linecap="round"/>
+          <path d="M20 30L28 20L36 30" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <!-- Wordmark: SF Pro-like, medium weight, tight tracking -->
+          <text x="66" y="41" font-family="'Inter', system-ui, -apple-system, sans-serif" font-size="32" font-weight="600" fill="#1D1D1F" letter-spacing="-0.8">enviar</text>
+        </svg>
+      </div>
+      <div class="info">
+        <div><h3>Squircle</h3><p>Apple squircle + SF-style glyph — pure Cupertino</p></div>
+        <span class="tag">iOS</span>
+      </div>
+    </div>
+
+    <!-- Apple 2: Monochrome silhouette, like Apple's own logo approach -->
+    <div class="card">
+      <div class="display pure-white">
+        <svg width="300" height="64" viewBox="0 0 300 64" fill="none">
+          <!-- Silhouette mark — the arrow IS the icon, no container -->
+          <!-- Thick, confident, perfectly balanced arrow silhouette -->
+          <path d="M28 56C28 56 28 30 28 28L12 44L8 40L28 16L48 40L44 44L28 28" fill="#1D1D1F"/>
+          <!-- Clean wordmark -->
+          <text x="64" y="42" font-family="'Inter', system-ui, sans-serif" font-size="34" font-weight="600" fill="#1D1D1F" letter-spacing="-1">enviar</text>
+        </svg>
+      </div>
+      <div class="info">
+        <div><h3>Silhouette</h3><p>Solid mark, no container — like the Apple logo itself</p></div>
+        <span class="tag">Iconic</span>
+      </div>
+    </div>
+
+    <!-- Apple 3: Gradient mesh, modern Apple marketing style -->
+    <div class="card">
+      <div class="display night">
+        <svg width="300" height="64" viewBox="0 0 300 64" fill="none">
+          <defs>
+            <!-- Apple-style vibrant gradient -->
+            <linearGradient id="apple-grad" x1="4" y1="60" x2="52" y2="4" gradientUnits="userSpaceOnUse">
+              <stop stop-color="#D4A830"/>
+              <stop offset="0.5" stop-color="#F0D060"/>
+              <stop offset="1" stop-color="#C99A20"/>
+            </linearGradient>
+          </defs>
+          <!-- Squircle with gradient — like an app icon -->
+          <path d="M4 20C4 9 9 4 20 4H36C47 4 52 9 52 20V44C52 55 47 60 36 60H20C9 60 4 55 4 44V20Z" fill="url(#apple-grad)"/>
+          <path d="M28 44V24" stroke="white" stroke-width="2.2" stroke-linecap="round"/>
+          <path d="M20 32L28 22L36 32" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+          <!-- White wordmark on dark — Apple keynote style -->
+          <text x="66" y="41" font-family="'Inter', system-ui, sans-serif" font-size="32" font-weight="600" fill="#F5F5F7" letter-spacing="-0.8">enviar</text>
+        </svg>
+      </div>
+      <div class="info">
+        <div><h3>Keynote</h3><p>Vibrant gradient squircle — Apple launch event energy</p></div>
+        <span class="tag">Premium</span>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- WISE -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div class="designer-section">
+  <div class="designer-header">
+    <h2>Wise</h2>
+    <span class="subtitle">Bold · Geometric · Unapologetically Simple</span>
+  </div>
+  <p class="philosophy">"Strip everything back. One shape, one color, maximum impact. The logo should work at 16px and on a billboard. If you need to explain it, redesign it."</p>
+
+  <div class="grid triple">
+
+    <!-- Wise 1: Flag-style bold geometric mark, green -->
+    <div class="card">
+      <div class="display wise-green">
+        <svg width="300" height="64" viewBox="0 0 300 64" fill="none">
+          <!-- Bold rounded square — Wise's container style -->
+          <rect width="52" height="52" x="2" y="6" rx="14" fill="#163300"/>
+          <!-- Thick bold arrow — Wise's chunky geometric style -->
+          <path d="M27 44V22" stroke="#9FE870" stroke-width="4" stroke-linecap="round"/>
+          <path d="M17 32L27 20L37 32" stroke="#9FE870" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+          <!-- Bold lowercase wordmark -->
+          <text x="68" y="43" font-family="'Inter', sans-serif" font-size="34" font-weight="800" fill="#163300" letter-spacing="-1.2">enviar</text>
+        </svg>
+      </div>
+      <div class="info">
+        <div><h3>Flag</h3><p>Bold flag icon — Wise's signature chunky geometry</p></div>
+        <span class="tag">Fintech</span>
+      </div>
+    </div>
+
+    <!-- Wise 2: Cutout/negative shape, like Wise's flag cutout -->
+    <div class="card">
+      <div class="display wise-navy">
+        <svg width="300" height="64" viewBox="0 0 300 64" fill="none">
+          <defs>
+            <mask id="wise-mask">
+              <rect width="52" height="52" x="2" y="6" rx="14" fill="white"/>
+              <!-- Cut out the arrow from the shape -->
+              <path d="M27 44V22" stroke="black" stroke-width="5" stroke-linecap="round"/>
+              <path d="M17 32L27 20L37 32" stroke="black" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+            </mask>
+          </defs>
+          <!-- Green block with arrow punched out -->
+          <rect width="52" height="52" x="2" y="6" rx="14" fill="#9FE870" mask="url(#wise-mask)"/>
+          <text x="68" y="43" font-family="'Inter', sans-serif" font-size="34" font-weight="800" fill="#9FE870" letter-spacing="-1.2">enviar</text>
+        </svg>
+      </div>
+      <div class="info">
+        <div><h3>Punch</h3><p>Arrow cut from solid — negative space power</p></div>
+        <span class="tag">Bold</span>
+      </div>
+    </div>
+
+    <!-- Wise 3: Abstract geometric arrow, Wise's motion-forward style -->
+    <div class="card">
+      <div class="display pure-white">
+        <svg width="300" height="64" viewBox="0 0 300 64" fill="none">
+          <!-- Single bold chevron — like Wise's flag but as an arrow -->
+          <polygon points="8,52 28,8 48,52 28,36" fill="#163300"/>
+          <!-- Black bold wordmark -->
+          <text x="62" y="43" font-family="'Inter', sans-serif" font-size="34" font-weight="800" fill="#163300" letter-spacing="-1.2">enviar</text>
+        </svg>
+      </div>
+      <div class="info">
+        <div><h3>Dart</h3><p>One solid shape — no outline, no fuss, all intent</p></div>
+        <span class="tag">Direct</span>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- SPLASH SCREEN COMPARISONS -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div class="phones-label">Side-by-Side Splash Screens — One from Each Designer</div>
+<div class="phones">
+
+  <!-- Dieter Rams: Instrument -->
+  <div>
+    <div class="phone light-frame">
+      <div class="screen white">
+        <div class="sbar"><span>9:41</span><span>...</span></div>
+        <div class="splash">
+          <svg width="72" height="72" viewBox="0 0 56 56" fill="none">
+            <circle cx="28" cy="28" r="24" fill="none" stroke="#2A2420" stroke-width="1"/>
+            <path d="M28 38V18" stroke="#2A2420" stroke-width="1.8" stroke-linecap="round"/>
+            <path d="M22 24L28 16L34 24" stroke="#2A2420" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            <line x1="28" y1="4" x2="28" y2="7" stroke="#2A2420" stroke-width="0.8" opacity="0.4"/>
+            <line x1="28" y1="49" x2="28" y2="52" stroke="#2A2420" stroke-width="0.8" opacity="0.4"/>
+            <line x1="4" y1="28" x2="7" y2="28" stroke="#2A2420" stroke-width="0.8" opacity="0.4"/>
+            <line x1="49" y1="28" x2="52" y2="28" stroke="#2A2420" stroke-width="0.8" opacity="0.4"/>
+          </svg>
+          <span style="font-size:22px;font-weight:400;color:#2A2420;letter-spacing:3px;font-family:'Inter',sans-serif;">enviar</span>
+          <span class="sub" style="color:#999;">Send money, effortlessly</span>
+        </div>
+      </div>
+    </div>
+    <div class="pcap">Dieter Rams — Instrument</div>
+  </div>
+
+  <!-- Dionisio González: Strata -->
+  <div>
+    <div class="phone">
+      <div class="screen">
+        <div class="sbar"><span>9:41</span><span>...</span></div>
+        <div class="splash" style="background: linear-gradient(170deg, #F5EDE3, #D4C4A8);">
+          <svg width="72" height="72" viewBox="0 0 60 60" fill="none">
+            <rect width="40" height="40" x="8" y="10" rx="2" fill="#2A1F14" opacity="0.6"/>
+            <rect width="40" height="40" x="14" y="4" rx="2" fill="#C99A20" opacity="0.4"/>
+            <rect width="36" height="36" x="2" y="16" rx="2" fill="#F5EDE3" opacity="0.25"/>
+            <path d="M28 48V26" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+            <path d="M20 34L28 24L36 34" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span style="font-size:22px;font-weight:500;color:#2A1F14;letter-spacing:1px;font-family:'Space Grotesk',sans-serif;">enviar</span>
+          <span class="sub">Send money, effortlessly</span>
+        </div>
+      </div>
+    </div>
+    <div class="pcap">Dionisio González — Strata</div>
+  </div>
+
+  <!-- Apple: Squircle -->
+  <div>
+    <div class="phone">
+      <div class="screen white">
+        <div class="sbar"><span>9:41</span><span>...</span></div>
+        <div class="splash">
+          <svg width="72" height="72" viewBox="0 0 56 56" fill="none">
+            <path d="M4 16C4 5 9 0 20 0H36C47 0 52 5 52 16V40C52 51 47 56 36 56H20C9 56 4 51 4 40V16Z" fill="#1D1D1F"/>
+            <path d="M28 40V20" stroke="white" stroke-width="2" stroke-linecap="round"/>
+            <path d="M20 28L28 18L36 28" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span style="font-size:22px;font-weight:600;color:#1D1D1F;letter-spacing:-0.8px;font-family:'Inter',system-ui,sans-serif;">enviar</span>
+          <span class="sub" style="color:#86868B;">Send money, effortlessly</span>
+        </div>
+      </div>
+    </div>
+    <div class="pcap">Apple — Squircle</div>
+  </div>
+
+  <!-- Wise: Flag -->
+  <div>
+    <div class="phone green-frame">
+      <div class="screen wise-screen">
+        <div class="sbar dark-text"><span>9:41</span><span>...</span></div>
+        <div class="splash">
+          <svg width="72" height="72" viewBox="0 0 56 56" fill="none">
+            <rect width="52" height="52" x="2" y="2" rx="14" fill="#163300"/>
+            <path d="M28 40V20" stroke="#9FE870" stroke-width="4" stroke-linecap="round"/>
+            <path d="M18 30L28 18L38 30" stroke="#9FE870" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span style="font-size:22px;font-weight:800;color:#163300;letter-spacing:-1.2px;font-family:'Inter',sans-serif;">enviar</span>
+          <span class="sub" style="color:#163300;opacity:0.6;">Send money, effortlessly</span>
+        </div>
+      </div>
+    </div>
+    <div class="pcap">Wise — Flag</div>
+  </div>
+
+</div>
+
+</body>
+</html>

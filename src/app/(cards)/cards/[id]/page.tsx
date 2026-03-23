@@ -1,28 +1,17 @@
 "use client";
 
 import { use, useState } from "react";
-import { useRouter } from "next/navigation";
 import {
-  ArrowLeft,
   Snowflake,
   Play,
   Globe,
   Wifi,
   Banknote,
   ShoppingCart,
-  ChevronRight,
   Loader2,
+  Trash2,
 } from "lucide-react";
-import { motion } from "framer-motion";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-} from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CardVisual } from "@/components/cards/CardVisual";
 import {
@@ -30,9 +19,12 @@ import {
   useUpdateCardStatus,
   useUpdateCardToggles,
   useUpdateCardLimits,
+  useDeleteCard,
 } from "@/hooks/use-cards";
-import { useTelegram } from "@/providers/TelegramProvider";
+
 import { Input } from "@/components/ui/input";
+import { formatMoney } from "@/lib/format";
+import { toast } from "sonner";
 
 export default function CardDetailPage({
   params,
@@ -40,30 +32,27 @@ export default function CardDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
-  const router = useRouter();
-  const { haptic } = useTelegram();
+
   const { data: card, isLoading } = useCard(id);
   const updateStatus = useUpdateCardStatus(id);
   const updateToggles = useUpdateCardToggles(id);
   const updateLimits = useUpdateCardLimits(id);
+  const deleteCard = useDeleteCard(id);
 
   const [limitsOpen, setLimitsOpen] = useState(false);
+  const [securityOpen, setSecurityOpen] = useState(false);
   const [perTxn, setPerTxn] = useState("");
   const [daily, setDaily] = useState("");
   const [monthly, setMonthly] = useState("");
 
   if (isLoading) {
     return (
-      <div className="space-y-6">
-        <div className="flex items-center gap-3">
-          <Skeleton className="h-10 w-10 rounded-full" />
-          <Skeleton className="h-6 w-32" />
-        </div>
-        <Skeleton className="h-52 w-full rounded-2xl" />
-        <div className="space-y-3">
-          <Skeleton className="h-14 w-full rounded-xl" />
-          <Skeleton className="h-14 w-full rounded-xl" />
-          <Skeleton className="h-14 w-full rounded-xl" />
+      <div className="space-y-12">
+        <Skeleton className="aspect-[1.586/1] w-full max-w-[320px] rounded-sm" />
+        <div className="h-px bg-border" />
+        <div className="grid gap-12 md:grid-cols-2">
+          <Skeleton className="h-48" />
+          <Skeleton className="h-48" />
         </div>
       </div>
     );
@@ -71,58 +60,69 @@ export default function CardDetailPage({
 
   if (!card) {
     return (
-      <div className="flex flex-col items-center gap-4 py-16 text-center">
-        <p className="text-muted-foreground">Card not found</p>
-        <Button variant="outline" onClick={() => router.push("/cards")}>
-          Back to Cards
-        </Button>
+      <div className="py-24 text-center">
+        <p className="text-sm text-foreground/90">Card not found</p>
+        <Link
+          href="/cards"
+          className="mt-4 inline-flex items-center gap-2 rounded-xl border border-primary bg-primary/10 px-4 py-2 text-sm font-medium text-primary hover:bg-primary/20 transition-colors"
+        >
+          Go to cards
+        </Link>
       </div>
     );
   }
 
   const isFrozen = card.status === "frozen";
   const isActive = card.status === "active";
+  const canDelete = card.type === "virtual" || card.type === "ephemeral";
 
   async function handleFreeze() {
-    haptic("medium");
     await updateStatus.mutateAsync({
       status: isFrozen ? "active" : "frozen",
     });
-    haptic("heavy");
+    setSecurityOpen(false);
+  }
+
+  function handleCopyNumber() {
+    if (!card) return;
+    const text = `···· ···· ···· ${card.lastFour}`;
+    navigator.clipboard.writeText(text);
+    toast.success("Copied");
   }
 
   async function handleToggle(
-    field: "allowOnline" | "allowContactless" | "allowAtm" | "allowInternational",
+    field:
+      | "allowOnline"
+      | "allowContactless"
+      | "allowAtm"
+      | "allowInternational",
   ) {
     if (!card) return;
-    haptic("light");
     await updateToggles.mutateAsync({ [field]: !card[field] });
   }
 
-  function openLimitsSheet() {
+  function toggleLimitsEditor() {
     if (!card) return;
     setPerTxn(String(card.perTxnLimitCents / 100));
     setDaily(String(card.dailyLimitCents / 100));
     setMonthly(String(card.monthlyLimitCents / 100));
-    setLimitsOpen(true);
+    setLimitsOpen((open) => !open);
   }
 
   async function handleSaveLimits() {
-    haptic("medium");
     await updateLimits.mutateAsync({
       perTxnLimitCents: Math.round(parseFloat(perTxn || "0") * 100),
       dailyLimitCents: Math.round(parseFloat(daily || "0") * 100),
       monthlyLimitCents: Math.round(parseFloat(monthly || "0") * 100),
     });
     setLimitsOpen(false);
-    haptic("heavy");
   }
 
   const toggles = [
     {
       key: "allowOnline" as const,
       icon: ShoppingCart,
-      label: "Online payments",
+      label: "Online",
       enabled: card.allowOnline,
     },
     {
@@ -134,7 +134,7 @@ export default function CardDetailPage({
     {
       key: "allowAtm" as const,
       icon: Banknote,
-      label: "ATM withdrawals",
+      label: "ATM",
       enabled: card.allowAtm,
     },
     {
@@ -146,142 +146,221 @@ export default function CardDetailPage({
   ];
 
   return (
-    <div className="flex flex-col gap-6">
-      {/* Header */}
-      <div className="flex items-center gap-3">
-        <Link
-          href="/cards"
-          className="flex h-10 w-10 items-center justify-center rounded-full transition-colors active:bg-muted"
-        >
-          <ArrowLeft className="h-5 w-5" />
-        </Link>
-        <h1 className="text-xl font-semibold">Card Details</h1>
+    <div className="space-y-12">
+      <div className="max-w-[320px]">
+        <CardVisual card={card} />
       </div>
 
-      {/* Card visual */}
-      <CardVisual card={card} />
-
-      {/* Freeze / Unfreeze */}
-      {(isActive || isFrozen) && (
-        <Button
-          variant={isFrozen ? "default" : "outline"}
-          size="lg"
-          onClick={handleFreeze}
-          disabled={updateStatus.isPending}
-          className="h-14 text-base font-semibold"
+      <div className="flex flex-wrap items-center gap-2 border-t border-b border-border bg-muted/50 py-4">
+        <button
+          type="button"
+          onClick={handleCopyNumber}
+          className="rounded-xl border border-primary bg-primary/10 px-3 py-1.5 text-xs font-medium uppercase tracking-widest text-primary hover:bg-primary/20 transition-colors"
         >
-          {updateStatus.isPending ? (
-            <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-          ) : isFrozen ? (
-            <Play className="mr-2 h-5 w-5" />
-          ) : (
-            <Snowflake className="mr-2 h-5 w-5" />
-          )}
-          {isFrozen ? "Unfreeze Card" : "Freeze Card"}
-        </Button>
+          Copy number
+        </button>
+        <Link
+          href="/transactions?filter=cards"
+          className="rounded-xl border border-primary bg-primary/10 px-3 py-1.5 text-xs font-medium uppercase tracking-widest text-primary hover:bg-primary/20 transition-colors"
+        >
+          Transactions
+        </Link>
+        {(isActive || isFrozen) && (
+          <button
+            type="button"
+            onClick={handleFreeze}
+            disabled={updateStatus.isPending}
+            className="flex items-center gap-2 rounded-xl border border-primary bg-primary/10 px-3 py-1.5 text-xs font-medium uppercase tracking-widest text-primary hover:bg-primary/20 disabled:opacity-50 transition-colors"
+          >
+            {updateStatus.isPending ? (
+              <Loader2 className="h-3 w-3 animate-spin" />
+            ) : isFrozen ? (
+              <Play className="h-3 w-3" />
+            ) : (
+              <Snowflake className="h-3 w-3" />
+            )}
+            {isFrozen ? "Unfreeze" : "Freeze"}
+          </button>
+        )}
+        <button
+          type="button"
+          onClick={() => setSecurityOpen((o) => !o)}
+          className="rounded-xl border border-primary bg-primary/10 px-3 py-1.5 text-xs font-medium uppercase tracking-widest text-primary hover:bg-primary/20 transition-colors"
+        >
+          Lost or stolen
+        </button>
+        {canDelete && (
+          <button
+            type="button"
+            onClick={() => {
+              if (
+                typeof window !== "undefined" &&
+                window.confirm("Delete this card? This cannot be undone.")
+              ) {
+                deleteCard.mutate(undefined, {
+                  onSuccess: () => {
+                    window.location.href = "/cards";
+                  },
+                });
+              }
+            }}
+            disabled={deleteCard.isPending}
+            className="flex items-center gap-2 rounded-xl border border-destructive/30 bg-destructive/10 px-3 py-1.5 text-xs font-medium uppercase tracking-widest text-destructive hover:bg-destructive/20 disabled:opacity-50 transition-colors"
+          >
+            {deleteCard.isPending ? (
+              <Loader2 className="h-3 w-3 animate-spin" />
+            ) : (
+              <Trash2 className="h-3 w-3" />
+            )}
+            Delete card
+          </button>
+        )}
+      </div>
+
+      {securityOpen && (
+        <div className="space-y-4 pb-8">
+          <p className="text-sm text-foreground/90">
+            Freeze the card to block new payments. Contact support if needed.
+          </p>
+          <div className="flex gap-6">
+            {(isActive || isFrozen) && (
+              <button
+                type="button"
+                onClick={handleFreeze}
+                disabled={updateStatus.isPending || isFrozen}
+                className="text-xs font-medium uppercase tracking-widest text-foreground hover:underline disabled:opacity-50"
+              >
+                {isFrozen ? "Frozen" : "Freeze card"}
+              </button>
+            )}
+            <Link
+              href="mailto:support@enviar.et"
+              className="text-xs font-medium uppercase tracking-widest text-foreground hover:underline"
+            >
+              Contact support
+            </Link>
+          </div>
+        </div>
       )}
 
-      {/* Channel toggles */}
-      <div>
-        <h3 className="mb-3 text-sm font-medium text-muted-foreground">
-          Payment Channels
-        </h3>
-        <div className="overflow-hidden rounded-2xl border bg-card">
-          {toggles.map((t, i) => (
-            <button
-              key={t.key}
-              onClick={() => handleToggle(t.key)}
-              disabled={!isActive}
-              className={`flex w-full items-center gap-3 px-4 py-4 text-left transition-colors active:bg-muted disabled:opacity-50 ${
-                i < toggles.length - 1 ? "border-b border-border/50" : ""
-              }`}
-            >
-              <t.icon className="h-5 w-5 text-muted-foreground" />
-              <span className="flex-1 text-sm font-medium">{t.label}</span>
-              <div
-                className={`h-6 w-11 rounded-full transition-colors ${
-                  t.enabled ? "bg-primary" : "bg-muted"
-                } relative`}
+      <div className="grid gap-12 md:grid-cols-2">
+        <section>
+          <h2 className="mb-4 text-[11px] font-medium uppercase tracking-widest text-muted-foreground">
+            Settings
+          </h2>
+          <div className="rounded-2xl border border-border/60 bg-card">
+            {toggles.map((t, i) => (
+              <button
+                key={t.key}
+                onClick={() => handleToggle(t.key)}
+                disabled={!isActive}
+                className={`flex w-full items-center justify-between px-4 py-3 text-left text-sm disabled:opacity-50 hover:bg-muted/30 ${
+                  i < toggles.length - 1 ? "border-b border-border" : ""
+                }`}
               >
-                <motion.div
-                  className="absolute top-0.5 h-5 w-5 rounded-full bg-white shadow"
-                  animate={{ left: t.enabled ? 20 : 2 }}
-                  transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                <span className="flex items-center gap-3">
+                  <t.icon className="h-3.5 w-3.5 text-primary/70" />
+                  {t.label}
+                </span>
+                <span
+                  className={`text-xs font-medium ${t.enabled ? "text-primary" : "text-foreground/70"}`}
+                >
+                  {t.enabled ? "On" : "Off"}
+                </span>
+              </button>
+            ))}
+          </div>
+        </section>
+
+        <section>
+          <h2 className="mb-4 text-[11px] font-medium uppercase tracking-widest text-muted-foreground">
+            Limits
+          </h2>
+          <div className="rounded-2xl border border-border/60 bg-card">
+            <button
+              type="button"
+              onClick={toggleLimitsEditor}
+              disabled={!isActive}
+              className="w-full text-left disabled:opacity-50 hover:bg-muted/30"
+            >
+              <div className="px-4 py-3">
+                <LimitRow
+                  label="Per transaction"
+                  cents={card.perTxnLimitCents}
+                />
+                <LimitRow
+                  label="Daily"
+                  cents={card.dailyLimitCents}
+                  className="mt-2"
+                />
+                <LimitRow
+                  label="Monthly"
+                  cents={card.monthlyLimitCents}
+                  className="mt-2"
                 />
               </div>
             </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Spending limits */}
-      <div>
-        <h3 className="mb-3 text-sm font-medium text-muted-foreground">
-          Spending Limits
-        </h3>
-        <button
-          onClick={openLimitsSheet}
-          disabled={!isActive}
-          className="flex w-full items-center justify-between rounded-2xl border bg-card px-4 py-4 transition-colors active:bg-muted disabled:opacity-50"
-        >
-          <div className="space-y-2 text-left">
-            <LimitRow
-              label="Per transaction"
-              cents={card.perTxnLimitCents}
-            />
-            <LimitRow label="Daily" cents={card.dailyLimitCents} />
-            <LimitRow label="Monthly" cents={card.monthlyLimitCents} />
+            {limitsOpen && (
+              <div className="border-t border-border px-4 py-4">
+                <div className="space-y-4">
+                  <LimitInput
+                    label="Per transaction"
+                    value={perTxn}
+                    onChange={setPerTxn}
+                  />
+                  <LimitInput label="Daily" value={daily} onChange={setDaily} />
+                  <LimitInput
+                    label="Monthly"
+                    value={monthly}
+                    onChange={setMonthly}
+                  />
+                </div>
+                <div className="mt-6 flex gap-4">
+                  <button
+                    type="button"
+                    onClick={() => setLimitsOpen(false)}
+                    disabled={updateLimits.isPending}
+                    className="rounded-xl border border-border/60 px-3 py-1.5 text-xs font-medium uppercase tracking-widest text-foreground/80 hover:bg-primary/5 disabled:opacity-50 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleSaveLimits}
+                    disabled={updateLimits.isPending}
+                    className="rounded-xl border border-primary bg-primary px-3 py-1.5 text-xs font-medium uppercase tracking-widest text-primary-foreground hover:opacity-90 disabled:opacity-50 transition-opacity"
+                  >
+                    {updateLimits.isPending ? (
+                      <Loader2 className="h-3 w-3 animate-spin" />
+                    ) : (
+                      "Save"
+                    )}
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
-          <ChevronRight className="h-5 w-5 text-muted-foreground" />
-        </button>
+        </section>
       </div>
-
-      {/* Limits sheet */}
-      <Sheet open={limitsOpen} onOpenChange={setLimitsOpen}>
-        <SheetContent side="bottom" className="rounded-t-3xl">
-          <SheetHeader>
-            <SheetTitle>Spending Limits</SheetTitle>
-            <SheetDescription>
-              Set maximum amounts in ETB for each limit type
-            </SheetDescription>
-          </SheetHeader>
-          <div className="space-y-4 p-4">
-            <LimitInput
-              label="Per transaction"
-              value={perTxn}
-              onChange={setPerTxn}
-            />
-            <LimitInput label="Daily limit" value={daily} onChange={setDaily} />
-            <LimitInput
-              label="Monthly limit"
-              value={monthly}
-              onChange={setMonthly}
-            />
-            <Button
-              size="lg"
-              onClick={handleSaveLimits}
-              disabled={updateLimits.isPending}
-              className="mt-2 h-14 w-full text-base font-semibold"
-            >
-              {updateLimits.isPending ? (
-                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-              ) : (
-                "Save Limits"
-              )}
-            </Button>
-          </div>
-        </SheetContent>
-      </Sheet>
     </div>
   );
 }
 
-function LimitRow({ label, cents }: { label: string; cents: number }) {
+function LimitRow({
+  label,
+  cents,
+  className = "",
+}: {
+  label: string;
+  cents: number;
+  className?: string;
+}) {
+  const display = formatMoney(cents, "ETB", undefined, 0);
   return (
-    <div className="flex items-center gap-3 text-sm">
-      <span className="text-muted-foreground">{label}:</span>
-      <span className="font-tabular font-medium">
-        Br {(cents / 100).toLocaleString()}
+    <div className={`flex justify-between text-sm ${className}`}>
+      <span className="text-foreground/70">{label}</span>
+      <span className="font-tabular font-medium tabular-nums text-foreground">
+        {display}
       </span>
     </div>
   );
@@ -298,9 +377,11 @@ function LimitInput({
 }) {
   return (
     <div>
-      <label className="mb-1.5 block text-sm font-medium">{label}</label>
+      <label className="mb-1 block text-[11px] font-medium uppercase tracking-widest text-foreground/70">
+        {label}
+      </label>
       <div className="relative">
-        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
+        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-foreground/60">
           Br
         </span>
         <Input
@@ -308,7 +389,7 @@ function LimitInput({
           inputMode="decimal"
           value={value}
           onChange={(e) => onChange(e.target.value.replace(/[^\d.]/g, ""))}
-          className="h-12 pl-10 text-right font-tabular text-lg"
+          className="h-10 rounded-none border-border pl-8 font-mono text-right tabular-nums"
         />
       </div>
     </div>

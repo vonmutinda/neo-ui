@@ -7,7 +7,12 @@ interface SpendingInsightProps {
   transactions: TransactionReceipt[];
 }
 
-const CREDIT_TYPES: Set<ReceiptType> = new Set(["p2p_receive", "ethswitch_in", "loan_disbursement", "convert_in"]);
+const CREDIT_TYPES: Set<ReceiptType> = new Set([
+  "p2p_receive",
+  "ethswitch_in",
+  "loan_disbursement",
+  "convert_in",
+]);
 
 export function SpendingInsight({ transactions }: SpendingInsightProps) {
   const todayStr = new Date().toDateString();
@@ -17,7 +22,7 @@ export function SpendingInsight({ transactions }: SpendingInsightProps) {
 
   if (todayTxs.length === 0) {
     return (
-      <div className="rounded-2xl bg-muted p-5">
+      <div className="rounded-2xl border border-border/40 bg-card p-5 shadow-[0_1px_3px_oklch(0.40_0.06_70/4%)]">
         <p className="text-center text-sm text-muted-foreground">
           No activity today
         </p>
@@ -36,10 +41,10 @@ export function SpendingInsight({ transactions }: SpendingInsightProps) {
   const netCents = receivedCents - spentCents;
 
   return (
-    <div className="rounded-2xl bg-muted p-5">
+    <div className="rounded-2xl border border-border/40 bg-card p-5 shadow-[0_1px_3px_oklch(0.40_0.06_70/4%)]">
       <div className="grid grid-cols-3 gap-4">
         <div>
-          <p className="text-[11px] font-medium uppercase tracking-widest text-muted-foreground">
+          <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
             Spent
           </p>
           <p className="font-tabular text-sm font-semibold text-destructive">
@@ -47,19 +52,19 @@ export function SpendingInsight({ transactions }: SpendingInsightProps) {
           </p>
         </div>
         <div>
-          <p className="text-[11px] font-medium uppercase tracking-widest text-muted-foreground">
+          <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
             Received
           </p>
-          <p className="font-tabular text-sm font-semibold text-success">
+          <p className="font-tabular text-sm font-semibold text-primary">
             {formatMoney(receivedCents, "ETB", undefined, 0)}
           </p>
         </div>
         <div>
-          <p className="text-[11px] font-medium uppercase tracking-widest text-muted-foreground">
+          <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
             Net flow
           </p>
           <p
-            className={`font-tabular text-sm font-semibold ${netCents >= 0 ? "text-success" : "text-destructive"}`}
+            className={`font-tabular text-sm font-semibold ${netCents >= 0 ? "text-primary" : "text-destructive"}`}
           >
             {formatMoney(netCents, "ETB", netCents >= 0 ? true : false, 0)}
           </p>

@@ -95,6 +95,7 @@ export function CreateImportForm({
   const [expectedArrival, setExpectedArrival] = useState(
     initialData?.expectedArrivalDate ?? "",
   );
+  const [notes, setNotes] = useState(initialData?.notes ?? "");
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -124,6 +125,7 @@ export function CreateImportForm({
     if (insuranceProvider) data.insuranceProvider = insuranceProvider;
     if (portOfEntry) data.portOfEntry = portOfEntry;
     if (expectedArrival) data.expectedArrivalDate = expectedArrival;
+    if (notes.trim()) data.notes = notes.trim();
 
     onSubmit(data);
   }
@@ -319,6 +321,25 @@ export function CreateImportForm({
             />
           </div>
         </div>
+      </div>
+
+      {/* Notes */}
+      <div className={cardClass}>
+        <h3 className="mb-4 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/60">
+          Notes
+        </h3>
+        <textarea
+          value={notes}
+          onChange={(e) => setNotes(e.target.value)}
+          placeholder="Any additional notes or instructions..."
+          rows={3}
+          className={cn(
+            "w-full rounded-xl bg-secondary/60 px-4 py-3 text-sm outline-none",
+            "placeholder:text-muted-foreground/50",
+            "focus:ring-2 focus:ring-foreground/10",
+            "transition-shadow resize-none",
+          )}
+        />
       </div>
 
       {/* Submit */}

@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Enviar — Statements & Accounting</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #F5F5F7; --surface: #FFFFFF;
+    --text-1: #1D1D1F; --text-2: #86868B; --text-3: #C7C7CC;
+    --border: rgba(0,0,0,0.06); --border-strong: rgba(0,0,0,0.12);
+    --blue: #0071E3; --blue-subtle: rgba(0,113,227,0.06);
+    --green-subtle: rgba(52,199,89,0.08); --green-text: #248A3D;
+    --orange-subtle: rgba(255,149,0,0.08); --orange-text: #C93400;
+    --r-xs: 8px; --r-sm: 12px; --r-md: 16px; --r-lg: 20px; --r-full: 980px;
+    --shadow-sm: 0 2px 8px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.06);
+    --shadow-md: 0 4px 16px rgba(0,0,0,0.06), 0 1px 4px rgba(0,0,0,0.04);
+    --sans: 'Inter', -apple-system, sans-serif;
+    --mono: 'JetBrains Mono', monospace;
+    --sidebar-w: 240px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: var(--sans); background: var(--bg); color: var(--text-1); font-size: 15px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+  .app { display: flex; min-height: 100vh; }
+  .sidebar { width: var(--sidebar-w); background: var(--surface); position: fixed; top: 0; left: 0; bottom: 0; z-index: 10; box-shadow: 1px 0 0 var(--border); }
+  .sb-top { padding: 24px 20px 20px; }
+  .sb-brand { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
+  .sb-logo { width: 28px; height: 28px; background: var(--text-1); border-radius: var(--r-xs); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 14px; }
+  .sb-name { font-size: 17px; font-weight: 600; letter-spacing: -0.4px; }
+  .sb-switcher { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-radius: var(--r-sm); background: var(--bg); font-size: 13px; font-weight: 500; }
+  .sb-avatar { width: 24px; height: 24px; border-radius: 6px; background: #E8D5F5; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; color: #7C3AED; }
+  .sb-nav { flex: 1; padding: 8px 8px; }
+  .sb-item { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: var(--r-xs); font-size: 14px; color: var(--text-2); cursor: pointer; text-decoration: none; margin-bottom: 1px; }
+  .sb-item--active { color: var(--text-1); font-weight: 500; background: rgba(0,0,0,0.05); }
+  .sb-icon { width: 18px; text-align: center; font-size: 14px; opacity: 0.4; }
+  .sb-item--active .sb-icon { opacity: 0.8; }
+  .sb-badge { margin-left: auto; background: #FF9500; color: white; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: var(--r-full); }
+  .sb-label { padding: 16px 12px 6px; font-size: 11px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: var(--text-3); }
+
+  .main { flex: 1; margin-left: var(--sidebar-w); }
+  .content { padding: 40px 48px; max-width: 1100px; }
+
+  .page-title { font-size: 28px; font-weight: 600; letter-spacing: -0.8px; margin-bottom: 4px; }
+  .page-sub { font-size: 14px; color: var(--text-2); margin-bottom: 32px; }
+
+  .seg { display: inline-flex; background: rgba(0,0,0,0.05); border-radius: var(--r-full); padding: 4px; gap: 4px; margin-bottom: 28px; }
+  .seg__item { padding: 8px 20px; border-radius: var(--r-full); font-size: 13px; font-weight: 500; color: var(--text-2); cursor: pointer; }
+  .seg__item--active { background: var(--surface); color: var(--text-1); box-shadow: var(--shadow-sm); }
+
+  .btn { display: inline-flex; align-items: center; gap: 6px; font-family: var(--sans); font-weight: 500; border: none; cursor: pointer; border-radius: var(--r-full); transition: all 0.2s; }
+  .btn:active { transform: scale(0.97); }
+  .btn--dark { background: var(--text-1); color: white; font-size: 15px; padding: 14px 32px; }
+  .btn--outline { background: transparent; color: var(--text-1); box-shadow: inset 0 0 0 1.5px var(--border-strong); font-size: 13px; padding: 8px 18px; }
+  .pill { display: inline-flex; align-items: center; padding: 4px 12px; border-radius: var(--r-full); font-size: 12px; font-weight: 600; }
+  .pill--green { background: var(--green-subtle); color: var(--green-text); font-family: var(--mono); }
+  .pill--orange { background: var(--orange-subtle); color: var(--orange-text); font-family: var(--mono); }
+  .pill--blue { background: var(--blue-subtle); color: var(--blue); font-family: var(--mono); }
+  .mono { font-family: var(--mono); font-weight: 500; }
+  .muted { color: var(--text-2); }
+
+  /* Two col: Form + History */
+  .two-col { display: grid; grid-template-columns: 380px 1fr; gap: 24px; margin-bottom: 48px; }
+
+  /* Form card */
+  .fcard { background: var(--surface); border-radius: var(--r-lg); box-shadow: var(--shadow-md); }
+  .fcard__head { padding: 24px 28px; border-bottom: 1px solid var(--border); }
+  .fcard__title { font-size: 18px; font-weight: 600; letter-spacing: -0.3px; }
+  .fcard__sub { font-size: 13px; color: var(--text-2); margin-top: 2px; }
+  .fcard__body { padding: 24px 28px; }
+
+  .field { margin-bottom: 20px; }
+  .field__label { display: block; font-size: 12px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; color: var(--text-3); margin-bottom: 8px; }
+  .field__input { width: 100%; padding: 14px 18px; border-radius: var(--r-sm); border: 1.5px solid var(--border-strong); font-size: 15px; font-family: var(--sans); background: var(--surface); outline: none; transition: all 0.2s; }
+  .field__input:focus { border-color: var(--blue); box-shadow: 0 0 0 4px var(--blue-subtle); }
+  .field__select { width: 100%; padding: 14px 18px; border-radius: var(--r-sm); border: 1.5px solid var(--border-strong); font-size: 15px; font-family: var(--sans); background: var(--surface); appearance: none; cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%23C7C7CC' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 16px center; }
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  /* Format selector */
+  .formats { display: flex; gap: 8px; }
+  .fmt { flex: 1; padding: 14px; border-radius: var(--r-sm); border: 1.5px solid var(--border-strong); text-align: center; cursor: pointer; transition: all 0.15s; }
+  .fmt:hover { border-color: var(--blue); }
+  .fmt--active { border-color: var(--blue); background: var(--blue-subtle); }
+  .fmt__icon { font-size: 22px; margin-bottom: 4px; }
+  .fmt__label { font-size: 12px; font-weight: 600; }
+
+  /* Statement history table */
+  .tcard { background: var(--surface); border-radius: var(--r-md); box-shadow: var(--shadow-sm); overflow: hidden; }
+  .tcard__head { padding: 16px 24px; border-bottom: 1px solid var(--border); }
+  .tcard__title { font-size: 14px; font-weight: 600; }
+  .tbl { width: 100%; border-collapse: collapse; }
+  .tbl th { text-align: left; padding: 10px 20px; font-size: 11px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; color: var(--text-3); border-bottom: 1px solid var(--border); }
+  .tbl td { padding: 14px 20px; font-size: 14px; border-bottom: 1px solid var(--border); }
+  .tbl tr:last-child td { border-bottom: none; }
+  .tbl tr:hover td { background: rgba(0,0,0,0.015); }
+
+  .dl-btn { padding: 6px 16px; border-radius: var(--r-full); border: 1.5px solid var(--border-strong); background: var(--surface); font-size: 12px; font-weight: 500; cursor: pointer; font-family: var(--sans); color: var(--blue); display: inline-flex; align-items: center; gap: 4px; transition: all 0.15s; }
+  .dl-btn:hover { background: var(--blue-subtle); }
+
+  /* Reports section */
+  .divider { height: 1px; background: var(--border); margin: 48px 0; }
+  .section-title { font-size: 22px; font-weight: 600; letter-spacing: -0.5px; margin-bottom: 4px; }
+  .section-sub { font-size: 14px; color: var(--text-2); margin-bottom: 24px; }
+
+  .reports { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .report {
+    background: var(--surface); border-radius: var(--r-md); box-shadow: var(--shadow-sm);
+    padding: 28px; transition: all 0.2s cubic-bezier(0.25,0.1,0.25,1); cursor: pointer;
+  }
+  .report:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+  .report__icon { width: 44px; height: 44px; border-radius: var(--r-sm); display: flex; align-items: center; justify-content: center; font-size: 20px; margin-bottom: 16px; }
+  .report__icon--green { background: var(--green-subtle); color: var(--green-text); }
+  .report__icon--blue { background: var(--blue-subtle); color: var(--blue); }
+  .report__icon--orange { background: var(--orange-subtle); color: var(--orange-text); }
+  .report__icon--purple { background: #F3E8FF; color: #7C3AED; }
+  .report__name { font-size: 16px; font-weight: 600; letter-spacing: -0.2px; margin-bottom: 4px; }
+  .report__desc { font-size: 13px; color: var(--text-2); line-height: 1.5; margin-bottom: 16px; }
+  .report__meta { font-size: 12px; color: var(--text-3); padding-top: 14px; border-top: 1px solid var(--border); }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="sb-top">
+      <div class="sb-brand"><div class="sb-logo">E</div><div class="sb-name">Enviar</div></div>
+      <div class="sb-switcher"><div class="sb-avatar">AH</div><span style="flex:1">Addis Hub Trading</span><span style="color:var(--text-3);font-size:10px">&#9662;</span></div>
+    </div>
+    <nav class="sb-nav">
+      <a class="sb-item"><span class="sb-icon">&#9632;</span> Dashboard</a>
+      <a class="sb-item"><span class="sb-icon">&#9671;</span> Wallets</a>
+      <a class="sb-item"><span class="sb-icon">&#8599;</span> Transfers <span class="sb-badge">3</span></a>
+      <a class="sb-item"><span class="sb-icon">&#9776;</span> Payments</a>
+      <a class="sb-item"><span class="sb-icon">&#9744;</span> Invoices</a>
+      <a class="sb-item"><span class="sb-icon">&#9645;</span> Cards</a>
+      <div class="sb-label">Trade</div>
+      <a class="sb-item"><span class="sb-icon">&#8615;</span> Imports</a>
+      <a class="sb-item"><span class="sb-icon">&#8613;</span> Exports</a>
+      <div class="sb-label">Finance</div>
+      <a class="sb-item"><span class="sb-icon">&#9733;</span> Loans</a>
+      <a class="sb-item"><span class="sb-icon">&#9879;</span> Tax</a>
+      <a class="sb-item sb-item--active"><span class="sb-icon">&#128214;</span> Accounting</a>
+      <div class="sb-label">Admin</div>
+      <a class="sb-item"><span class="sb-icon">&#128101;</span> Team</a>
+      <a class="sb-item"><span class="sb-icon">&#9881;</span> Settings</a>
+    </nav>
+  </aside>
+
+  <main class="main">
+    <div class="content">
+      <div class="page-title">Statements & Accounting</div>
+      <div class="page-sub">Generate statements and export financial reports</div>
+
+      <div class="seg">
+        <div class="seg__item seg__item--active">Statements</div>
+        <div class="seg__item">Reports</div>
+      </div>
+
+      <!-- Two col -->
+      <div class="two-col">
+        <!-- Request -->
+        <div class="fcard">
+          <div class="fcard__head">
+            <div class="fcard__title">Request Statement</div>
+            <div class="fcard__sub">Any period, any currency</div>
+          </div>
+          <div class="fcard__body">
+            <div class="field"><label class="field__label">Currency</label><select class="field__select"><option>ETB — Ethiopian Birr</option><option>USD</option><option>EUR</option><option>All Currencies</option></select></div>
+            <div class="field-row">
+              <div class="field"><label class="field__label">From</label><input class="field__input" type="date" value="2026-03-01"></div>
+              <div class="field"><label class="field__label">To</label><input class="field__input" type="date" value="2026-03-23"></div>
+            </div>
+            <div class="field">
+              <label class="field__label">Format</label>
+              <div class="formats">
+                <div class="fmt fmt--active"><div class="fmt__icon">&#128196;</div><div class="fmt__label">PDF</div></div>
+                <div class="fmt"><div class="fmt__icon">&#128202;</div><div class="fmt__label">CSV</div></div>
+                <div class="fmt"><div class="fmt__icon">&#128209;</div><div class="fmt__label">Excel</div></div>
+              </div>
+            </div>
+            <button class="btn btn--dark" style="width:100%;justify-content:center;margin-top:8px;">Generate</button>
+          </div>
+        </div>
+
+        <!-- History -->
+        <div class="tcard">
+          <div class="tcard__head"><div class="tcard__title">Recent Statements</div></div>
+          <table class="tbl">
+            <thead><tr><th>Period</th><th>Currency</th><th>Format</th><th>Date</th><th></th></tr></thead>
+            <tbody>
+              <tr><td style="font-weight:500">Mar 1–23, 2026</td><td class="muted">ETB</td><td><span class="pill pill--green">PDF</span></td><td class="muted" style="font-size:13px">Just now</td><td><button class="dl-btn">&#8681; Download</button></td></tr>
+              <tr><td style="font-weight:500">Feb 2026</td><td class="muted">ETB</td><td><span class="pill pill--green">PDF</span></td><td class="muted" style="font-size:13px">Mar 2</td><td><button class="dl-btn">&#8681; Download</button></td></tr>
+              <tr><td style="font-weight:500">Feb 2026</td><td class="muted">USD</td><td><span class="pill pill--orange">CSV</span></td><td class="muted" style="font-size:13px">Mar 2</td><td><button class="dl-btn">&#8681; Download</button></td></tr>
+              <tr><td style="font-weight:500">Jan 2026</td><td class="muted">ETB</td><td><span class="pill pill--green">PDF</span></td><td class="muted" style="font-size:13px">Feb 3</td><td><button class="dl-btn">&#8681; Download</button></td></tr>
+              <tr><td style="font-weight:500">Q4 2025</td><td class="muted">All</td><td><span class="pill pill--blue">XLSX</span></td><td class="muted" style="font-size:13px">Jan 15</td><td><button class="dl-btn">&#8681; Download</button></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Reports -->
+      <div class="divider"></div>
+      <div class="section-title">Accounting Reports</div>
+      <div class="section-sub">Export data for bookkeeping, tax, and compliance</div>
+
+      <div class="reports">
+        <div class="report">
+          <div class="report__icon report__icon--green">&#128200;</div>
+          <div class="report__name">Transactions</div>
+          <div class="report__desc">Full history with categories and counterparties. QuickBooks / Xero compatible.</div>
+          <div class="report__meta">CSV / XLSX &middot; Custom range</div>
+        </div>
+        <div class="report">
+          <div class="report__icon report__icon--blue">&#128202;</div>
+          <div class="report__name">Profit & Loss</div>
+          <div class="report__desc">Income vs expenses by category with year-over-year comparison.</div>
+          <div class="report__meta">PDF / XLSX &middot; Monthly</div>
+        </div>
+        <div class="report">
+          <div class="report__icon report__icon--orange">&#128176;</div>
+          <div class="report__name">Balance Sheet</div>
+          <div class="report__desc">Assets, liabilities, equity. Multi-currency at current rates.</div>
+          <div class="report__meta">PDF &middot; Point-in-time</div>
+        </div>
+        <div class="report">
+          <div class="report__icon report__icon--purple">&#128203;</div>
+          <div class="report__name">Tax Summary</div>
+          <div class="report__desc">VAT, withholding, PAYE grouped by category for tax filing.</div>
+          <div class="report__meta">PDF / CSV &middot; Fiscal year</div>
+        </div>
+        <div class="report">
+          <div class="report__icon report__icon--green">&#128176;</div>
+          <div class="report__name">Cash Flow</div>
+          <div class="report__desc">Operating, investing, financing activities with net change.</div>
+          <div class="report__meta">PDF / XLSX &middot; Monthly</div>
+        </div>
+        <div class="report">
+          <div class="report__icon report__icon--blue">&#128195;</div>
+          <div class="report__name">Audit Trail</div>
+          <div class="report__desc">All actions: transfers, approvals, member changes, settings.</div>
+          <div class="report__meta">CSV &middot; Custom range</div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+</body>
+</html>

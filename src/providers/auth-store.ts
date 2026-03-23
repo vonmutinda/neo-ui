@@ -22,10 +22,27 @@ interface AuthState {
   setUserProfile: (profile: UserProfile) => void;
 }
 
-const TOKEN_KEY = "neo_auth_token";
-const REFRESH_KEY = "neo_refresh_token";
-const USER_KEY = "neo_user_id";
-const PROFILE_KEY = "neo_user_profile";
+const TOKEN_KEY = "enviar_auth_token";
+const REFRESH_KEY = "enviar_refresh_token";
+const USER_KEY = "enviar_user_id";
+const PROFILE_KEY = "enviar_user_profile";
+
+// Migrate old "neo_*" keys to "enviar_*" so existing sessions survive the rename
+function migrateStorageKeys(s: Storage) {
+  const migrations: [string, string][] = [
+    ["neo_auth_token", TOKEN_KEY],
+    ["neo_refresh_token", REFRESH_KEY],
+    ["neo_user_id", USER_KEY],
+    ["neo_user_profile", PROFILE_KEY],
+  ];
+  for (const [oldKey, newKey] of migrations) {
+    const val = s.getItem(oldKey);
+    if (val && !s.getItem(newKey)) {
+      s.setItem(newKey, val);
+    }
+    s.removeItem(oldKey);
+  }
+}
 
 function getStorage(): Storage | null {
   return typeof window !== "undefined" ? sessionStorage : null;
@@ -71,6 +88,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   hydrate: () => {
     const s = getStorage();
     if (!s) return;
+    migrateStorageKeys(s);
     const token = s.getItem(TOKEN_KEY);
     const refreshToken = s.getItem(REFRESH_KEY);
     const userId = s.getItem(USER_KEY);

@@ -7,6 +7,8 @@ import { cn } from "@/lib/utils";
 import { useBusinessStore } from "@/providers/business-store";
 import { useCreateExport } from "@/hooks/business/use-exports";
 import { PageHeader } from "@/components/shared/PageHeader";
+import { ExportsSkeleton } from "@/components/business/exports/ExportsSkeleton";
+import { useBusinessPermissionCheck } from "@/hooks/business/use-business-members";
 import type { CreateExportRequest, ExportType } from "@/lib/business-types";
 import type { SupportedCurrency } from "@/lib/types";
 
@@ -41,6 +43,9 @@ const CURRENCIES: SupportedCurrency[] = [
 export default function NewExportPage() {
   const router = useRouter();
   const { activeBusinessId } = useBusinessStore();
+  const { isChecking, allowed: canManageExports } = useBusinessPermissionCheck([
+    "biz:exports:manage",
+  ]);
 
   const createMutation = useCreateExport(activeBusinessId);
 
@@ -52,6 +57,7 @@ export default function NewExportPage() {
   const [amount, setAmount] = useState("");
   const [currency, setCurrency] = useState<SupportedCurrency>("USD");
   const [expectedProceedsDate, setExpectedProceedsDate] = useState("");
+  const [notes, setNotes] = useState("");
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -70,6 +76,7 @@ export default function NewExportPage() {
 
     if (hsCode) data.hsCode = hsCode;
     if (expectedProceedsDate) data.expectedProceedsDate = expectedProceedsDate;
+    if (notes.trim()) data.notes = notes.trim();
 
     createMutation.mutate(data, {
       onSuccess: () => {
@@ -93,6 +100,22 @@ export default function NewExportPage() {
   );
 
   const labelClass = "text-xs font-medium text-muted-foreground";
+
+  if (isChecking) {
+    return <ExportsSkeleton />;
+  }
+
+  if (!canManageExports) {
+    return (
+      <div className="space-y-6">
+        <PageHeader title="New Export" backHref="/business/exports" />
+        <p className="text-sm text-muted-foreground">
+          You don&apos;t have permission to create export requests for this
+          business.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -245,6 +268,25 @@ export default function NewExportPage() {
               />
             </div>
           </div>
+        </div>
+
+        {/* Notes */}
+        <div className={cardClass}>
+          <h3 className="mb-4 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/60">
+            Notes
+          </h3>
+          <textarea
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            placeholder="Any additional notes or instructions..."
+            rows={3}
+            className={cn(
+              "w-full rounded-xl bg-secondary/60 px-4 py-3 text-sm outline-none",
+              "placeholder:text-muted-foreground/50",
+              "focus:ring-2 focus:ring-foreground/10",
+              "transition-shadow resize-none",
+            )}
+          />
         </div>
 
         {/* Submit */}

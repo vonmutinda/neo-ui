@@ -1,6 +1,7 @@
 "use client";
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { api } from "@/lib/api-client";
 import type {
   ImportRequest,
@@ -45,6 +46,9 @@ export function useCreateImport(bizId: string | null) {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["business", bizId, "imports"] });
     },
+    onError: (err: Error) => {
+      toast.error(err.message || "Failed to create import request");
+    },
   });
 }
 
@@ -56,6 +60,10 @@ export function useSubmitImport(bizId: string | null) {
       api.post(`/v1/business/${bizId}/imports/${importId}/submit`, {}),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["business", bizId, "imports"] });
+      toast.success("Import request submitted");
+    },
+    onError: (err: Error) => {
+      toast.error(err.message || "Failed to submit import request");
     },
   });
 }
@@ -68,6 +76,10 @@ export function useCancelImport(bizId: string | null) {
       api.post(`/v1/business/${bizId}/imports/${importId}/cancel`, {}),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["business", bizId, "imports"] });
+      toast.success("Import request cancelled");
+    },
+    onError: (err: Error) => {
+      toast.error(err.message || "Failed to cancel import request");
     },
   });
 }
@@ -87,6 +99,10 @@ export function useUpdateImport(bizId: string | null) {
       ),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["business", bizId, "imports"] });
+      toast.success("Import request updated");
+    },
+    onError: (err: Error) => {
+      toast.error(err.message || "Failed to update import request");
     },
   });
 }
@@ -97,5 +113,98 @@ export function useImportChecklist(bizId: string | null) {
     queryFn: () => api.get(`/v1/business/${bizId}/imports/checklist-template`),
     enabled: !!bizId,
     staleTime: 300_000,
+  });
+}
+
+export function useAttachImportDocument(bizId: string | null) {
+  const qc = useQueryClient();
+  return useMutation<
+    unknown,
+    Error,
+    {
+      importId: string;
+      body: { documentType: string; fileKey: string; fileName: string };
+    }
+  >({
+    mutationFn: ({ importId, body }) =>
+      api.post(`/v1/business/${bizId}/imports/${importId}/documents`, body),
+    onSuccess: (_, { importId }) => {
+      toast.success("Document attached");
+      qc.invalidateQueries({
+        queryKey: ["business", bizId, "imports", importId],
+      });
+    },
+    onError: (err) =>
+      toast.error("Failed to attach document", { description: err.message }),
+  });
+}
+
+export function useRemoveImportDocument(bizId: string | null) {
+  const qc = useQueryClient();
+  return useMutation<void, Error, { importId: string; docId: string }>({
+    mutationFn: ({ importId, docId }) =>
+      api.delete(
+        `/v1/business/${bizId}/imports/${importId}/documents/${docId}`,
+      ),
+    onSuccess: (_, { importId }) => {
+      toast.success("Document removed");
+      qc.invalidateQueries({
+        queryKey: ["business", bizId, "imports", importId],
+      });
+    },
+    onError: (err) =>
+      toast.error("Failed to remove document", { description: err.message }),
+  });
+}
+
+export function useImportConversion(bizId: string | null) {
+  const qc = useQueryClient();
+  return useMutation<
+    unknown,
+    Error,
+    {
+      importId: string;
+      body: { amountCents: number; fromCurrency: string; toCurrency: string };
+    }
+  >({
+    mutationFn: ({ importId, body }) =>
+      api.post(`/v1/business/${bizId}/imports/${importId}/convert`, body),
+    onSuccess: (_, { importId }) => {
+      toast.success("FX conversion executed");
+      qc.invalidateQueries({
+        queryKey: ["business", bizId, "imports", importId],
+      });
+    },
+    onError: (err) =>
+      toast.error("Conversion failed", { description: err.message }),
+  });
+}
+
+export function useUpdateImportStatus(bizId: string | null) {
+  const qc = useQueryClient();
+  return useMutation<
+    unknown,
+    Error,
+    {
+      importId: string;
+      body: {
+        status: string;
+        bankPermitNumber?: string;
+        eswReference?: string;
+        notes?: string;
+      };
+    }
+  >({
+    mutationFn: ({ importId, body }) =>
+      api.patch(`/v1/business/${bizId}/imports/${importId}/status`, body),
+    onSuccess: (_, { importId }) => {
+      toast.success("Import status updated");
+      qc.invalidateQueries({
+        queryKey: ["business", bizId, "imports", importId],
+      });
+      qc.invalidateQueries({ queryKey: ["business", bizId, "imports"] });
+    },
+    onError: (err) =>
+      toast.error("Failed to update status", { description: err.message }),
   });
 }

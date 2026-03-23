@@ -38,7 +38,7 @@ export const useAdminAuthStore = create<AdminAuthState>()(
       },
     }),
     {
-      name: "neo-admin-auth",
+      name: "enviar-admin-auth",
       storage: createJSONStorage(() => sessionStorage),
       partialize: (state) => ({ token: state.token, staff: state.staff }),
     },

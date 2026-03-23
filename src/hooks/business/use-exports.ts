@@ -1,6 +1,7 @@
 "use client";
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { api } from "@/lib/api-client";
 import type {
   ExportRequest,
@@ -45,6 +46,9 @@ export function useCreateExport(bizId: string | null) {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["business", bizId, "exports"] });
     },
+    onError: (err: Error) => {
+      toast.error(err.message || "Failed to create export request");
+    },
   });
 }
 
@@ -56,6 +60,10 @@ export function useSubmitExport(bizId: string | null) {
       api.post(`/v1/business/${bizId}/exports/${exportId}/submit`, {}),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["business", bizId, "exports"] });
+      toast.success("Export request submitted");
+    },
+    onError: (err: Error) => {
+      toast.error(err.message || "Failed to submit export request");
     },
   });
 }
@@ -68,6 +76,10 @@ export function useCancelExport(bizId: string | null) {
       api.post(`/v1/business/${bizId}/exports/${exportId}/cancel`, {}),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["business", bizId, "exports"] });
+      toast.success("Export request cancelled");
+    },
+    onError: (err: Error) => {
+      toast.error(err.message || "Failed to cancel export request");
     },
   });
 }
@@ -87,6 +99,10 @@ export function useUpdateExport(bizId: string | null) {
       ),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["business", bizId, "exports"] });
+      toast.success("Export request updated");
+    },
+    onError: (err: Error) => {
+      toast.error(err.message || "Failed to update export request");
     },
   });
 }
@@ -106,6 +122,10 @@ export function useRecordProceeds(bizId: string | null) {
       api.post(`/v1/business/${bizId}/exports/${exportId}/proceeds`, body),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["business", bizId, "exports"] });
+      toast.success("Proceeds recorded");
+    },
+    onError: (err: Error) => {
+      toast.error(err.message || "Failed to record proceeds");
     },
   });
 }
@@ -125,6 +145,10 @@ export function useRecordSurrender(bizId: string | null) {
       api.post(`/v1/business/${bizId}/exports/${exportId}/surrender`, body),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["business", bizId, "exports"] });
+      toast.success("Surrender recorded");
+    },
+    onError: (err: Error) => {
+      toast.error(err.message || "Failed to record surrender");
     },
   });
 }
@@ -135,5 +159,46 @@ export function useExportChecklist(bizId: string | null) {
     queryFn: () => api.get(`/v1/business/${bizId}/exports/checklist-template`),
     enabled: !!bizId,
     staleTime: 300_000,
+  });
+}
+
+export function useAttachExportDocument(bizId: string | null) {
+  const qc = useQueryClient();
+  return useMutation<
+    unknown,
+    Error,
+    {
+      exportId: string;
+      body: { documentType: string; fileKey: string; fileName: string };
+    }
+  >({
+    mutationFn: ({ exportId, body }) =>
+      api.post(`/v1/business/${bizId}/exports/${exportId}/documents`, body),
+    onSuccess: (_, { exportId }) => {
+      toast.success("Document attached");
+      qc.invalidateQueries({
+        queryKey: ["business", bizId, "exports", exportId],
+      });
+    },
+    onError: (err) =>
+      toast.error("Failed to attach document", { description: err.message }),
+  });
+}
+
+export function useRemoveExportDocument(bizId: string | null) {
+  const qc = useQueryClient();
+  return useMutation<void, Error, { exportId: string; docId: string }>({
+    mutationFn: ({ exportId, docId }) =>
+      api.delete(
+        `/v1/business/${bizId}/exports/${exportId}/documents/${docId}`,
+      ),
+    onSuccess: (_, { exportId }) => {
+      toast.success("Document removed");
+      qc.invalidateQueries({
+        queryKey: ["business", bizId, "exports", exportId],
+      });
+    },
+    onError: (err) =>
+      toast.error("Failed to remove document", { description: err.message }),
   });
 }

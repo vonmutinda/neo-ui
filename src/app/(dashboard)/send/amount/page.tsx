@@ -1,81 +1,128 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, ArrowRight, Delete } from "lucide-react";
+import { ArrowRight, Delete } from "lucide-react";
 import { UserAvatar } from "@/components/shared/UserAvatar";
-import { motion, AnimatePresence } from "framer-motion";
-import Link from "next/link";
+import { AnimatePresence, motion } from "framer-motion";
+import { PageHeader } from "@/components/shared/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { CurrencyFlag } from "@/components/shared/CurrencyFlag";
 import { useSendStore } from "@/lib/send-store";
-import { useTelegram } from "@/providers/TelegramProvider";
+
+import { useBalances } from "@/hooks/use-balances";
 import { formatMoney } from "@/lib/format";
 import type { SupportedCurrency } from "@/lib/types";
 
-const CURRENCIES: { code: SupportedCurrency; symbol: string }[] = [
-  { code: "ETB", symbol: "Br" },
-  { code: "USD", symbol: "$" },
-  { code: "EUR", symbol: "€" },
+const CURRENCY_ORDER: SupportedCurrency[] = [
+  "ETB",
+  "USD",
+  "EUR",
+  "GBP",
+  "AED",
+  "SAR",
+  "CNY",
+  "KES",
 ];
-
-const KEYS = ["1", "2", "3", "4", "5", "6", "7", "8", "9", ".", "0", "DEL"] as const;
-
-const SYMBOL_MAP: Record<SupportedCurrency, string> = {
+const SYMBOL_BY_CODE: Record<SupportedCurrency, string> = {
   ETB: "Br",
   USD: "$",
   EUR: "€",
+  GBP: "£",
+  AED: "د.إ",
+  SAR: "﷼",
+  CNY: "¥",
+  KES: "KSh",
 };
 
-type AmountMode = "split" | "custom";
+const KEYS = [
+  "1",
+  "2",
+  "3",
+  "4",
+  "5",
+  "6",
+  "7",
+  "8",
+  "9",
+  ".",
+  "0",
+  "DEL",
+] as const;
 
 export default function SendAmountPage() {
   const router = useRouter();
-  const { haptic } = useTelegram();
+
   const {
-    recipientPhone, setCurrency, setAmount, setNarration, currency,
-    isMultiSend, recipients, setBulkAmount, setBulkNarration,
-    setRecipientAmount, setRecipientNarration,
+    setCurrency,
+    setAmount,
+    setNarration,
+    currency,
+    recipients,
+    setBulkAmount,
+    setBulkNarration,
+    setRecipientAmount,
+    setRecipientNarration,
   } = useSendStore();
+
+  const isMulti = recipients.length > 1;
+
+  const { data: balances } = useBalances();
+  const availableCurrencies = useMemo((): SupportedCurrency[] => {
+    const codes = new Set(
+      (balances ?? []).map((b) => b.currencyCode as SupportedCurrency),
+    );
+    return CURRENCY_ORDER.filter((c) => codes.has(c));
+  }, [balances]);
 
   const [display, setDisplay] = useState("0");
   const [note, setNote] = useState("");
-  const [amountMode, setAmountMode] = useState<AmountMode>("split");
+  const [showCustom, setShowCustom] = useState(false);
 
-  const [customAmounts, setCustomAmounts] = useState<Record<string, string>>({});
-  const [customNarrations, setCustomNarrations] = useState<Record<string, string>>({});
+  const [customAmounts, setCustomAmounts] = useState<Record<string, string>>(
+    {},
+  );
+  const [customNarrations, setCustomNarrations] = useState<
+    Record<string, string>
+  >({});
 
   useEffect(() => {
-    if (isMultiSend ? recipients.length < 2 : !recipientPhone) {
+    if (recipients.length < 1) {
       router.replace("/send");
     }
-  }, [recipientPhone, isMultiSend, recipients.length, router]);
+  }, [recipients.length, router]);
 
-  const handleKey = useCallback(
-    (key: string) => {
-      haptic("light");
+  useEffect(() => {
+    if (
+      availableCurrencies.length > 0 &&
+      !availableCurrencies.includes(currency)
+    ) {
+      setCurrency(availableCurrencies[0]);
+    }
+  }, [availableCurrencies, currency, setCurrency]);
 
-      if (key === "DEL") {
-        setDisplay((prev) => (prev.length <= 1 ? "0" : prev.slice(0, -1)));
-        return;
-      }
+  const hasNoBalances = (balances?.length ?? 0) === 0;
 
-      if (key === ".") {
-        setDisplay((prev) => (prev.includes(".") ? prev : prev + "."));
-        return;
-      }
+  const handleKey = useCallback((key: string) => {
+    if (key === "DEL") {
+      setDisplay((prev) => (prev.length <= 1 ? "0" : prev.slice(0, -1)));
+      return;
+    }
 
-      setDisplay((prev) => {
-        if (prev === "0") return key;
-        const parts = prev.split(".");
-        if (parts[1] && parts[1].length >= 2) return prev;
-        if (prev.length >= 12) return prev;
-        return prev + key;
-      });
-    },
-    [haptic],
-  );
+    if (key === ".") {
+      setDisplay((prev) => (prev.includes(".") ? prev : prev + "."));
+      return;
+    }
+
+    setDisplay((prev) => {
+      if (prev === "0") return key;
+      const parts = prev.split(".");
+      if (parts[1] && parts[1].length >= 2) return prev;
+      if (prev.length >= 12) return prev;
+      return prev + key;
+    });
+  }, []);
 
   const amountCents = Math.round(parseFloat(display || "0") * 100);
 
@@ -84,26 +131,26 @@ export default function SendAmountPage() {
     return sum + Math.round(val * 100);
   }, 0);
 
-  const isValid = isMultiSend
-    ? amountMode === "split"
-      ? amountCents > 0
-      : customTotal > 0
-    : amountCents > 0;
+  const isValid =
+    !hasNoBalances &&
+    (isMulti && showCustom ? customTotal > 0 : amountCents > 0);
 
   function handleContinue() {
-    if (isMultiSend) {
-      if (amountMode === "split") {
-        const perPerson = Math.floor(amountCents / recipients.length);
-        setBulkAmount(perPerson);
-        setBulkNarration(note);
-        setAmount(amountCents);
-      } else {
+    if (isMulti) {
+      if (showCustom) {
         for (const r of recipients) {
-          const cents = Math.round(parseFloat(customAmounts[r.phone] || "0") * 100);
+          const cents = Math.round(
+            parseFloat(customAmounts[r.phone] || "0") * 100,
+          );
           setRecipientAmount(r.phone, cents);
           setRecipientNarration(r.phone, customNarrations[r.phone] || "");
         }
         setAmount(customTotal);
+      } else {
+        const perPerson = Math.floor(amountCents / recipients.length);
+        setBulkAmount(perPerson);
+        setBulkNarration(note);
+        setAmount(amountCents);
       }
       setNarration(note);
       router.push("/send/confirm");
@@ -116,70 +163,41 @@ export default function SendAmountPage() {
   }
 
   return (
-    <motion.div
-      className="flex min-h-[calc(100dvh-6rem)] flex-col"
-      initial={{ opacity: 0, x: 20 }}
-      animate={{ opacity: 1, x: 0 }}
-      transition={{ duration: 0.25 }}
-    >
-      {/* Header */}
-      <div className="flex items-center gap-3">
-        <Link
-          href="/send"
-          className="flex h-10 w-10 items-center justify-center rounded-full transition-colors active:bg-muted"
-        >
-          <ArrowLeft className="h-5 w-5" />
-        </Link>
-        <h1 className="text-xl font-semibold">Enter Amount</h1>
-      </div>
+    <div className="flex min-h-[calc(100dvh-6rem)] flex-col">
+      <PageHeader title="Enter Amount" backHref="/send" />
 
       {/* Currency pills */}
-      <div className="mt-6 flex justify-center gap-2">
-        {CURRENCIES.map((c) => (
-          <button
-            key={c.code}
-            onClick={() => setCurrency(c.code)}
-            className={`flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm font-medium transition-colors ${
-              currency === c.code
-                ? "border-primary bg-primary/10 text-primary"
-                : "border-border bg-card text-muted-foreground"
-            }`}
-          >
-            <CurrencyFlag currency={c.code} size="sm" />
-            {c.code}
-          </button>
-        ))}
+      <div className="mt-6 flex flex-wrap justify-center gap-2">
+        {hasNoBalances ? (
+          <p className="text-center text-sm text-muted-foreground">
+            Add a balance to send money.
+          </p>
+        ) : (
+          availableCurrencies.map((code) => (
+            <button
+              key={code}
+              onClick={() => setCurrency(code)}
+              className={`flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-xs font-medium transition-all active:scale-95 ${
+                currency === code
+                  ? "border-primary bg-primary/10 text-primary"
+                  : "border-border/60 bg-card text-muted-foreground hover:border-primary/40"
+              }`}
+            >
+              <CurrencyFlag currency={code} size="sm" />
+              {code}
+            </button>
+          ))
+        )}
       </div>
 
-      {/* Multi-send mode selector */}
-      {isMultiSend && (
-        <div className="mt-6 flex justify-center">
-          <div className="inline-flex rounded-full border bg-muted p-1">
-            <button
-              onClick={() => setAmountMode("split")}
-              className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
-                amountMode === "split" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground"
-              }`}
-            >
-              Split total
-            </button>
-            <button
-              onClick={() => setAmountMode("custom")}
-              className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
-                amountMode === "custom" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground"
-              }`}
-            >
-              Custom amounts
-            </button>
-          </div>
-        </div>
-      )}
-
       {/* Custom amounts per recipient */}
-      {isMultiSend && amountMode === "custom" ? (
+      {isMulti && showCustom ? (
         <div className="flex flex-1 flex-col gap-4 overflow-y-auto py-4">
           {recipients.map((r) => (
-            <div key={r.phone} className="flex items-start gap-3 rounded-xl border bg-card p-4">
+            <div
+              key={r.phone}
+              className="flex items-start gap-3 rounded-2xl border border-border/60 bg-card p-4"
+            >
               <UserAvatar name={r.name} />
               <div className="flex-1 space-y-2">
                 <p className="text-sm font-medium">{r.name}</p>
@@ -188,14 +206,24 @@ export default function SendAmountPage() {
                   inputMode="decimal"
                   placeholder="Amount"
                   value={customAmounts[r.phone] ?? ""}
-                  onChange={(e) => setCustomAmounts((prev) => ({ ...prev, [r.phone]: e.target.value }))}
+                  onChange={(e) =>
+                    setCustomAmounts((prev) => ({
+                      ...prev,
+                      [r.phone]: e.target.value,
+                    }))
+                  }
                   className="h-10"
                 />
                 <input
                   type="text"
                   placeholder="Note (optional)"
                   value={customNarrations[r.phone] ?? ""}
-                  onChange={(e) => setCustomNarrations((prev) => ({ ...prev, [r.phone]: e.target.value }))}
+                  onChange={(e) =>
+                    setCustomNarrations((prev) => ({
+                      ...prev,
+                      [r.phone]: e.target.value,
+                    }))
+                  }
                   maxLength={100}
                   className="w-full border-0 bg-transparent text-sm text-muted-foreground outline-none placeholder:text-muted-foreground/50"
                 />
@@ -205,6 +233,12 @@ export default function SendAmountPage() {
           <p className="text-center text-sm font-medium text-muted-foreground">
             Total: {formatMoney(customTotal, currency)}
           </p>
+          <button
+            onClick={() => setShowCustom(false)}
+            className="text-center text-xs font-semibold text-primary"
+          >
+            Back to split total
+          </button>
         </div>
       ) : (
         <>
@@ -220,23 +254,39 @@ export default function SendAmountPage() {
                 className="font-tabular text-center"
               >
                 <span className="text-2xl text-muted-foreground">
-                  {SYMBOL_MAP[currency]}
+                  {SYMBOL_BY_CODE[currency]}
                 </span>
-                <span className="text-5xl font-bold tracking-tight">{display}</span>
+                <span className="text-5xl font-bold tracking-tight">
+                  {display}
+                </span>
               </motion.div>
             </AnimatePresence>
 
-            {/* Split calculation for multi-send */}
-            {isMultiSend && amountMode === "split" && amountCents > 0 && (
+            {/* Per-person subtitle for multi-send */}
+            {isMulti && amountCents > 0 && (
               <p className="mt-2 text-sm text-muted-foreground">
-                {formatMoney(amountCents, currency)} / {recipients.length} people = {formatMoney(Math.floor(amountCents / recipients.length), currency)} each
+                {formatMoney(
+                  Math.floor(amountCents / recipients.length),
+                  currency,
+                )}{" "}
+                per person
               </p>
             )}
 
-            {/* Optional note */}
+            {/* Custom amounts link */}
+            {isMulti && (
+              <button
+                onClick={() => setShowCustom(true)}
+                className="mt-1 text-xs font-semibold text-primary"
+              >
+                Custom amounts
+              </button>
+            )}
+
+            {/* Note */}
             <input
               type="text"
-              placeholder="Add a note (optional)"
+              placeholder="Note (optional)"
               value={note}
               onChange={(e) => setNote(e.target.value)}
               maxLength={100}
@@ -251,6 +301,7 @@ export default function SendAmountPage() {
                 key={key}
                 onClick={() => handleKey(key)}
                 className="flex h-16 items-center justify-center rounded-2xl text-xl font-semibold transition-colors active:bg-muted"
+                aria-label={key === "DEL" ? "Delete" : undefined}
               >
                 {key === "DEL" ? <Delete className="h-6 w-6" /> : key}
               </button>
@@ -261,16 +312,11 @@ export default function SendAmountPage() {
 
       {/* Continue */}
       <div className="px-2 pb-6">
-        <Button
-          size="lg"
-          disabled={!isValid}
-          onClick={handleContinue}
-          className="h-14 w-full text-base font-semibold"
-        >
+        <Button size="cta" disabled={!isValid} onClick={handleContinue}>
           Review
           <ArrowRight className="ml-2 h-5 w-5" />
         </Button>
       </div>
-    </motion.div>
+    </div>
   );
 }

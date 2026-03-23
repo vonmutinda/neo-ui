@@ -10,31 +10,45 @@ const ACTIONS = [
     label: "Send Money",
     icon: ArrowUpRight,
     iconBg: "bg-[oklch(0.93_0.04_300)] text-[oklch(0.55_0.15_300)]",
+    perm: (p: string[]) =>
+      p.includes("biz:transfers:initiate:internal") ||
+      p.includes("biz:transfers:initiate:external"),
   },
   {
     href: "/business/invoices/new",
     label: "Invoice",
     icon: FileText,
     iconBg: "bg-warning/10 text-warning-foreground",
+    perm: (p: string[]) => p.includes("biz:invoices:manage"),
   },
   {
     href: "/business/payments/new",
     label: "Batch Pay",
     icon: Layers,
     iconBg: "bg-primary/10 text-primary",
+    perm: (p: string[]) => p.includes("biz:batch:create"),
   },
   {
     href: "/business/convert",
     label: "Convert",
     icon: ArrowLeftRight,
     iconBg: "bg-success/10 text-success-foreground",
+    perm: (p: string[]) => p.includes("biz:convert:initiate"),
   },
 ] as const;
 
-export function BusinessQuickActions() {
+export function BusinessQuickActions({
+  permissions,
+}: {
+  permissions?: string[];
+}) {
+  const visible = permissions
+    ? ACTIONS.filter((a) => a.perm(permissions))
+    : [...ACTIONS];
+
   return (
     <div className="mb-10 flex flex-wrap gap-3">
-      {ACTIONS.map((action) => {
+      {visible.map((action) => {
         const Icon = action.icon;
         return (
           <Link

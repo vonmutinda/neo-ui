@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Enviar — Invoices</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #F5F5F7; --surface: #FFFFFF;
+    --text-1: #1D1D1F; --text-2: #86868B; --text-3: #C7C7CC;
+    --border: rgba(0,0,0,0.06); --border-strong: rgba(0,0,0,0.12);
+    --blue: #0071E3; --blue-subtle: rgba(0,113,227,0.06);
+    --green-subtle: rgba(52,199,89,0.08); --green-text: #248A3D; --green: #34C759;
+    --red-subtle: rgba(255,59,48,0.08); --red-text: #D70015;
+    --orange-subtle: rgba(255,149,0,0.08); --orange-text: #C93400;
+    --r-xs: 8px; --r-sm: 12px; --r-md: 16px; --r-full: 980px;
+    --shadow-sm: 0 2px 8px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.06);
+    --shadow-md: 0 4px 16px rgba(0,0,0,0.06), 0 1px 4px rgba(0,0,0,0.04);
+    --sans: 'Inter', -apple-system, sans-serif;
+    --mono: 'JetBrains Mono', monospace;
+    --sidebar-w: 240px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: var(--sans); background: var(--bg); color: var(--text-1); font-size: 15px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+  .app { display: flex; min-height: 100vh; }
+
+  .sidebar { width: var(--sidebar-w); background: var(--surface); position: fixed; top: 0; left: 0; bottom: 0; display: flex; flex-direction: column; z-index: 10; box-shadow: 1px 0 0 var(--border); }
+  .sb-top { padding: 24px 20px 20px; }
+  .sb-brand { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
+  .sb-logo { width: 28px; height: 28px; background: var(--text-1); border-radius: var(--r-xs); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 14px; }
+  .sb-name { font-size: 17px; font-weight: 600; letter-spacing: -0.4px; }
+  .sb-switcher { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-radius: var(--r-sm); background: var(--bg); font-size: 13px; font-weight: 500; }
+  .sb-avatar { width: 24px; height: 24px; border-radius: 6px; background: #E8D5F5; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; color: #7C3AED; }
+  .sb-nav { flex: 1; padding: 8px 8px; }
+  .sb-item { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: var(--r-xs); font-size: 14px; color: var(--text-2); cursor: pointer; text-decoration: none; margin-bottom: 1px; }
+  .sb-item--active { color: var(--text-1); font-weight: 500; background: rgba(0,0,0,0.05); }
+  .sb-icon { width: 18px; text-align: center; font-size: 14px; opacity: 0.4; }
+  .sb-item--active .sb-icon { opacity: 0.8; }
+  .sb-badge { margin-left: auto; background: #FF9500; color: white; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: var(--r-full); }
+  .sb-label { padding: 16px 12px 6px; font-size: 11px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: var(--text-3); }
+
+  .main { flex: 1; margin-left: var(--sidebar-w); }
+  .content { padding: 40px 48px; max-width: 1200px; }
+
+  .page-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 32px; }
+  .page-title { font-size: 28px; font-weight: 600; letter-spacing: -0.8px; }
+  .btn { display: inline-flex; align-items: center; gap: 6px; font-family: var(--sans); font-size: 15px; font-weight: 500; border: none; cursor: pointer; border-radius: var(--r-full); padding: 12px 28px; transition: all 0.2s; }
+  .btn:active { transform: scale(0.97); }
+  .btn--dark { background: var(--text-1); color: white; }
+  .btn--dark:hover { background: #333; }
+
+  /* Metric strip */
+  .metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 32px; }
+  .metric {
+    background: var(--surface); border-radius: var(--r-md);
+    box-shadow: var(--shadow-sm); padding: 24px;
+    transition: all 0.2s;
+  }
+  .metric:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
+  .metric__label { font-size: 12px; color: var(--text-2); }
+  .metric__value { font-family: var(--mono); font-size: 28px; font-weight: 600; letter-spacing: -1.2px; margin-top: 4px; }
+  .metric__sub { font-size: 12px; color: var(--text-3); margin-top: 4px; }
+  .metric--alert { position: relative; }
+  .metric--alert::before { content: ''; position: absolute; left: 0; top: 12px; bottom: 12px; width: 3px; border-radius: 0 2px 2px 0; background: var(--red-text); }
+  .metric--alert .metric__value { color: var(--red-text); }
+
+  /* Segmented */
+  .seg { display: inline-flex; background: rgba(0,0,0,0.05); border-radius: var(--r-full); padding: 4px; gap: 4px; margin-bottom: 24px; }
+  .seg__item { padding: 8px 18px; border-radius: var(--r-full); font-size: 13px; font-weight: 500; color: var(--text-2); cursor: pointer; transition: all 0.2s; }
+  .seg__item--active { background: var(--surface); color: var(--text-1); box-shadow: var(--shadow-sm); }
+  .seg__count { font-size: 11px; margin-left: 3px; opacity: 0.5; }
+
+  /* Table */
+  .tcard { background: var(--surface); border-radius: var(--r-md); box-shadow: var(--shadow-sm); overflow: hidden; }
+  .tbl { width: 100%; border-collapse: collapse; }
+  .tbl th { text-align: left; padding: 12px 24px; font-size: 11px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; color: var(--text-3); border-bottom: 1px solid var(--border); }
+  .tbl td { padding: 16px 24px; font-size: 14px; border-bottom: 1px solid var(--border); }
+  .tbl tr:last-child td { border-bottom: none; }
+  .tbl tr { transition: background 0.1s; cursor: pointer; }
+  .tbl tr:hover td { background: rgba(0,0,0,0.015); }
+  .mono { font-family: var(--mono); font-weight: 500; letter-spacing: -0.3px; }
+  .muted { color: var(--text-2); }
+
+  .pill { display: inline-flex; align-items: center; padding: 4px 12px; border-radius: var(--r-full); font-size: 12px; font-weight: 600; }
+  .pill--green { background: var(--green-subtle); color: var(--green-text); }
+  .pill--orange { background: var(--orange-subtle); color: var(--orange-text); }
+  .pill--red { background: var(--red-subtle); color: var(--red-text); }
+  .pill--blue { background: var(--blue-subtle); color: var(--blue); }
+  .pill--neutral { background: rgba(0,0,0,0.05); color: var(--text-2); }
+
+  /* Progress bar — thin, elegant */
+  .prog { display: flex; align-items: center; gap: 10px; }
+  .prog__bar { flex: 1; height: 4px; background: rgba(0,0,0,0.06); border-radius: 2px; overflow: hidden; min-width: 60px; }
+  .prog__fill { height: 100%; border-radius: 2px; }
+  .prog__label { font-size: 12px; color: var(--text-3); font-family: var(--mono); white-space: nowrap; }
+
+  /* Due date */
+  .due--late { color: var(--red-text); font-weight: 500; }
+  .due--soon { color: var(--orange-text); }
+
+  .pag { display: flex; align-items: center; justify-content: space-between; padding: 16px 24px; border-top: 1px solid var(--border); }
+  .pag__info { font-size: 13px; color: var(--text-2); }
+  .pag__btns { display: flex; gap: 4px; }
+  .pag__btn { width: 32px; height: 32px; border-radius: var(--r-xs); border: none; background: transparent; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 13px; font-weight: 500; color: var(--text-2); }
+  .pag__btn--active { background: var(--text-1); color: white; }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="sb-top">
+      <div class="sb-brand"><div class="sb-logo">E</div><div class="sb-name">Enviar</div></div>
+      <div class="sb-switcher"><div class="sb-avatar">AH</div><span style="flex:1">Addis Hub Trading</span><span style="color:var(--text-3);font-size:10px">&#9662;</span></div>
+    </div>
+    <nav class="sb-nav">
+      <a class="sb-item"><span class="sb-icon">&#9632;</span> Dashboard</a>
+      <a class="sb-item"><span class="sb-icon">&#9671;</span> Wallets</a>
+      <a class="sb-item"><span class="sb-icon">&#8599;</span> Transfers <span class="sb-badge">3</span></a>
+      <a class="sb-item"><span class="sb-icon">&#9776;</span> Payments</a>
+      <a class="sb-item sb-item--active"><span class="sb-icon">&#9744;</span> Invoices</a>
+      <a class="sb-item"><span class="sb-icon">&#9645;</span> Cards</a>
+      <div class="sb-label">Trade</div>
+      <a class="sb-item"><span class="sb-icon">&#8615;</span> Imports</a>
+      <a class="sb-item"><span class="sb-icon">&#8613;</span> Exports</a>
+      <div class="sb-label">Finance</div>
+      <a class="sb-item"><span class="sb-icon">&#9733;</span> Loans</a>
+      <a class="sb-item"><span class="sb-icon">&#9879;</span> Tax</a>
+      <a class="sb-item"><span class="sb-icon">&#128214;</span> Accounting</a>
+      <div class="sb-label">Admin</div>
+      <a class="sb-item"><span class="sb-icon">&#128101;</span> Team</a>
+      <a class="sb-item"><span class="sb-icon">&#9881;</span> Settings</a>
+    </nav>
+  </aside>
+
+  <main class="main">
+    <div class="content">
+      <div class="page-head">
+        <div class="page-title">Invoices</div>
+        <button class="btn btn--dark">&#43; Create Invoice</button>
+      </div>
+
+      <!-- Metrics -->
+      <div class="metrics">
+        <div class="metric">
+          <div class="metric__label">Total Invoiced</div>
+          <div class="metric__value">Br 4.2M</div>
+          <div class="metric__sub">48 invoices this year</div>
+        </div>
+        <div class="metric">
+          <div class="metric__label">Outstanding</div>
+          <div class="metric__value">Br 1.2M</div>
+          <div class="metric__sub">12 unpaid</div>
+        </div>
+        <div class="metric metric--alert">
+          <div class="metric__label">Overdue</div>
+          <div class="metric__value">3</div>
+          <div class="metric__sub">Br 340K past due</div>
+        </div>
+        <div class="metric">
+          <div class="metric__label">Collected</div>
+          <div class="metric__value" style="color:var(--green-text)">Br 520K</div>
+          <div class="metric__sub">This month</div>
+        </div>
+      </div>
+
+      <!-- Segmented -->
+      <div class="seg">
+        <div class="seg__item seg__item--active">All <span class="seg__count">48</span></div>
+        <div class="seg__item">Draft <span class="seg__count">4</span></div>
+        <div class="seg__item">Sent <span class="seg__count">5</span></div>
+        <div class="seg__item">Paid <span class="seg__count">28</span></div>
+        <div class="seg__item" style="color:var(--red-text)">Overdue <span class="seg__count">3</span></div>
+      </div>
+
+      <!-- Table -->
+      <div class="tcard">
+        <table class="tbl">
+          <thead>
+            <tr>
+              <th>Invoice</th>
+              <th>Customer</th>
+              <th style="text-align:right">Amount</th>
+              <th>Paid</th>
+              <th>Status</th>
+              <th>Due</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="mono" style="font-size:13px">INV-0048</td>
+              <td>Habesha Trading PLC</td>
+              <td class="mono" style="text-align:right">Br 180,000</td>
+              <td>
+                <div class="prog">
+                  <div class="prog__bar"><div class="prog__fill" style="width:0%;background:var(--text-3)"></div></div>
+                  <span class="prog__label">0%</span>
+                </div>
+              </td>
+              <td><span class="pill pill--neutral">Draft</span></td>
+              <td class="muted" style="font-size:13px">Apr 21</td>
+            </tr>
+            <tr>
+              <td class="mono" style="font-size:13px">INV-0047</td>
+              <td>Ethiopian Airlines Cargo</td>
+              <td class="mono" style="text-align:right">$8,500</td>
+              <td>
+                <div class="prog">
+                  <div class="prog__bar"><div class="prog__fill" style="width:0%;background:var(--text-3)"></div></div>
+                  <span class="prog__label">0%</span>
+                </div>
+              </td>
+              <td><span class="pill pill--blue">Sent</span></td>
+              <td class="muted" style="font-size:13px">Apr 19</td>
+            </tr>
+            <tr>
+              <td class="mono" style="font-size:13px">INV-0046</td>
+              <td>Gebeya Inc</td>
+              <td class="mono" style="text-align:right">Br 95,000</td>
+              <td>
+                <div class="prog">
+                  <div class="prog__bar"><div class="prog__fill" style="width:60%;background:var(--orange-text)"></div></div>
+                  <span class="prog__label">60%</span>
+                </div>
+              </td>
+              <td><span class="pill pill--orange">Partial</span></td>
+              <td class="due--soon" style="font-size:13px">Mar 25</td>
+            </tr>
+            <tr>
+              <td class="mono" style="font-size:13px">INV-0045</td>
+              <td>Ride PLC</td>
+              <td class="mono" style="text-align:right">Br 120,000</td>
+              <td>
+                <div class="prog">
+                  <div class="prog__bar"><div class="prog__fill" style="width:0%;background:var(--text-3)"></div></div>
+                  <span class="prog__label">0%</span>
+                </div>
+              </td>
+              <td><span class="pill pill--red">Overdue</span></td>
+              <td class="due--late" style="font-size:13px">Mar 15 (+7d)</td>
+            </tr>
+            <tr>
+              <td class="mono" style="font-size:13px">INV-0044</td>
+              <td>Safari Logistics</td>
+              <td class="mono" style="text-align:right">Br 340,000</td>
+              <td>
+                <div class="prog">
+                  <div class="prog__bar"><div class="prog__fill" style="width:100%;background:var(--green)"></div></div>
+                  <span class="prog__label">100%</span>
+                </div>
+              </td>
+              <td><span class="pill pill--green">Paid</span></td>
+              <td class="muted" style="font-size:13px">Mar 20</td>
+            </tr>
+            <tr>
+              <td class="mono" style="font-size:13px">INV-0043</td>
+              <td>Tikur Anbessa Hospital</td>
+              <td class="mono" style="text-align:right">Br 75,000</td>
+              <td>
+                <div class="prog">
+                  <div class="prog__bar"><div class="prog__fill" style="width:100%;background:var(--green)"></div></div>
+                  <span class="prog__label">100%</span>
+                </div>
+              </td>
+              <td><span class="pill pill--green">Paid</span></td>
+              <td class="muted" style="font-size:13px">Mar 15</td>
+            </tr>
+            <tr>
+              <td class="mono" style="font-size:13px">INV-0042</td>
+              <td>Addis Ababa University</td>
+              <td class="mono" style="text-align:right">Br 220,000</td>
+              <td>
+                <div class="prog">
+                  <div class="prog__bar"><div class="prog__fill" style="width:0%;background:var(--text-3)"></div></div>
+                  <span class="prog__label">0%</span>
+                </div>
+              </td>
+              <td><span class="pill pill--red">Overdue</span></td>
+              <td class="due--late" style="font-size:13px">Feb 28 (+22d)</td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="pag">
+          <div class="pag__info">1 &ndash; 7 of 48</div>
+          <div class="pag__btns">
+            <div class="pag__btn" style="opacity:0.3">&#8249;</div>
+            <div class="pag__btn pag__btn--active">1</div>
+            <div class="pag__btn">2</div>
+            <div class="pag__btn">3</div>
+            <div class="pag__btn">&#8250;</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+</body>
+</html>

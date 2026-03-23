@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import {
   useAdminReconRuns,
   useAdminReconExceptions,
@@ -37,7 +37,11 @@ describe("useAdminReconRuns", () => {
     );
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expectAdminCall(globalThis.fetch, "GET", "/reconciliation/runs?limit=20&offset=0");
+    expectAdminCall(
+      globalThis.fetch,
+      "GET",
+      "/reconciliation/runs?limit=20&offset=0",
+    );
   });
 });
 
@@ -46,7 +50,11 @@ describe("useAdminReconExceptions", () => {
     globalThis.fetch = mockFetchPaginated([], 0);
 
     const { result } = renderHook(
-      () => useAdminReconExceptions({ status: "open", errorType: "amount_mismatch" }),
+      () =>
+        useAdminReconExceptions({
+          status: "open",
+          errorType: "amount_mismatch",
+        }),
       { wrapper: createWrapper() },
     );
 
@@ -63,11 +71,17 @@ describe("useAdminAssignException", () => {
   it("calls POST /reconciliation/exceptions/{id}/assign", async () => {
     globalThis.fetch = mockFetchSuccess(null);
 
-    const { result } = renderHook(() => useAdminAssignException(), { wrapper: createWrapper() });
+    const { result } = renderHook(() => useAdminAssignException(), {
+      wrapper: createWrapper(),
+    });
     result.current.mutate({ id: "e1", assignedTo: "staff-uuid" });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expectAdminCall(globalThis.fetch, "POST", "/reconciliation/exceptions/e1/assign");
+    expectAdminCall(
+      globalThis.fetch,
+      "POST",
+      "/reconciliation/exceptions/e1/assign",
+    );
     expectAdminCallBody(globalThis.fetch, { assignedTo: "staff-uuid" });
   });
 });
@@ -76,11 +90,17 @@ describe("useAdminInvestigateException", () => {
   it("calls POST /reconciliation/exceptions/{id}/investigate", async () => {
     globalThis.fetch = mockFetchSuccess(null);
 
-    const { result } = renderHook(() => useAdminInvestigateException(), { wrapper: createWrapper() });
+    const { result } = renderHook(() => useAdminInvestigateException(), {
+      wrapper: createWrapper(),
+    });
     result.current.mutate({ id: "e1", notes: "Looking into it" });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expectAdminCall(globalThis.fetch, "POST", "/reconciliation/exceptions/e1/investigate");
+    expectAdminCall(
+      globalThis.fetch,
+      "POST",
+      "/reconciliation/exceptions/e1/investigate",
+    );
   });
 });
 
@@ -88,12 +108,25 @@ describe("useAdminResolveException", () => {
   it("calls POST /reconciliation/exceptions/{id}/resolve", async () => {
     globalThis.fetch = mockFetchSuccess(null);
 
-    const { result } = renderHook(() => useAdminResolveException(), { wrapper: createWrapper() });
-    result.current.mutate({ id: "e1", resolutionNotes: "Fixed", resolutionAction: "manual_adjustment" });
+    const { result } = renderHook(() => useAdminResolveException(), {
+      wrapper: createWrapper(),
+    });
+    result.current.mutate({
+      id: "e1",
+      resolutionNotes: "Fixed",
+      resolutionAction: "manual_adjustment",
+    });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expectAdminCall(globalThis.fetch, "POST", "/reconciliation/exceptions/e1/resolve");
-    expectAdminCallBody(globalThis.fetch, { resolutionNotes: "Fixed", resolutionAction: "manual_adjustment" });
+    expectAdminCall(
+      globalThis.fetch,
+      "POST",
+      "/reconciliation/exceptions/e1/resolve",
+    );
+    expectAdminCallBody(globalThis.fetch, {
+      resolutionNotes: "Fixed",
+      resolutionAction: "manual_adjustment",
+    });
   });
 });
 
@@ -101,11 +134,17 @@ describe("useAdminEscalateException", () => {
   it("calls POST /reconciliation/exceptions/{id}/escalate", async () => {
     globalThis.fetch = mockFetchSuccess(null);
 
-    const { result } = renderHook(() => useAdminEscalateException(), { wrapper: createWrapper() });
+    const { result } = renderHook(() => useAdminEscalateException(), {
+      wrapper: createWrapper(),
+    });
     result.current.mutate({ id: "e1", notes: "Needs manager review" });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expectAdminCall(globalThis.fetch, "POST", "/reconciliation/exceptions/e1/escalate");
+    expectAdminCall(
+      globalThis.fetch,
+      "POST",
+      "/reconciliation/exceptions/e1/escalate",
+    );
     expectAdminCallBody(globalThis.fetch, { notes: "Needs manager review" });
   });
 });

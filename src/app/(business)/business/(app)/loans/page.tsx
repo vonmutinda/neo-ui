@@ -15,6 +15,7 @@ import { LoanCard } from "@/components/business/loans/LoanCard";
 import { RepaymentScheduleTable } from "@/components/business/loans/RepaymentScheduleTable";
 import { LoansSkeleton } from "@/components/business/loans/LoansSkeleton";
 import type { BusinessLoanStatus } from "@/lib/business-types";
+import { useMyPermissions } from "@/hooks/business/use-business-members";
 
 type Tab = "active" | "history" | "eligibility";
 
@@ -40,6 +41,8 @@ const HISTORY_STATUSES: BusinessLoanStatus[] = [
 
 export default function LoansPage() {
   const { activeBusinessId } = useBusinessStore();
+  const { data: permissions } = useMyPermissions(activeBusinessId);
+  const canApplyLoan = permissions?.includes("biz:loans:apply") ?? false;
   const [activeTab, setActiveTab] = useState<Tab>("active");
 
   const { data: eligibility, isLoading: eligLoading } =
@@ -75,7 +78,9 @@ export default function LoansPage() {
         <LoanEligibilityBanner
           eligibility={eligibility}
           onViewOffer={
-            eligibility.eligible ? () => setActiveTab("eligibility") : undefined
+            eligibility.eligible && canApplyLoan
+              ? () => setActiveTab("eligibility")
+              : undefined
           }
         />
       )}

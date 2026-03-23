@@ -131,7 +131,7 @@ describe("RecipientsPage", () => {
         recipients: [
           {
             id: "r1",
-            type: "neo_user",
+            type: "enviar_user",
             displayName: "Abebe Bikila",
             username: "abebe",
             isFavorite: true,
@@ -212,7 +212,7 @@ describe("RecipientsPage", () => {
     });
     render(createElement(RecipientsPage), { wrapper });
     expect(screen.getByText("All")).toBeTruthy();
-    expect(screen.getByText("Neo Users")).toBeTruthy();
+    expect(screen.getByText("Enviar Users")).toBeTruthy();
     expect(screen.getByText("Bank Accounts")).toBeTruthy();
     expect(screen.getByText("Favorites")).toBeTruthy();
   });

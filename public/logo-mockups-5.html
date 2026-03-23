@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Enviar Logo — Arrow-in-i Concepts</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,700;0,9..40,800&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', system-ui, sans-serif;
+    background: #FAF6F0;
+    color: #2A1F14;
+    padding: 40px 20px 80px;
+  }
+
+  h1 {
+    text-align: center;
+    font-size: 28px;
+    font-weight: 800;
+    margin-bottom: 8px;
+    letter-spacing: -0.5px;
+  }
+
+  .subtitle {
+    text-align: center;
+    font-size: 14px;
+    color: #8B7355;
+    margin-bottom: 48px;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 32px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .card {
+    background: #FFFDF9;
+    border: 1.5px solid #E8DFD0;
+    border-radius: 20px;
+    overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 32px rgba(42, 31, 20, 0.08);
+  }
+
+  .logo-area {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 32px;
+    min-height: 160px;
+  }
+
+  .logo-area-dark {
+    background: #1A1510;
+  }
+
+  .info {
+    padding: 20px 24px;
+    border-top: 1px solid #E8DFD0;
+  }
+
+  .info h3 {
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+
+  .info p {
+    font-size: 12px;
+    color: #8B7355;
+    line-height: 1.5;
+  }
+
+  .splash {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 32px;
+    border-top: 1px solid #E8DFD0;
+    background: linear-gradient(135deg, #FAF6F0 0%, #F0E8D8 100%);
+  }
+  .splash-dark {
+    background: linear-gradient(135deg, #1A1510 0%, #2A1F14 100%);
+  }
+  .splash-card {
+    background: #FFFDF9;
+    border-radius: 20px;
+    padding: 40px 32px;
+    text-align: center;
+    width: 260px;
+    box-shadow: 0 4px 20px rgba(42, 31, 20, 0.06);
+    border: 1px solid #E8DFD0;
+  }
+  .splash-card-dark {
+    background: #252017;
+    border-color: #3D3428;
+  }
+  .splash-card .tagline {
+    font-size: 11px;
+    color: #8B7355;
+    margin-top: 12px;
+  }
+  .splash-card-dark .tagline {
+    color: #A89070;
+  }
+</style>
+</head>
+<body>
+
+<h1>Arrow-in-i Concepts</h1>
+<p class="subtitle">The upward arrow replaces the dot on the 'i' in "enviar" — no separate icon needed</p>
+
+<div class="grid">
+
+  <!-- 1. Hairline Arrow (gold accent) -->
+  <div class="card">
+    <div class="logo-area">
+      <svg width="140" height="48" viewBox="0 0 140 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- "env" -->
+        <text x="0" y="38" font-family="'DM Sans', system-ui, sans-serif" font-size="36" font-weight="700" fill="#2A1F14" letter-spacing="-0.8">env</text>
+        <!-- i: stem -->
+        <line x1="80.5" y1="16" x2="80.5" y2="38" stroke="#2A1F14" stroke-width="4" stroke-linecap="round"/>
+        <!-- i: gold chevron arrow as dot -->
+        <path d="M74.5 21L80.5 12L86.5 21" stroke="#C99A20" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <!-- "ar" -->
+        <text x="87" y="38" font-family="'DM Sans', system-ui, sans-serif" font-size="36" font-weight="700" fill="#2A1F14" letter-spacing="-0.8">ar</text>
+      </svg>
+    </div>
+    <div class="info">
+      <h3>1. Hairline Arrow</h3>
+      <p>Thin gold chevron replaces the i-dot. Clean separation between arrow and stem. Minimal, elegant accent.</p>
+    </div>
+    <div class="splash">
+      <div class="splash-card">
+        <svg width="120" height="40" viewBox="0 0 140 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <text x="0" y="38" font-family="'DM Sans', system-ui, sans-serif" font-size="36" font-weight="700" fill="#2A1F14" letter-spacing="-0.8">env</text>
+          <line x1="80.5" y1="16" x2="80.5" y2="38" stroke="#2A1F14" stroke-width="4" stroke-linecap="round"/>
+          <path d="M74.5 21L80.5 12L86.5 21" stroke="#C99A20" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <text x="87" y="38" font-family="'DM Sans', system-ui, sans-serif" font-size="36" font-weight="700" fill="#2A1F14" letter-spacing="-0.8">ar</text>
+        </svg>
+        <p class="tagline">Digital Banking</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. Monochrome Bold -->
+  <div class="card">
+    <div class="logo-area">
+      <svg width="140" height="48" viewBox="0 0 140 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <text x="0" y="38" font-family="'DM Sans', system-ui, sans-serif" font-size="36" font-weight="700" fill="#2A1F14" letter-spacing="-0.8">env</text>
+        <line x1="80.5" y1="16" x2="80.5" y2="38" stroke="#2A1F14" stroke-width="4" stroke-linecap="round"/>
+        <path d="M74 22L80.5 11L87 22" stroke="#2A1F14" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
+        <text x="87" y="38" font-family="'DM Sans', system-ui, sans-serif" font-size="36" font-weight="700" fill="#2A1F14" letter-spacing="-0.8">ar</text>
+      </svg>
+    </div>
+    <div class="info">
+      <h3>2. Monochrome Bold</h3>
+      <p>Arrow in same weight and color as the wordmark. Reads as part of the letterform — seamless integration.</p>
+    </div>
+    <div class="splash">
+      <div class="splash-card">
+        <svg width="120" height="40" viewBox="0 0 140 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <text x="0" y="38" font-family="'DM Sans', system-ui, sans-serif" font-size="36" font-weight="700" fill="#2A1F14" letter-spacing="-0.8">env</text>
+          <line x1="80.5" y1="16" x2="80.5" y2="38" stroke="#2A1F14" stroke-width="4" stroke-linecap="round"/>
+          <path d="M74 22L80.5 11L87 22" stroke="#2A1F14" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
+          <text x="87" y="38" font-family="'DM Sans', system-ui, sans-serif" font-size="36" font-weight="700" fill="#2A1F14" letter-spacing="-0.8">ar</text>
+        </svg>
+        <p class="tagline">Digital Banking</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. Filled Triangle -->
+  <div class="card">
+    <div class="logo-area">
+      <svg width="140" height="48" viewBox="0 0 140 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <text x="0" y="38" font-family="'DM Sans', system-ui, sans-serif" font-size="36" font-weight="700" fill="#2A1F14" letter-spacing="-0.8">env</text>
+        <line x1="80.5" y1="16" x2="80.5" y2="38" stroke="#2A1F14" stroke-width="4" stroke-linecap="round"/>
+        <polygon points="80.5,8 74,20 87,20" fill="#C99A20"/>
+        <text x="87" y="38" font-family="'DM Sans', system-ui, sans-serif" font-size="36" font-weight="700" fill="#2A1F14" letter-spacing="-0.8">ar</text>
+      </svg>
+    </div>
+    <div class="info">
+      <h3>3. Filled Triangle</h3>
+      <p>Solid gold triangle pointing up. Acts as both the i-dot and a bold brand mark. Impossible to miss.</p>
+    </div>
+    <div class="splash">
+      <div class="splash-card">
+        <svg width="120" height="40" viewBox="0 0 140 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <text x="0" y="38" font-family="'DM Sans', system-ui, sans-serif" font-size="36" font-weight="700" fill="#2A1F14" letter-spacing="-0.8">env</text>
+          <line x1="80.5" y1="16" x2="80.5" y2="38" stroke="#2A1F14" stroke-width="4" stroke-linecap="round"/>
+          <polygon points="80.5,8 74,20 87,20" fill="#C99A20"/>
+          <text x="87" y="38" font-family="'DM Sans', system-ui, sans-serif" font-size="36" font-weight="700" fill="#2A1F14" letter-spacing="-0.8">ar</text>
+        </svg>
+        <p class="tagline">Digital Banking</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. Connected Arrow (stem extends through) -->
+  <div class="card">
+    <div class="logo-area">
+      <svg width="140" height="48" viewBox="0 0 140 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <text x="0" y="38" font-family="'DM Sans', system-ui, sans-serif" font-size="36" font-weight="700" fill="#2A1F14" letter-spacing="-0.8">env</text>
+        <!-- One continuous stroke from baseline to arrow tip -->
+        <line x1="80.5" y1="9" x2="80.5" y2="38" stroke="#2A1F14" stroke-width="3.5" stroke-linecap="round"/>
+        <path d="M73.5 19L80.5 9L87.5 19" stroke="#2A1F14" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+        <text x="87" y="38" font-family="'DM Sans', system-ui, sans-serif" font-size="36" font-weight="700" fill="#2A1F14" letter-spacing="-0.8">ar</text>
+      </svg>
+    </div>
+    <div class="info">
+      <h3>4. Connected Arrow</h3>
+      <p>The i-stem extends all the way up through the chevron — one continuous vertical stroke. The letter IS the arrow.</p>
+    </div>
+    <div class="splash">
+      <div class="splash-card">
+        <svg width="120" height="40" viewBox="0 0 140 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <text x="0" y="38" font-family="'DM Sans', system-ui, sans-serif" font-size="36" font-weight="700" fill="#2A1F14" letter-spacing="-0.8">env</text>
+          <line x1="80.5" y1="9" x2="80.5" y2="38" stroke="#2A1F14" stroke-width="3.5" stroke-linecap="round"/>
+          <path d="M73.5 19L80.5 9L87.5 19" stroke="#2A1F14" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+          <text x="87" y="38" font-family="'DM Sans', system-ui, sans-serif" font-size="36" font-weight="700" fill="#2A1F14" letter-spacing="-0.8">ar</text>
+        </svg>
+        <p class="tagline">Digital Banking</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. Subtle Lift -->
+  <div class="card">
+    <div class="logo-area">
+      <svg width="140" height="48" viewBox="0 0 140 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <text x="0" y="38" font-family="'DM Sans', system-ui, sans-serif" font-size="36" font-weight="700" fill="#2A1F14" letter-spacing="-0.8">env</text>
+        <line x1="80.5" y1="17" x2="80.5" y2="38" stroke="#2A1F14" stroke-width="4" stroke-linecap="round"/>
+        <!-- Small tight chevron — similar visual weight to a dot -->
+        <path d="M77 13L80.5 7L84 13" stroke="#2A1F14" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+        <text x="87" y="38" font-family="'DM Sans', system-ui, sans-serif" font-size="36" font-weight="700" fill="#2A1F14" letter-spacing="-0.8">ar</text>
+      </svg>
+    </div>
+    <div class="info">
+      <h3>5. Subtle Lift</h3>
+      <p>Small, tight chevron — nearly the same size as a regular i-dot. You notice it's an arrow on second glance. Understated.</p>
+    </div>
+    <div class="splash">
+      <div class="splash-card">
+        <svg width="120" height="40" viewBox="0 0 140 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <text x="0" y="38" font-family="'DM Sans', system-ui, sans-serif" font-size="36" font-weight="700" fill="#2A1F14" letter-spacing="-0.8">env</text>
+          <line x1="80.5" y1="17" x2="80.5" y2="38" stroke="#2A1F14" stroke-width="4" stroke-linecap="round"/>
+          <path d="M77 13L80.5 7L84 13" stroke="#2A1F14" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+          <text x="87" y="38" font-family="'DM Sans', system-ui, sans-serif" font-size="36" font-weight="700" fill="#2A1F14" letter-spacing="-0.8">ar</text>
+        </svg>
+        <p class="tagline">Digital Banking</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. Full Naked Arrow -->
+  <div class="card">
+    <div class="logo-area">
+      <svg width="144" height="48" viewBox="0 0 144 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <text x="0" y="38" font-family="'DM Sans', system-ui, sans-serif" font-size="36" font-weight="700" fill="#2A1F14" letter-spacing="-0.8">env</text>
+        <!-- Full naked arrow as the entire 'i' -->
+        <line x1="81" y1="4" x2="81" y2="38" stroke="#2A1F14" stroke-width="3" stroke-linecap="round"/>
+        <path d="M73 15L81 4L89 15" stroke="#2A1F14" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+        <text x="90" y="38" font-family="'DM Sans', system-ui, sans-serif" font-size="36" font-weight="700" fill="#2A1F14" letter-spacing="-0.8">ar</text>
+      </svg>
+    </div>
+    <div class="info">
+      <h3>6. Full Naked Arrow</h3>
+      <p>The original naked arrow placed exactly where 'i' sits. Tallest variant — the arrow extends above the x-height dramatically.</p>
+    </div>
+    <div class="splash">
+      <div class="splash-card">
+        <svg width="122" height="40" viewBox="0 0 144 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <text x="0" y="38" font-family="'DM Sans', system-ui, sans-serif" font-size="36" font-weight="700" fill="#2A1F14" letter-spacing="-0.8">env</text>
+          <line x1="81" y1="4" x2="81" y2="38" stroke="#2A1F14" stroke-width="3" stroke-linecap="round"/>
+          <path d="M73 15L81 4L89 15" stroke="#2A1F14" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+          <text x="90" y="38" font-family="'DM Sans', system-ui, sans-serif" font-size="36" font-weight="700" fill="#2A1F14" letter-spacing="-0.8">ar</text>
+        </svg>
+        <p class="tagline">Digital Banking</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 7. Gold Accent — Light + Dark -->
+  <div class="card">
+    <div class="logo-area">
+      <svg width="140" height="48" viewBox="0 0 140 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <text x="0" y="38" font-family="'DM Sans', system-ui, sans-serif" font-size="36" font-weight="700" fill="#2A1F14" letter-spacing="-0.8">env</text>
+        <line x1="80.5" y1="16" x2="80.5" y2="38" stroke="#2A1F14" stroke-width="4" stroke-linecap="round"/>
+        <path d="M74 21L80.5 11L87 21" stroke="#C99A20" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+        <text x="87" y="38" font-family="'DM Sans', system-ui, sans-serif" font-size="36" font-weight="700" fill="#2A1F14" letter-spacing="-0.8">ar</text>
+      </svg>
+    </div>
+    <div class="logo-area logo-area-dark">
+      <svg width="140" height="48" viewBox="0 0 140 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <text x="0" y="38" font-family="'DM Sans', system-ui, sans-serif" font-size="36" font-weight="700" fill="#F5E6C8" letter-spacing="-0.8">env</text>
+        <line x1="80.5" y1="16" x2="80.5" y2="38" stroke="#F5E6C8" stroke-width="4" stroke-linecap="round"/>
+        <path d="M74 21L80.5 11L87 21" stroke="#D4A830" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+        <text x="87" y="38" font-family="'DM Sans', system-ui, sans-serif" font-size="36" font-weight="700" fill="#F5E6C8" letter-spacing="-0.8">ar</text>
+      </svg>
+    </div>
+    <div class="info">
+      <h3>7. Gold Accent (Light + Dark)</h3>
+      <p>Gold chevron arrow on dark text — works beautifully in both modes. The accent color draws the eye naturally.</p>
+    </div>
+  </div>
+
+  <!-- 8. Wide Wings -->
+  <div class="card">
+    <div class="logo-area">
+      <svg width="142" height="48" viewBox="0 0 142 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <text x="0" y="38" font-family="'DM Sans', system-ui, sans-serif" font-size="36" font-weight="700" fill="#2A1F14" letter-spacing="-0.8">env</text>
+        <line x1="80.5" y1="18" x2="80.5" y2="38" stroke="#2A1F14" stroke-width="4" stroke-linecap="round"/>
+        <!-- Wide chevron wings that nearly touch neighbors -->
+        <path d="M71 20L80.5 7L90 20" stroke="#2A1F14" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+        <text x="88" y="38" font-family="'DM Sans', system-ui, sans-serif" font-size="36" font-weight="700" fill="#2A1F14" letter-spacing="-0.8">ar</text>
+      </svg>
+    </div>
+    <div class="info">
+      <h3>8. Wide Wings</h3>
+      <p>Wider chevron arms extending outward. Sheltering, protective feel. Confident and grounded.</p>
+    </div>
+    <div class="splash">
+      <div class="splash-card">
+        <svg width="120" height="40" viewBox="0 0 142 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <text x="0" y="38" font-family="'DM Sans', system-ui, sans-serif" font-size="36" font-weight="700" fill="#2A1F14" letter-spacing="-0.8">env</text>
+          <line x1="80.5" y1="18" x2="80.5" y2="38" stroke="#2A1F14" stroke-width="4" stroke-linecap="round"/>
+          <path d="M71 20L80.5 7L90 20" stroke="#2A1F14" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+          <text x="88" y="38" font-family="'DM Sans', system-ui, sans-serif" font-size="36" font-weight="700" fill="#2A1F14" letter-spacing="-0.8">ar</text>
+        </svg>
+        <p class="tagline">Digital Banking</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 9. Mini Arrow (complete tiny arrow icon as dot) -->
+  <div class="card">
+    <div class="logo-area">
+      <svg width="140" height="48" viewBox="0 0 140 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <text x="0" y="38" font-family="'DM Sans', system-ui, sans-serif" font-size="36" font-weight="700" fill="#2A1F14" letter-spacing="-0.8">env</text>
+        <line x1="80.5" y1="17" x2="80.5" y2="38" stroke="#2A1F14" stroke-width="4" stroke-linecap="round"/>
+        <!-- Tiny complete arrow: shaft + head -->
+        <line x1="80.5" y1="14" x2="80.5" y2="6" stroke="#C99A20" stroke-width="2.2" stroke-linecap="round"/>
+        <path d="M77 10L80.5 4.5L84 10" stroke="#C99A20" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+        <text x="87" y="38" font-family="'DM Sans', system-ui, sans-serif" font-size="36" font-weight="700" fill="#2A1F14" letter-spacing="-0.8">ar</text>
+      </svg>
+    </div>
+    <div class="info">
+      <h3>9. Mini Arrow</h3>
+      <p>A complete tiny arrow (shaft + head) floating where the dot would be. Like a micro icon. Playful precision.</p>
+    </div>
+    <div class="splash">
+      <div class="splash-card">
+        <svg width="120" height="40" viewBox="0 0 140 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <text x="0" y="38" font-family="'DM Sans', system-ui, sans-serif" font-size="36" font-weight="700" fill="#2A1F14" letter-spacing="-0.8">env</text>
+          <line x1="80.5" y1="17" x2="80.5" y2="38" stroke="#2A1F14" stroke-width="4" stroke-linecap="round"/>
+          <line x1="80.5" y1="14" x2="80.5" y2="6" stroke="#C99A20" stroke-width="2.2" stroke-linecap="round"/>
+          <path d="M77 10L80.5 4.5L84 10" stroke="#C99A20" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+          <text x="87" y="38" font-family="'DM Sans', system-ui, sans-serif" font-size="36" font-weight="700" fill="#2A1F14" letter-spacing="-0.8">ar</text>
+        </svg>
+        <p class="tagline">Digital Banking</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>

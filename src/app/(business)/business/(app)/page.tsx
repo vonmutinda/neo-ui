@@ -15,10 +15,14 @@ import { BusinessRecentTransfers } from "@/components/business/dashboard/Busines
 import { BusinessPendingApprovals } from "@/components/business/dashboard/BusinessPendingApprovals";
 import { BusinessDashboardSkeleton } from "@/components/business/dashboard/BusinessDashboardSkeleton";
 import { toast } from "sonner";
+import { useMyPermissions } from "@/hooks/business/use-business-members";
 
 export default function BusinessDashboardPage() {
   const userProfile = useAuthStore((s) => s.userProfile);
   const { activeBusinessId, activeBusiness } = useBusinessStore();
+  const { data: permissions } = useMyPermissions(activeBusinessId);
+  const canApproveTransfer =
+    permissions?.includes("biz:transfers:approve") ?? false;
 
   const { data: walletSummary, isLoading } =
     useBusinessWalletSummary(activeBusinessId);
@@ -72,7 +76,7 @@ export default function BusinessDashboardPage() {
       />
 
       {/* Quick Actions */}
-      <BusinessQuickActions />
+      <BusinessQuickActions permissions={permissions} />
 
       {/* Currency Cards */}
       <BusinessCurrencyCards balances={balances} />
@@ -83,8 +87,8 @@ export default function BusinessDashboardPage() {
         <BusinessPendingApprovals
           transfers={pendingResult?.data ?? []}
           totalPending={pendingResult?.pagination?.total ?? 0}
-          onApprove={handleApprove}
-          onReject={handleReject}
+          onApprove={canApproveTransfer ? handleApprove : undefined}
+          onReject={canApproveTransfer ? handleReject : undefined}
         />
       </div>
     </div>

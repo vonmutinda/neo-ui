@@ -2,10 +2,17 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ArrowLeft, ArrowRight, Building2, Users, Loader2, AlertCircle, CheckCircle2, X } from "lucide-react";
+import {
+  ArrowRight,
+  Loader2,
+  AlertCircle,
+  CheckCircle2,
+  X,
+  Plus,
+} from "lucide-react";
 import { UserAvatar } from "@/components/shared/UserAvatar";
-import { motion } from "framer-motion";
-import Link from "next/link";
+import { BankLogo } from "@/components/shared/BankLogos";
+import { PageHeader } from "@/components/shared/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useSendStore } from "@/lib/send-store";
@@ -16,11 +23,11 @@ import { toE164, formatPhoneDisplay } from "@/lib/phone-utils";
 import type { RecipientInfo } from "@/lib/types";
 
 const INSTITUTIONS = [
-  { id: "NEOBANK", label: "Neo User", icon: Users },
-  { id: "CBE", label: "CBE", icon: Building2 },
-  { id: "DASHEN", label: "Dashen", icon: Building2 },
-  { id: "AWASH", label: "Awash", icon: Building2 },
-  { id: "ABYSSINIA", label: "Abyssinia", icon: Building2 },
+  { id: "ENVIAR", label: "Enviar User" },
+  { id: "CBE", label: "CBE" },
+  { id: "DASHEN", label: "Dashen" },
+  { id: "AWASH", label: "Awash" },
+  { id: "ABYSSINIA", label: "Abyssinia" },
 ];
 
 function recipientDisplayName(r: RecipientInfo): string {
@@ -33,11 +40,15 @@ function recipientDisplayName(r: RecipientInfo): string {
 export default function SendRecipientPage() {
   const router = useRouter();
   const {
-    setRecipient, setType, setDestInstitution,
-    isMultiSend, setMultiSend, recipients, addRecipient, removeRecipient,
+    setRecipient,
+    setType,
+    setDestInstitution,
+    recipients,
+    addRecipient,
+    removeRecipient,
   } = useSendStore();
   const [identifier, setIdentifier] = useState("");
-  const [selectedInst, setSelectedInst] = useState("NEOBANK");
+  const [selectedInst, setSelectedInst] = useState("ENVIAR");
   const [resolved, setResolved] = useState<RecipientInfo | null>(null);
   const [resolveError, setResolveError] = useState("");
 
@@ -46,10 +57,11 @@ export default function SendRecipientPage() {
 
   const resolve = useResolveRecipient();
   const recentsQuery = useRecipients({ limit: 8 });
-  const recentNeoUsers = (recentsQuery.data?.recipients ?? []).filter(
-    (r) => r.type === "neo_user",
+  const recentEnviarUsers = (recentsQuery.data?.recipients ?? []).filter(
+    (r) => r.type === "enviar_user",
   );
 
+  /* eslint-disable react-hooks/set-state-in-effect -- one-time URL prepopulation */
   useEffect(() => {
     if (didPrepopulate.current) return;
     const phone = searchParams.get("phone");
@@ -58,22 +70,29 @@ export default function SendRecipientPage() {
 
     if (phone) {
       didPrepopulate.current = true;
-      setSelectedInst("NEOBANK");
+      setSelectedInst("ENVIAR");
       setIdentifier(phone);
-      resolve.mutateAsync(phone.trim()).then(setResolved).catch(() => {
-        setResolveError("User not found. Check the phone number or username.");
-      });
+      resolve
+        .mutateAsync(phone.trim())
+        .then(setResolved)
+        .catch(() => {
+          setResolveError(
+            "User not found. Check the phone number or username.",
+          );
+        });
     } else if (account && institution) {
       didPrepopulate.current = true;
       setSelectedInst(institution);
       setIdentifier(account);
     }
   }, [searchParams]); // eslint-disable-line react-hooks/exhaustive-deps
+  /* eslint-enable react-hooks/set-state-in-effect */
 
-  const isNeo = selectedInst === "NEOBANK";
-  const isValid = isMultiSend
-    ? recipients.length >= 2
-    : isNeo
+  const isEnviar = selectedInst === "ENVIAR";
+  const hasRecipients = recipients.length > 0;
+  const isValid = hasRecipients
+    ? recipients.length >= 1
+    : isEnviar
       ? !!resolved
       : identifier.length >= 10;
 
@@ -102,7 +121,7 @@ export default function SendRecipientPage() {
     }
   }
 
-  function handleAddRecipient() {
+  function handleAddAnother() {
     if (!resolved) return;
     const phone = toE164(resolved.phoneNumber);
     const name = recipientDisplayName(resolved);
@@ -113,39 +132,47 @@ export default function SendRecipientPage() {
     setResolveError("");
   }
 
-  function handleRecentTap(r: (typeof recentNeoUsers)[number]) {
+  function handleRecentTap(r: (typeof recentEnviarUsers)[number]) {
     const phone = toE164(r.number ?? "");
-    if (isMultiSend) {
+
+    if (hasRecipients) {
+      // Progressive: add to list
       if (recipients.some((rec) => rec.phone === phone)) return;
-      addRecipient({ phone, name: r.displayName, id: r.neoUserId ?? "" });
+      addRecipient({ phone, name: r.displayName, id: r.enviarUserId ?? "" });
     } else {
+      // First recipient: resolve
       setIdentifier(r.number ?? r.username ?? "");
       setResolved(null);
       setResolveError("");
       (async () => {
         try {
-          const info = await resolve.mutateAsync((r.number ?? r.username ?? "").trim());
+          const info = await resolve.mutateAsync(
+            (r.number ?? r.username ?? "").trim(),
+          );
           setResolved(info);
         } catch {
-          setResolveError("User not found. Check the phone number or username.");
+          setResolveError(
+            "User not found. Check the phone number or username.",
+          );
         }
       })();
     }
   }
 
   function handleContinue() {
-    if (isMultiSend) {
+    // If recipients already populated (progressive add mode)
+    if (hasRecipients) {
       setType("inbound");
-      setDestInstitution("NEOBANK");
+      setDestInstitution("ENVIAR");
       router.push("/send/amount");
       return;
     }
 
-    const type: TransferType = isNeo ? "inbound" : "outbound";
+    const type: TransferType = isEnviar ? "inbound" : "outbound";
     setType(type);
     setDestInstitution(selectedInst);
 
-    if (isNeo && resolved) {
+    if (isEnviar && resolved) {
       const phone = toE164(resolved.phoneNumber);
       const name = recipientDisplayName(resolved);
       setRecipient(phone, name, resolved.id);
@@ -156,39 +183,17 @@ export default function SendRecipientPage() {
     router.push("/send/amount");
   }
 
+  // Hide institution selector once recipients are being added (always ENVIAR for multi)
+  const showInstitutions = !hasRecipients;
+
   return (
-    <motion.div
-      className="flex flex-col gap-6"
-      initial={{ opacity: 0, x: 20 }}
-      animate={{ opacity: 1, x: 0 }}
-      transition={{ duration: 0.25 }}
-    >
-      {/* Header */}
-      <div className="flex items-center gap-3">
-        <Link
-          href="/"
-          className="flex h-10 w-10 items-center justify-center rounded-full transition-colors active:bg-muted"
-        >
-          <ArrowLeft className="h-5 w-5" />
-        </Link>
-        <h1 className="text-xl font-semibold">Send Money</h1>
-      </div>
+    <div className="flex flex-col gap-6">
+      <PageHeader title="Send Money" backHref="/" />
 
-      {/* Multi-send toggle */}
-      <button
-        onClick={() => setMultiSend(!isMultiSend)}
-        className={`flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition-colors ${
-          isMultiSend ? "border-primary bg-primary/10 text-primary" : "border-border bg-card text-muted-foreground"
-        }`}
-      >
-        <Users className="h-4 w-4" />
-        Send to Multiple
-      </button>
-
-      {/* Institution selector (single mode only) */}
-      {!isMultiSend && (
+      {/* Institution selector — only before first recipient */}
+      {showInstitutions && (
         <div>
-          <p className="mb-3 text-sm font-medium text-muted-foreground">
+          <p className="mb-3 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
             Send to
           </p>
           <div className="flex gap-2 overflow-x-auto pb-1">
@@ -196,13 +201,13 @@ export default function SendRecipientPage() {
               <button
                 key={inst.id}
                 onClick={() => handleInstitutionChange(inst.id)}
-                className={`flex shrink-0 items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition-colors ${
+                className={`flex shrink-0 items-center gap-2 rounded-full border px-3.5 py-1.5 text-xs font-medium transition-all active:scale-95 ${
                   selectedInst === inst.id
                     ? "border-primary bg-primary/10 text-primary"
-                    : "border-border bg-card text-muted-foreground active:bg-muted"
+                    : "border-border/60 bg-card text-muted-foreground hover:border-primary/40"
                 }`}
               >
-                <inst.icon className="h-4 w-4" />
+                <BankLogo institutionId={inst.id} className="h-5 w-5" />
                 {inst.label}
               </button>
             ))}
@@ -211,11 +216,13 @@ export default function SendRecipientPage() {
       )}
 
       {/* Recents row */}
-      {recentNeoUsers.length > 0 && (
+      {recentEnviarUsers.length > 0 && (
         <div>
-          <p className="mb-3 text-xs font-medium text-muted-foreground">Recent</p>
+          <p className="mb-3 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+            Recent
+          </p>
           <div className="flex gap-3 overflow-x-auto pb-1">
-            {recentNeoUsers.map((r) => (
+            {recentEnviarUsers.map((r) => (
               <button
                 key={r.id}
                 onClick={() => handleRecentTap(r)}
@@ -236,20 +243,57 @@ export default function SendRecipientPage() {
         </div>
       )}
 
+      {/* Recipient chips */}
+      {hasRecipients && (
+        <div>
+          <p className="mb-2 text-xs text-muted-foreground">
+            {recipients.length}{" "}
+            {recipients.length === 1 ? "recipient" : "recipients"}
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {recipients.map((r) => (
+              <div
+                key={r.phone}
+                className="flex items-center gap-2 rounded-full border border-border/60 bg-muted px-3 py-1.5"
+              >
+                <UserAvatar
+                  name={r.name}
+                  size="sm"
+                  className="h-6 w-6 text-[10px]"
+                />
+                <span className="text-sm font-medium">{r.name}</span>
+                <button
+                  onClick={() => removeRecipient(r.phone)}
+                  aria-label={`Remove ${r.name}`}
+                >
+                  <X className="h-3.5 w-3.5 text-muted-foreground" />
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Identifier input */}
       <div>
         <label
           htmlFor="identifier"
-          className="mb-3 block text-sm font-medium text-muted-foreground"
+          className="mb-3 block text-[11px] font-semibold uppercase tracking-widest text-muted-foreground"
         >
-          {isMultiSend ? "Phone number or username" : isNeo ? "Phone number or username" : "Account / phone"}
+          {isEnviar || hasRecipients
+            ? "Phone number or username"
+            : "Account / phone"}
         </label>
         <div className="relative">
           <Input
             id="identifier"
-            type={isMultiSend || isNeo ? "text" : "tel"}
-            inputMode={isMultiSend || isNeo ? "text" : "tel"}
-            placeholder={isMultiSend || isNeo ? "+251 9XX... or @username" : "+251 9XX XXX XXXX"}
+            type={isEnviar || hasRecipients ? "text" : "tel"}
+            inputMode={isEnviar || hasRecipients ? "text" : "tel"}
+            placeholder={
+              isEnviar || hasRecipients
+                ? "+251 9XX... or @username"
+                : "+251 9XX XXX XXXX"
+            }
             value={identifier}
             onChange={(e) => handleIdentifierChange(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleLookup()}
@@ -263,13 +307,9 @@ export default function SendRecipientPage() {
       </div>
 
       {/* Resolve result */}
-      {(isMultiSend || isNeo) && resolved && (
-        <motion.div
-          initial={{ opacity: 0, y: -8 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex items-center gap-3 rounded-xl border border-emerald-200 bg-emerald-50 p-4 dark:border-emerald-800 dark:bg-emerald-950/30"
-        >
-          <CheckCircle2 className="h-5 w-5 shrink-0 text-emerald-600 dark:text-emerald-400" />
+      {(isEnviar || hasRecipients) && resolved && (
+        <div className="flex items-center gap-3 rounded-2xl border border-border/60 bg-primary/10 p-4">
+          <CheckCircle2 className="h-5 w-5 shrink-0 text-primary" />
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-medium">
               {recipientDisplayName(resolved)}
@@ -279,70 +319,47 @@ export default function SendRecipientPage() {
               {resolved.username && ` · @${resolved.username}`}
             </p>
           </div>
-          {isMultiSend && (
-            <Button
-              size="sm"
-              onClick={handleAddRecipient}
+          {/* Progressive add: "+" to add this person and search for another */}
+          {isEnviar && (
+            <button
+              onClick={handleAddAnother}
               disabled={recipients.length >= 10}
-              className="shrink-0"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-border/60 transition-colors hover:bg-muted active:bg-muted disabled:opacity-50"
+              aria-label="Add another recipient"
             >
-              Add
-            </Button>
+              <Plus className="h-4 w-4 text-primary" />
+            </button>
           )}
-        </motion.div>
+        </div>
       )}
 
       {/* Resolve error */}
-      {(isMultiSend || isNeo) && resolveError && (
-        <motion.div
-          initial={{ opacity: 0, y: -8 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex items-center gap-3 rounded-xl border border-destructive/30 bg-destructive/5 p-4"
-        >
+      {(isEnviar || hasRecipients) && resolveError && (
+        <div className="flex items-center gap-3 rounded-2xl border border-destructive/30 bg-destructive/5 p-4">
           <AlertCircle className="h-5 w-5 shrink-0 text-destructive" />
           <p className="text-sm text-destructive">{resolveError}</p>
-        </motion.div>
-      )}
-
-      {/* Multi-send recipient chips */}
-      {isMultiSend && recipients.length > 0 && (
-        <div>
-          <p className="mb-2 text-xs text-muted-foreground">
-            {recipients.length} of 10 recipients
-          </p>
-          <div className="flex flex-wrap gap-2">
-            {recipients.map((r) => (
-              <div key={r.phone} className="flex items-center gap-2 rounded-full border bg-muted px-3 py-1.5">
-                <UserAvatar name={r.name} size="sm" className="h-6 w-6 text-[10px]" />
-                <span className="text-sm font-medium">{r.name}</span>
-                <button onClick={() => removeRecipient(r.phone)}>
-                  <X className="h-3.5 w-3.5 text-muted-foreground" />
-                </button>
-              </div>
-            ))}
-          </div>
         </div>
       )}
 
       {/* Hint */}
       <p className="text-xs text-muted-foreground">
-        {isMultiSend
-          ? "Send to multiple Neo users at once."
-          : isNeo
-            ? "Send instantly to another Neo user at zero fee."
+        {hasRecipients
+          ? "Send to multiple Enviar users at once."
+          : isEnviar
+            ? "Send instantly to another Enviar user at zero fee."
             : `Transfer to ${selectedInst} via EthSwitch.`}
       </p>
 
       {/* Continue */}
       <Button
-        size="lg"
+        size="cta"
         disabled={!isValid}
         onClick={handleContinue}
-        className="mt-8 h-14 text-base font-semibold"
+        className="mt-4"
       >
         Continue
         <ArrowRight className="ml-2 h-5 w-5" />
       </Button>
-    </motion.div>
+    </div>
   );
 }

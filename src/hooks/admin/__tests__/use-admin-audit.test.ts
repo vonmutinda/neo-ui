@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { useAdminAuditLog, useAdminAuditEntry } from "../use-admin-audit";
 import {
   setupAdminAuth,
@@ -50,7 +50,9 @@ describe("useAdminAuditEntry", () => {
   it("calls GET /audit/{id}", async () => {
     globalThis.fetch = mockFetchSuccess({ id: "a1", action: "user_frozen" });
 
-    const { result } = renderHook(() => useAdminAuditEntry("a1"), { wrapper: createWrapper() });
+    const { result } = renderHook(() => useAdminAuditEntry("a1"), {
+      wrapper: createWrapper(),
+    });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expectAdminCall(globalThis.fetch, "GET", "/audit/a1");

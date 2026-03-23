@@ -16,53 +16,40 @@ function getGreeting(): string {
   return "Good evening";
 }
 
-function formatDate(): string {
-  return new Intl.DateTimeFormat("en-ET", {
-    weekday: "long",
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  })
-    .format(new Date())
-    .toUpperCase();
-}
-
 export function GreetingHeader({
   username,
   firstName,
   lastName,
   avatarUrl,
 }: GreetingHeaderProps) {
-  const displayName = username || firstName || "there";
-  const initials = [firstName?.[0], lastName?.[0]]
-    .filter(Boolean)
-    .join("")
-    .toUpperCase() || (username?.[0]?.toUpperCase() ?? "U");
+  const displayName = firstName || username || "there";
+  const initials =
+    [firstName?.[0], lastName?.[0]].filter(Boolean).join("").toUpperCase() ||
+    (username?.[0]?.toUpperCase() ?? "U");
 
   return (
     <div className="flex items-center justify-between">
       <div className="min-w-0 flex-1">
-        <p className="text-[11px] font-medium uppercase tracking-widest text-muted-foreground">
-          {formatDate()}
-        </p>
-        <h1 className="text-xl font-bold md:text-2xl">
-          {getGreeting()}, {displayName}
+        <p className="text-xs text-muted-foreground">{getGreeting()}</p>
+        <h1 className="text-lg font-bold tracking-tight text-foreground">
+          {displayName}
         </h1>
       </div>
 
       <Link
         href="/profile"
         aria-label="View profile"
-        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-transform active:scale-95"
+        className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full ring-2 ring-primary/20 ring-offset-2 ring-offset-background transition-transform active:scale-95"
       >
         {avatarUrl ? (
+          /* eslint-disable-next-line @next/next/no-img-element */
           <img
             src={avatarUrl}
             alt={`${displayName}'s avatar`}
-            className="h-10 w-10 rounded-full object-cover"
+            className="h-9 w-9 rounded-full object-cover"
           />
         ) : (
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-accent text-sm font-semibold text-accent-foreground">
+          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-primary to-accent text-xs font-bold text-primary-foreground">
             {initials}
           </div>
         )}

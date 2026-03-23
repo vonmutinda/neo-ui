@@ -13,26 +13,24 @@ export interface ResolvedRecipient {
 
 interface SendState {
   type: TransferType;
-  recipientPhone: string;
-  recipientName: string;
-  recipientId: string;
   destInstitution: string;
   amountCents: number;
   currency: SupportedCurrency;
   narration: string;
+  recipients: ResolvedRecipient[];
 
   setType: (type: TransferType) => void;
-  setRecipient: (phone: string, name?: string, id?: string) => void;
   setDestInstitution: (inst: string) => void;
   setAmount: (cents: number) => void;
   setCurrency: (c: SupportedCurrency) => void;
   setNarration: (n: string) => void;
   reset: () => void;
 
-  isMultiSend: boolean;
-  recipients: ResolvedRecipient[];
-  setMultiSend: (on: boolean) => void;
-  addRecipient: (r: Omit<ResolvedRecipient, "amountCents" | "narration">) => void;
+  /** Set (or replace) a single recipient — clears the list first. */
+  setRecipient: (phone: string, name?: string, id?: string) => void;
+  addRecipient: (
+    r: Omit<ResolvedRecipient, "amountCents" | "narration">,
+  ) => void;
   removeRecipient: (phone: string) => void;
   setRecipientAmount: (phone: string, cents: number) => void;
   setRecipientNarration: (phone: string, narration: string) => void;
@@ -42,30 +40,34 @@ interface SendState {
 
 const initial = {
   type: "inbound" as TransferType,
-  recipientPhone: "",
-  recipientName: "",
-  recipientId: "",
-  destInstitution: "NEOBANK",
+  destInstitution: "ENVIAR",
   amountCents: 0,
   currency: "ETB" as SupportedCurrency,
   narration: "",
-  isMultiSend: false,
   recipients: [] as ResolvedRecipient[],
 };
 
 export const useSendStore = create<SendState>((set) => ({
   ...initial,
   setType: (type) => set({ type }),
-  setRecipient: (phone, name, id) =>
-    set({ recipientPhone: phone, recipientName: name ?? "", recipientId: id ?? "" }),
   setDestInstitution: (inst) => set({ destInstitution: inst }),
   setAmount: (cents) => set({ amountCents: cents }),
   setCurrency: (c) => set({ currency: c }),
   setNarration: (n) => set({ narration: n }),
   reset: () => set(initial),
 
-  setMultiSend: (on) =>
-    set(on ? { isMultiSend: true } : { isMultiSend: false, recipients: [] }),
+  setRecipient: (phone, name, id) =>
+    set({
+      recipients: [
+        {
+          phone,
+          name: name ?? "",
+          id: id ?? "",
+          amountCents: 0,
+          narration: "",
+        },
+      ],
+    }),
   addRecipient: (r) =>
     set((s) => ({
       recipients: [...s.recipients, { ...r, amountCents: 0, narration: "" }],

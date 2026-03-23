@@ -58,7 +58,9 @@ export function useAdminWriteOffLoan() {
   });
 }
 
-export function useAdminCreditProfiles(filter: { limit?: number; offset?: number } = {}) {
+export function useAdminCreditProfiles(
+  filter: { limit?: number; offset?: number } = {},
+) {
   const params = new URLSearchParams();
   if (filter.limit !== undefined) params.set("limit", String(filter.limit));
   if (filter.offset !== undefined) params.set("offset", String(filter.offset));
@@ -66,14 +68,17 @@ export function useAdminCreditProfiles(filter: { limit?: number; offset?: number
   return useQuery({
     queryKey: ["admin", "credit-profiles", filter],
     queryFn: () =>
-      adminApi.get<PaginatedResponse<AdminCreditProfile>>(`/credit-profiles${qs ? `?${qs}` : ""}`),
+      adminApi.get<PaginatedResponse<AdminCreditProfile>>(
+        `/credit-profiles${qs ? `?${qs}` : ""}`,
+      ),
   });
 }
 
 export function useAdminCreditProfile(userId: string) {
   return useQuery({
     queryKey: ["admin", "credit-profiles", userId],
-    queryFn: () => adminApi.get<AdminCreditProfile>(`/credit-profiles/${userId}`),
+    queryFn: () =>
+      adminApi.get<AdminCreditProfile>(`/credit-profiles/${userId}`),
     enabled: !!userId,
   });
 }
@@ -81,8 +86,16 @@ export function useAdminCreditProfile(userId: string) {
 export function useAdminOverrideCredit() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ userId, ...body }: CreditOverrideRequest & { userId: string }) =>
+    mutationFn: ({
+      userId,
+      ...body
+    }: CreditOverrideRequest & { userId: string }) =>
       adminApi.post<void>(`/credit-profiles/${userId}/override`, body),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["admin", "credit-profiles"] }),
+    onSuccess: (_, variables) => {
+      qc.invalidateQueries({ queryKey: ["admin", "credit-profiles"] });
+      qc.invalidateQueries({
+        queryKey: ["admin", "customers", variables.userId],
+      });
+    },
   });
 }

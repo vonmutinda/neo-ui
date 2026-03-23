@@ -2,6 +2,11 @@ const CURRENCY_SYMBOLS: Record<string, string> = {
   ETB: "Br",
   USD: "$",
   EUR: "€",
+  GBP: "£",
+  AED: "د.إ",
+  SAR: "﷼",
+  CNY: "¥",
+  KES: "KSh",
 };
 
 export function currencySymbol(currency: string): string {
@@ -30,7 +35,6 @@ export function formatMoney(
     maximumFractionDigits: fractionDigits,
   });
   const sym = currencySymbol(currency);
-  const prefix =
-    sign === true ? "+" : sign === false ? "-" : "";
+  const prefix = sign === true ? "+" : sign === false ? "-" : "";
   return `${prefix}${sym}${formatted}`;
 }

@@ -8,9 +8,17 @@ import { TransferRecipientStep } from "@/components/business/transfers/TransferR
 import { TransferAmountStep } from "@/components/business/transfers/TransferAmountStep";
 import { TransferReviewStep } from "@/components/business/transfers/TransferReviewStep";
 import { TransferSummaryCard } from "@/components/business/transfers/TransferSummaryCard";
+import { TransfersSkeleton } from "@/components/business/transfers/TransfersSkeleton";
 import { useBusinessTransferStore } from "@/lib/business-transfer-store";
+import { useBusinessPermissionCheck } from "@/hooks/business/use-business-members";
 
 export default function NewTransferPage() {
+  const { isChecking, allowed: canInitiateTransfer } =
+    useBusinessPermissionCheck([
+      "biz:transfers:initiate:internal",
+      "biz:transfers:initiate:external",
+    ]);
+
   const { step, reset } = useBusinessTransferStore();
 
   // Reset store on mount
@@ -18,6 +26,22 @@ export default function NewTransferPage() {
     reset();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  if (isChecking) {
+    return <TransfersSkeleton />;
+  }
+
+  if (!canInitiateTransfer) {
+    return (
+      <div className="space-y-6">
+        <PageHeader title="New Transfer" backHref="/business/transfers" />
+        <p className="text-sm text-muted-foreground">
+          You don&apos;t have permission to initiate transfers for this
+          business.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

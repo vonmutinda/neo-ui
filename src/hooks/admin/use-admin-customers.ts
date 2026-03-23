@@ -14,8 +14,10 @@ import type {
 function buildQuery(filter: CustomerFilter): string {
   const params = new URLSearchParams();
   if (filter.search) params.set("search", filter.search);
-  if (filter.kycLevel !== undefined) params.set("kyc_level", String(filter.kycLevel));
-  if (filter.isFrozen !== undefined) params.set("is_frozen", String(filter.isFrozen));
+  if (filter.kycLevel !== undefined)
+    params.set("kyc_level", String(filter.kycLevel));
+  if (filter.isFrozen !== undefined)
+    params.set("is_frozen", String(filter.isFrozen));
   if (filter.createdFrom) params.set("from", filter.createdFrom);
   if (filter.createdTo) params.set("to", filter.createdTo);
   if (filter.sort) params.set("sort", filter.sort);
@@ -30,7 +32,9 @@ export function useAdminCustomers(filter: CustomerFilter) {
   return useQuery({
     queryKey: ["admin", "customers", filter],
     queryFn: () =>
-      adminApi.get<PaginatedResponse<AdminTransaction>>(`/customers${buildQuery(filter)}`),
+      adminApi.get<PaginatedResponse<AdminTransaction>>(
+        `/customers${buildQuery(filter)}`,
+      ),
   });
 }
 
@@ -62,7 +66,8 @@ export function useAdminFreezeCustomer() {
 export function useAdminUnfreezeCustomer() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: string) => adminApi.post<void>(`/customers/${id}/unfreeze`, {}),
+    mutationFn: (id: string) =>
+      adminApi.post<void>(`/customers/${id}/unfreeze`, {}),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["admin", "customers"] }),
   });
 }
@@ -82,5 +87,22 @@ export function useAdminAddNote() {
     mutationFn: ({ id, ...body }: AddNoteRequest & { id: string }) =>
       adminApi.post<void>(`/customers/${id}/note`, body),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["admin", "customers"] }),
+  });
+}
+
+interface DepositRequest {
+  id: string;
+  amountCents: number;
+  asset?: string;
+  narration?: string;
+}
+
+export function useAdminDepositToCustomer() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, ...body }: DepositRequest) =>
+      adminApi.post<{ status: string }>(`/customers/${id}/deposit`, body),
+    onSuccess: (_, vars) =>
+      qc.invalidateQueries({ queryKey: ["admin", "customers", vars.id] }),
   });
 }

@@ -5,7 +5,6 @@ import { useParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import {
-  ArrowLeft,
   Plus,
   ArrowLeftRight,
   ArrowUp,
@@ -17,35 +16,62 @@ import {
   ArrowDownLeft,
   ArrowUpRight,
   Search,
-  Settings,
+  ChevronDown,
 } from "lucide-react";
+import { PageHeader } from "@/components/shared/PageHeader";
 import { useBalances } from "@/hooks/use-balances";
 import { useTransactions } from "@/hooks/use-wallets";
 import { useSendStore } from "@/lib/send-store";
-import { useTelegram } from "@/providers/TelegramProvider";
+
 import { CurrencyFlag } from "@/components/shared/CurrencyFlag";
+import { EmptyState } from "@/components/shared/EmptyState";
+import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
-import type { SupportedCurrency, TransactionReceipt, ReceiptType } from "@/lib/types";
+import type {
+  SupportedCurrency,
+  TransactionReceipt,
+  ReceiptType,
+} from "@/lib/types";
 import { formatMoney } from "@/lib/format";
 
-const CREDIT_TYPES: Set<ReceiptType> = new Set(["p2p_receive", "ethswitch_in", "loan_disbursement", "convert_in"]);
+const CREDIT_TYPES: Set<ReceiptType> = new Set([
+  "p2p_receive",
+  "ethswitch_in",
+  "loan_disbursement",
+  "convert_in",
+]);
+
+const CURRENCY_NAMES: Record<string, string> = {
+  ETB: "Ethiopian Birr",
+  USD: "US Dollar",
+  EUR: "Euro",
+  GBP: "British Pound",
+  KES: "Kenyan Shilling",
+};
 
 function ActionButton({
   icon: Icon,
   label,
   href,
   onClick,
+  variant = "primary",
 }: {
   icon: React.ElementType;
   label: string;
   href?: string;
   onClick?: () => void;
+  variant?: "primary" | "secondary";
 }) {
+  const circleClass =
+    variant === "primary"
+      ? "flex h-11 w-11 items-center justify-center rounded-full bg-primary text-primary-foreground transition-transform active:scale-95"
+      : "flex h-10 w-10 items-center justify-center rounded-full border border-border/60 bg-card text-primary transition-transform active:scale-95";
+
   const content = (
-    <div className="flex flex-col items-center gap-1.5">
-      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground transition-transform active:scale-95">
-        <Icon className="h-5 w-5" />
+    <div className="flex flex-col items-center gap-1">
+      <div className={circleClass}>
+        <Icon className="h-4 w-4" />
       </div>
       <span className="text-xs font-medium">{label}</span>
     </div>
@@ -88,7 +114,6 @@ function AccountDetailRow({
   );
 }
 
-
 function formatRelativeTime(dateStr: string | undefined): string {
   if (!dateStr) return "";
   const diffMs = Date.now() - new Date(dateStr).getTime();
@@ -99,10 +124,19 @@ function formatRelativeTime(dateStr: string | undefined): string {
   if (diffHr < 24) return `${diffHr}h ago`;
   const diffDay = Math.floor(diffHr / 24);
   if (diffDay < 7) return `${diffDay}d ago`;
-  return new Date(dateStr).toLocaleDateString("en-ET", { month: "short", day: "numeric" });
+  return new Date(dateStr).toLocaleDateString("en-ET", {
+    month: "short",
+    day: "numeric",
+  });
 }
 
-function TransactionRow({ tx, index }: { tx: TransactionReceipt; index: number }) {
+function TransactionRow({
+  tx,
+  index,
+}: {
+  tx: TransactionReceipt;
+  index: number;
+}) {
   const isConversion = tx.type === "convert_out" || tx.type === "convert_in";
   const isCredit = CREDIT_TYPES.has(tx.type);
   const label = isConversion
@@ -111,16 +145,15 @@ function TransactionRow({ tx, index }: { tx: TransactionReceipt; index: number }
 
   const iconColor = isConversion
     ? "bg-blue-500/10 text-blue-500"
-    : isCredit ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive";
+    : isCredit
+      ? "bg-success/10 text-success"
+      : "bg-destructive/10 text-destructive";
 
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 4 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.02 }}
-      className="flex items-center gap-3 rounded-lg px-3 py-3 transition-colors active:bg-muted"
-    >
-      <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${iconColor}`}>
+  const rowContent = (
+    <>
+      <div
+        className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${iconColor}`}
+      >
         {isConversion ? (
           <ArrowLeftRight className="h-5 w-5" />
         ) : isCredit ? (
@@ -137,11 +170,34 @@ function TransactionRow({ tx, index }: { tx: TransactionReceipt; index: number }
       </div>
       <span
         className={`whitespace-nowrap font-tabular text-sm font-semibold ${
-          isConversion ? "text-blue-500" : isCredit ? "text-success" : "text-foreground"
+          isConversion
+            ? "text-blue-500"
+            : isCredit
+              ? "text-success"
+              : "text-foreground"
         }`}
       >
         {formatMoney(tx.amountCents, tx.currency, isCredit ? true : false)}
       </span>
+    </>
+  );
+
+  const rowClassName =
+    "flex items-center gap-3 rounded-lg px-3 py-3 transition-colors active:bg-muted";
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 4 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.02 }}
+    >
+      {tx.id ? (
+        <Link href={`/transactions/${tx.id}`} className={rowClassName}>
+          {rowContent}
+        </Link>
+      ) : (
+        <div className={rowClassName}>{rowContent}</div>
+      )}
     </motion.div>
   );
 }
@@ -149,7 +205,7 @@ function TransactionRow({ tx, index }: { tx: TransactionReceipt; index: number }
 export default function BalanceDetailPage() {
   const params = useParams<{ code: string }>();
   const code = (params.code?.toUpperCase() ?? "ETB") as SupportedCurrency;
-  const { haptic } = useTelegram();
+
   const setCurrency = useSendStore((s) => s.setCurrency);
 
   const { data: balances, isLoading: balancesLoading } = useBalances();
@@ -162,20 +218,21 @@ export default function BalanceDetailPage() {
   const balance = balances?.find((b) => b.currencyCode === code);
   const ad = balance?.accountDetails;
 
-  const filteredTxs = (transactions ?? []).filter((tx) => {
-    if (!searchQuery) return true;
-    const q = searchQuery.toLowerCase();
-    return (
-      (tx.counterpartyName ?? "").toLowerCase().includes(q) ||
-      (tx.narration ?? "").toLowerCase().includes(q) ||
-      tx.type.toLowerCase().includes(q)
-    );
-  });
+  const filteredTxs = (Array.isArray(transactions) ? transactions : []).filter(
+    (tx) => {
+      if (!searchQuery) return true;
+      const q = searchQuery.toLowerCase();
+      return (
+        (tx.counterpartyName ?? "").toLowerCase().includes(q) ||
+        (tx.narration ?? "").toLowerCase().includes(q) ||
+        tx.type.toLowerCase().includes(q)
+      );
+    },
+  );
 
   async function copyToClipboard(value: string, field: string) {
     try {
       await navigator.clipboard.writeText(value);
-      haptic("light");
       setCopiedField(field);
       toast.success("Copied to clipboard");
       setTimeout(() => setCopiedField(null), 2000);
@@ -211,44 +268,41 @@ export default function BalanceDetailPage() {
 
   if (!balance) {
     return (
-      <div className="flex flex-col items-center justify-center gap-4 pt-20">
-        <p className="text-muted-foreground">
-          No active {code} balance found
-        </p>
-        <Link href="/" className="text-sm font-medium text-primary">
-          Back to dashboard
-        </Link>
-      </div>
+      <EmptyState
+        icon={Building2}
+        title={`No active ${code} balance`}
+        description="Add this currency to start sending, receiving, and tracking activity."
+        actionLabel="Go to dashboard"
+        actionHref="/"
+      />
     );
   }
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
-      className="space-y-8"
-    >
+    <div className="space-y-5">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <Link
-          href="/"
-          className="flex h-10 w-10 items-center justify-center rounded-full transition-colors active:bg-muted"
-        >
-          <ArrowLeft className="h-5 w-5" />
-        </Link>
-        <button
-          onClick={() => setShowAccountDetails(!showAccountDetails)}
-          className="flex h-10 w-10 items-center justify-center rounded-full transition-colors active:bg-muted"
-        >
-          <Settings className="h-5 w-5 text-muted-foreground" />
-        </button>
-      </div>
+      <PageHeader
+        title={`${CURRENCY_NAMES[code] ?? code} Account`}
+        backHref="/balances"
+        rightSlot={
+          <button
+            onClick={() => setShowAccountDetails(!showAccountDetails)}
+            className="flex items-center gap-1.5 rounded-full border border-border/60 bg-card px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground active:bg-muted"
+          >
+            Account details
+            <ChevronDown
+              className={`h-3.5 w-3.5 transition-transform duration-200 ${showAccountDetails ? "rotate-180" : ""}`}
+            />
+          </button>
+        }
+      />
 
       {/* Currency Identity */}
-      <div className="flex flex-col items-center gap-3">
-        <CurrencyFlag currency={code} size="lg" />
-        <p className="text-lg font-medium">{code} balance</p>
+      <div className="flex flex-col items-center gap-2.5">
+        <CurrencyFlag currency={code} size="xl" />
+        <p className="text-base font-medium text-muted-foreground">
+          {code} balance
+        </p>
 
         {ad && (
           <button
@@ -260,20 +314,40 @@ export default function BalanceDetailPage() {
           </button>
         )}
 
-        <p className="font-tabular text-4xl font-bold tracking-tight md:text-5xl">
+        <span className="font-tabular text-3xl font-bold tracking-tight md:text-4xl">
           {formatMoney(balance.balanceCents, balance.currencyCode)}
-        </p>
+        </span>
       </div>
 
       {/* Action Buttons */}
-      <div className="flex items-center justify-center gap-6">
-        <ActionButton icon={Plus} label="Add" href={`/receive?currency=${code}`} />
-        <ActionButton icon={ArrowLeftRight} label="Convert" href={`/convert?from=${code}`} />
-        <ActionButton icon={ArrowUp} label="Send" href="/send" onClick={handleSend} />
-        <ActionButton icon={ArrowDown} label="Receive" href={`/receive?currency=${code}`} />
+      <div className="flex items-center justify-center gap-4">
+        <ActionButton
+          icon={Plus}
+          label="Add"
+          href={`/receive?currency=${code}`}
+          variant="secondary"
+        />
+        <ActionButton
+          icon={ArrowUp}
+          label="Send"
+          href="/send"
+          onClick={handleSend}
+        />
+        <ActionButton
+          icon={ArrowDown}
+          label="Receive"
+          href={`/receive?currency=${code}`}
+        />
+        <ActionButton
+          icon={ArrowLeftRight}
+          label="Convert"
+          href={`/convert?from=${code}`}
+          variant="secondary"
+        />
         <ActionButton
           icon={MoreHorizontal}
           label="More"
+          variant="secondary"
           onClick={() => setShowAccountDetails(!showAccountDetails)}
         />
       </div>
@@ -287,8 +361,10 @@ export default function BalanceDetailPage() {
             exit={{ opacity: 0, height: 0 }}
             className="overflow-hidden"
           >
-            <div className="rounded-2xl border bg-card p-5">
-              <h3 className="mb-3 text-base font-semibold">Account details</h3>
+            <div className="rounded-2xl border border-border/60 bg-card p-4">
+              <h3 className="mb-3 text-base font-semibold text-muted-foreground">
+                Account details
+              </h3>
               <div className="divide-y">
                 <AccountDetailRow
                   label="IBAN"
@@ -333,42 +409,22 @@ export default function BalanceDetailPage() {
         )}
       </AnimatePresence>
 
-      {/* Balance Information */}
-      {ad && !showAccountDetails && (
-        <div className="rounded-2xl border bg-card">
-          <button
-            onClick={() => setShowAccountDetails(true)}
-            className="flex w-full items-center justify-between px-5 py-4 transition-colors active:bg-muted"
-          >
-            <div className="flex items-center gap-3">
-              <Building2 className="h-5 w-5 text-muted-foreground" />
-              <div className="text-left">
-                <p className="text-sm font-medium">Account details</p>
-                <p className="text-xs text-muted-foreground">
-                  IBAN, SWIFT, and bank information
-                </p>
-              </div>
-            </div>
-            <ChevronRight className="h-4 w-4 text-muted-foreground" />
-          </button>
-        </div>
-      )}
-
       {/* Transactions */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-base font-semibold">Transactions</h2>
+          <h2 className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+            Transactions
+          </h2>
         </div>
 
-        {/* Search */}
         <div className="relative">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <input
+          <Input
             type="text"
             placeholder="Search transactions..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full rounded-xl border bg-background py-2.5 pl-10 pr-4 text-sm outline-none ring-primary focus:ring-2"
+            className="pl-10"
           />
         </div>
 
@@ -386,7 +442,7 @@ export default function BalanceDetailPage() {
             ))}
           </div>
         ) : filteredTxs.length > 0 ? (
-          <div className="space-y-0.5 rounded-2xl border bg-card">
+          <div className="space-y-0.5 overflow-hidden rounded-2xl border border-border/60 bg-card">
             {filteredTxs.map((tx, i) => (
               <TransactionRow
                 key={tx.id ? `${tx.id}-${i}` : `tx-${i}`}
@@ -396,51 +452,21 @@ export default function BalanceDetailPage() {
             ))}
           </div>
         ) : (
-          <div className="flex flex-col items-center gap-4 rounded-2xl border border-dashed py-12 text-center">
-            <p className="text-sm text-muted-foreground">
-              {searchQuery
-                ? "No transactions matching your search"
-                : `No transactions yet`}
-            </p>
-            {!searchQuery && (
-              <div className="flex gap-3">
-                <Link
-                  href="/send"
-                  onClick={handleSend}
-                  className="rounded-full bg-primary px-4 py-2 text-xs font-medium text-primary-foreground"
-                >
-                  Send {code}
-                </Link>
-                <Link
-                  href={`/receive?currency=${code}`}
-                  className="rounded-full border px-4 py-2 text-xs font-medium"
-                >
-                  Receive {code}
-                </Link>
-              </div>
-            )}
-          </div>
+          <EmptyState
+            icon={searchQuery ? Search : ArrowLeftRight}
+            title={
+              searchQuery ? "No matching transactions" : "No transactions yet"
+            }
+            description={
+              searchQuery
+                ? "Try a different name, note, or transaction type."
+                : `Your ${code} activity will appear here once you start moving money.`
+            }
+            actionLabel={!searchQuery ? `Receive ${code}` : undefined}
+            actionHref={!searchQuery ? `/receive?currency=${code}` : undefined}
+          />
         )}
       </div>
-    </motion.div>
-  );
-}
-
-function ChevronRight(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      {...props}
-    >
-      <path d="m9 18 6-6-6-6" />
-    </svg>
+    </div>
   );
 }
