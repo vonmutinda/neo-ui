@@ -410,7 +410,20 @@ Subtle colored backgrounds at ~6-8% opacity for contextual tinting.
 - RBAC-driven UI (show/hide based on 25+ permissions)
 - Approval workflows for transfers and batch payments
 
-### Phase 6: Polish & Production
+### Phase 6: Admin — Trade Finance
+
+- Admin import request management (list, review, approve/reject, advance status)
+- Admin export request management (same lifecycle)
+- Admin KYB application review (already partially built)
+
+### Phase 7: Form Validation & API Error Handling
+
+- Display backend validation errors inline on form fields (map API error responses to field-level messages)
+- Client-side validation with consistent patterns (required fields, format checks, min/max)
+- Standardized error toast with detail extraction from API envelope (`{ error: "..." }`)
+- Form-level error banners for non-field-specific errors
+
+### Phase 8: Polish & Production
 
 - Accessibility audit (WCAG 2.1 AA)
 - Performance optimization (bundle splitting, lazy loading)
