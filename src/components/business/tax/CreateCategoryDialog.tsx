@@ -38,6 +38,7 @@ export function CreateCategoryDialog({
       {/* Backdrop */}
       <div
         className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+        aria-hidden="true"
         onClick={onClose}
       />
 
@@ -47,10 +48,16 @@ export function CreateCategoryDialog({
           "relative z-10 w-full max-w-md rounded-2xl bg-card p-6",
           "shadow-[0_2px_8px_oklch(0.40_0.06_70/4%),0_1px_2px_oklch(0.40_0.06_70/6%)]",
         )}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="create-category-title"
       >
         {/* Header */}
         <div className="flex items-center justify-between">
-          <h2 className="text-base font-semibold text-foreground">
+          <h2
+            id="create-category-title"
+            className="text-base font-semibold text-foreground"
+          >
             New Category
           </h2>
           <button

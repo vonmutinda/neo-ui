@@ -79,11 +79,20 @@ export function CreateRoleDialog({
       {/* Backdrop */}
       <div
         className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm"
+        aria-hidden="true"
         onClick={handleClose}
       />
       {/* Dialog */}
-      <div className="fixed left-1/2 top-1/2 z-50 max-h-[85vh] w-full max-w-lg -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-2xl bg-background p-6 shadow-xl">
-        <h2 className="text-base font-semibold tracking-tight text-foreground">
+      <div
+        className="fixed left-1/2 top-1/2 z-50 max-h-[85vh] w-full max-w-lg -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-2xl bg-background p-6 shadow-xl"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="create-role-title"
+      >
+        <h2
+          id="create-role-title"
+          className="text-base font-semibold tracking-tight text-foreground"
+        >
           Create Custom Role
         </h2>
         <p className="mt-1 text-xs text-muted-foreground">
