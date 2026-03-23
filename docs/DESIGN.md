@@ -442,11 +442,11 @@ Subtle colored backgrounds at ~6-8% opacity for contextual tinting.
 - RM (relationship manager) assignment and workload management ✅
 - KYB submission review and approval workflow ✅
 
-### Phase 7: Admin — Reports & Detailed Views
+### Phase 7: Admin — Reports & Detailed Views ✅ Done
 
-- Generate compliance reports, transaction exports, customer summaries
-- Detailed user action views: payment requests with full details, transfer approval history, challenge/confirmation details
-- Bill payments admin page
+- Generate compliance reports, transaction exports, customer summaries ✅ (compliance page, analytics dashboard, audit log, money flow map)
+- Bill payments admin page ✅
+- Detailed user action views — **blocked on backend**: no admin endpoints for payment-requests, challenges, or confirmations (see Known Gaps)
 
 ### Phase 8: Form Validation & API Error Handling
 
@@ -479,9 +479,8 @@ Subtle colored backgrounds at ~6-8% opacity for contextual tinting.
 
 **Admin app — not yet built (Phase 7):**
 
-- Report generation pages (compliance report, transaction exports, customer summaries)
-- Detailed user action views (payment request details, transfer approval history, challenge/confirmation details)
-- Bill payment admin detail page
+- Admin views for payment requests, challenges, confirmations — requires backend `/admin/v1/payment-requests`, `/admin/v1/challenges`, `/admin/v1/confirmations` endpoints first
+- Transfer approval history admin view — requires backend endpoint
 
 **Cross-cutting — not yet implemented (Phase 8):**
 

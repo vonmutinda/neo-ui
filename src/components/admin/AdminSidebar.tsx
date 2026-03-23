@@ -131,6 +131,12 @@ const FINANCE_NAV: NavItem[] = [
     permission: "users:read",
   },
   {
+    href: "/admin/bill-payments",
+    label: "Bill Payments",
+    icon: Receipt,
+    permission: "transactions:read",
+  },
+  {
     href: "/admin/billers",
     label: "Billers",
     icon: Building2,
