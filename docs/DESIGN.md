@@ -435,12 +435,12 @@ Subtle colored backgrounds at ~6-8% opacity for contextual tinting.
 - RBAC-driven UI (show/hide based on 25+ permissions)
 - Approval workflows for transfers and batch payments
 
-### Phase 6: Admin — Trade Finance & Business Oversight
+### Phase 6: Admin — Trade Finance & Business Oversight ✅ Done
 
-- Admin import/export request review with approve/reject and status advancement
-- Admin business-cards, business-transfers, and invoices views
-- RM (relationship manager) assignment and workload management
-- KYB submission review and approval workflow
+- Admin import/export request review with approve/reject and status advancement ✅
+- Admin business-cards, business-transfers, and invoices views ✅
+- RM (relationship manager) assignment and workload management ✅
+- KYB submission review and approval workflow ✅
 
 ### Phase 7: Admin — Reports & Detailed Views
 

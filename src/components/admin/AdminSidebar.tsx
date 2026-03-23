@@ -107,6 +107,24 @@ const FINANCE_NAV: NavItem[] = [
     permission: "users:read",
   },
   {
+    href: "/admin/business-cards",
+    label: "Business Cards",
+    icon: CreditCard,
+    permission: "users:read",
+  },
+  {
+    href: "/admin/business-transfers",
+    label: "Business Transfers",
+    icon: ArrowLeftRight,
+    permission: "users:read",
+  },
+  {
+    href: "/admin/invoices",
+    label: "Invoices",
+    icon: Receipt,
+    permission: "users:read",
+  },
+  {
     href: "/admin/batch-payments",
     label: "Batch payments",
     icon: ListOrdered,
