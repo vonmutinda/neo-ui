@@ -21,8 +21,8 @@ export function TaxPotCard({
   onEdit,
   onWithdraw,
 }: TaxPotCardProps) {
-  const balance = pot.balanceCents ?? 0;
-  const target = pot.targetCents ?? 0;
+  const balance = pot.pot?.balanceCents ?? 0;
+  const target = pot.pot?.targetCents ?? 0;
   const progressPct =
     target > 0 ? Math.min(100, Math.round((balance / target) * 100)) : 0;
 
@@ -42,12 +42,12 @@ export function TaxPotCard({
         <span
           className={cn(
             "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold",
-            pot.isActive
+            pot.pot?.isActive
               ? "bg-success/10 text-success-foreground"
               : "bg-muted text-muted-foreground",
           )}
         >
-          {pot.isActive ? "Active" : "Paused"}
+          {pot.pot?.isActive ? "Active" : "Paused"}
         </span>
       </div>
 

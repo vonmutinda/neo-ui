@@ -23,11 +23,7 @@ import { TransferStatusBadge } from "@/components/business/transfers/TransferSta
 import { TransferActions } from "@/components/business/transfers/TransferActions";
 import { TransfersFilterBar } from "@/components/business/transfers/TransfersFilterBar";
 import { TransfersSkeleton } from "@/components/business/transfers/TransfersSkeleton";
-import type {
-  BusinessTransferStatus,
-  BusinessTransferType,
-} from "@/lib/business-types";
-import type { SupportedCurrency } from "@/lib/types";
+import type { BusinessTransferStatus } from "@/lib/business-types";
 
 type TabValue = "all" | BusinessTransferStatus;
 
@@ -40,22 +36,15 @@ export default function TransfersPage() {
 
   const [tab, setTab] = useState<TabValue>("all");
   const [search, setSearch] = useState("");
-  const [currencyCode, setCurrencyCode] = useState<SupportedCurrency | "">("");
-  const [transferType, setTransferType] = useState<BusinessTransferType | "">(
-    "",
-  );
   const [offset, setOffset] = useState(0);
 
   const filter = useMemo(
     () => ({
       status: tab === "all" ? undefined : tab,
-      search: search || undefined,
-      currencyCode: currencyCode || undefined,
-      transferType: transferType || undefined,
       limit: PAGE_SIZE,
       offset,
     }),
-    [tab, search, currencyCode, transferType, offset],
+    [tab, offset],
   );
 
   const { data: result, isLoading } = useBusinessTransfers(
@@ -182,16 +171,6 @@ export default function TransfersPage() {
         search={search}
         onSearchChange={(v) => {
           setSearch(v);
-          setOffset(0);
-        }}
-        currencyCode={currencyCode}
-        onCurrencyChange={(v) => {
-          setCurrencyCode(v);
-          setOffset(0);
-        }}
-        transferType={transferType}
-        onTransferTypeChange={(v) => {
-          setTransferType(v);
           setOffset(0);
         }}
         onExport={handleExport}

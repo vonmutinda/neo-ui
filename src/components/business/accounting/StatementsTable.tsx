@@ -80,12 +80,12 @@ export function StatementsTable({
           >
             {/* Period */}
             <p className="text-sm font-medium text-foreground">
-              {formatPeriod(stmt.fromDate, stmt.toDate)}
+              {formatPeriod(stmt.dateFrom, stmt.dateTo)}
             </p>
 
             {/* Currency */}
             <p className="text-sm text-muted-foreground">
-              {stmt.currencyCode ?? "All"}
+              {stmt.currency ?? "All"}
             </p>
 
             {/* Format */}

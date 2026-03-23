@@ -50,7 +50,7 @@ export function ExportDetailView({
           <div>
             <div className="flex items-center gap-3">
               <h2 className="font-mono text-lg font-semibold tracking-tight">
-                {exportReq.exportNumber}
+                {exportReq.referenceNumber}
               </h2>
               <ExportStatusBadge status={exportReq.status} />
             </div>
@@ -122,7 +122,7 @@ export function ExportDetailView({
                 className="flex items-center justify-between py-2.5"
               >
                 <div>
-                  <p className="text-sm font-medium">{doc.name}</p>
+                  <p className="text-sm font-medium">{doc.fileName}</p>
                   <p className="text-xs text-muted-foreground">
                     {doc.documentType}
                   </p>

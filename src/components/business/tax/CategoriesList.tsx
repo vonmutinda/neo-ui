@@ -1,7 +1,6 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { formatMoney } from "@/lib/format";
 import { Pencil, Trash2 } from "lucide-react";
 import type { TransactionCategory } from "@/lib/business-types";
 
@@ -10,7 +9,7 @@ interface CategoriesListProps {
   onEdit?: (category: TransactionCategory) => void;
   onDelete?: (category: TransactionCategory) => void;
   canManage: boolean;
-  currencyCode: string;
+  currencyCode?: string;
 }
 
 export function CategoriesList({
@@ -18,7 +17,6 @@ export function CategoriesList({
   onEdit,
   onDelete,
   canManage,
-  currencyCode,
 }: CategoriesListProps) {
   if (categories.length === 0) {
     return (
@@ -47,29 +45,9 @@ export function CategoriesList({
               style={{ backgroundColor: cat.color }}
             />
 
-            {/* Name & description */}
+            {/* Name */}
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-foreground">{cat.name}</p>
-              {cat.description && (
-                <p className="mt-0.5 truncate text-xs text-muted-foreground">
-                  {cat.description}
-                </p>
-              )}
-            </div>
-
-            {/* Amount & count */}
-            <div className="text-right shrink-0">
-              {cat.totalCents != null && (
-                <p className="font-mono text-sm font-medium tracking-tight">
-                  {formatMoney(cat.totalCents, currencyCode, undefined, 0)}
-                </p>
-              )}
-              {cat.transactionCount != null && (
-                <p className="text-[11px] text-muted-foreground">
-                  {cat.transactionCount}{" "}
-                  {cat.transactionCount === 1 ? "txn" : "txns"}
-                </p>
-              )}
             </div>
 
             {/* Actions */}

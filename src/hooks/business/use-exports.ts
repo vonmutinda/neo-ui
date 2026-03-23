@@ -71,3 +71,69 @@ export function useCancelExport(bizId: string | null) {
     },
   });
 }
+
+export function useUpdateExport(bizId: string | null) {
+  const qc = useQueryClient();
+
+  return useMutation<
+    ExportRequest,
+    Error,
+    { exportId: string; body: Partial<CreateExportRequest> }
+  >({
+    mutationFn: ({ exportId, body }) =>
+      api.patch<ExportRequest>(
+        `/v1/business/${bizId}/exports/${exportId}`,
+        body,
+      ),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["business", bizId, "exports"] });
+    },
+  });
+}
+
+export function useRecordProceeds(bizId: string | null) {
+  const qc = useQueryClient();
+
+  return useMutation<
+    unknown,
+    Error,
+    {
+      exportId: string;
+      body: { proceedsAmountCents: number; repatriationDate: string };
+    }
+  >({
+    mutationFn: ({ exportId, body }) =>
+      api.post(`/v1/business/${bizId}/exports/${exportId}/proceeds`, body),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["business", bizId, "exports"] });
+    },
+  });
+}
+
+export function useRecordSurrender(bizId: string | null) {
+  const qc = useQueryClient();
+
+  return useMutation<
+    unknown,
+    Error,
+    {
+      exportId: string;
+      body: { surrenderedAmountCents: number; retainedAmountCents: number };
+    }
+  >({
+    mutationFn: ({ exportId, body }) =>
+      api.post(`/v1/business/${bizId}/exports/${exportId}/surrender`, body),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["business", bizId, "exports"] });
+    },
+  });
+}
+
+export function useExportChecklist(bizId: string | null) {
+  return useQuery<{ documents: { type: string; required: boolean }[] }>({
+    queryKey: ["business", bizId, "exports", "checklist"],
+    queryFn: () => api.get(`/v1/business/${bizId}/exports/checklist-template`),
+    enabled: !!bizId,
+    staleTime: 300_000,
+  });
+}

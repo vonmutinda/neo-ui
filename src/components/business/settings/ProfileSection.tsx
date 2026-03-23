@@ -10,6 +10,7 @@ import {
   type UpdateBusinessRequest,
   type IndustryCategory,
 } from "@/lib/business-types";
+import type { PhoneNumber } from "@/lib/types";
 
 interface ProfileSectionProps {
   business: Business;
@@ -22,27 +23,48 @@ export function ProfileSection({
   onSave,
   isSaving,
 }: ProfileSectionProps) {
-  const [form, setForm] = useState<UpdateBusinessRequest>({
+  const phoneStr = business.phoneNumber
+    ? `${business.phoneNumber.countryCode}${business.phoneNumber.number}`
+    : "";
+
+  const [form, setForm] = useState({
     name: business.name,
     tradeName: business.tradeName ?? "",
     email: business.email ?? "",
-    phoneNumber: business.phoneNumber
-      ? `${business.phoneNumber.countryCode}${business.phoneNumber.number}`
-      : "",
+    phone: phoneStr,
     address: business.address ?? "",
     city: business.city ?? "",
     subRegion: business.subRegion ?? "",
-    industryCategory: business.industryCategory,
+    industryCategory: business.industryCategory as IndustryCategory | undefined,
     website: business.website ?? "",
   });
 
-  function handleChange(field: keyof UpdateBusinessRequest, value: string) {
+  function handleChange(field: keyof typeof form, value: string) {
     setForm((prev) => ({ ...prev, [field]: value }));
+  }
+
+  function buildPhoneNumber(raw: string): PhoneNumber | undefined {
+    if (!raw) return undefined;
+    const digits = raw.replace(/\D/g, "");
+    if (digits.startsWith("251")) {
+      return { countryCode: "+251", number: digits.slice(3) };
+    }
+    return { countryCode: "+251", number: digits };
   }
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    onSave(form);
+    onSave({
+      name: form.name,
+      tradeName: form.tradeName || undefined,
+      email: form.email || undefined,
+      phoneNumber: buildPhoneNumber(form.phone),
+      address: form.address || undefined,
+      city: form.city || undefined,
+      subRegion: form.subRegion || undefined,
+      industryCategory: form.industryCategory,
+      website: form.website || undefined,
+    });
   }
 
   function handleCancel() {
@@ -50,9 +72,7 @@ export function ProfileSection({
       name: business.name,
       tradeName: business.tradeName ?? "",
       email: business.email ?? "",
-      phoneNumber: business.phoneNumber
-        ? `${business.phoneNumber.countryCode}${business.phoneNumber.number}`
-        : "",
+      phone: phoneStr,
       address: business.address ?? "",
       city: business.city ?? "",
       subRegion: business.subRegion ?? "",
@@ -132,8 +152,8 @@ export function ProfileSection({
           Phone
         </label>
         <Input
-          value={form.phoneNumber ?? ""}
-          onChange={(e) => handleChange("phoneNumber", e.target.value)}
+          value={form.phone ?? ""}
+          onChange={(e) => handleChange("phone", e.target.value)}
         />
       </div>
 

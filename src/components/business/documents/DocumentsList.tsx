@@ -1,10 +1,6 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import {
-  getDocumentStatusColor,
-  getDocumentStatusLabel,
-} from "@/lib/business-utils";
 import { FileText, Trash2, ExternalLink } from "lucide-react";
 import type { BusinessDocument } from "@/lib/business-types";
 
@@ -107,10 +103,12 @@ export function DocumentsList({
             <span
               className={cn(
                 "inline-flex shrink-0 items-center rounded-full px-2.5 py-0.5 text-xs font-semibold",
-                getDocumentStatusColor(doc.status),
+                doc.isArchived
+                  ? "bg-muted text-muted-foreground"
+                  : "bg-success/10 text-success-foreground",
               )}
             >
-              {getDocumentStatusLabel(doc.status)}
+              {doc.isArchived ? "Archived" : "Active"}
             </span>
 
             {/* Actions */}

@@ -130,16 +130,11 @@ export function WalletsTransactionTable({
               >
                 {/* Transaction info */}
                 <div className="flex items-center gap-3 min-w-0">
-                  <TxIcon direction={tx.direction} />
+                  <TxIcon direction={tx.amountCents >= 0 ? "in" : "out"} />
                   <div className="min-w-0">
                     <p className="truncate text-sm font-medium">
                       {tx.counterpartyName || tx.narration || tx.type}
                     </p>
-                    {tx.category && (
-                      <p className="truncate text-xs text-muted-foreground">
-                        {tx.category}
-                      </p>
-                    )}
                   </div>
                 </div>
 
@@ -147,16 +142,17 @@ export function WalletsTransactionTable({
                 <span
                   className={cn(
                     "font-mono text-sm font-medium tracking-tight text-right whitespace-nowrap",
-                    tx.direction === "in" && "text-success-foreground",
-                    tx.direction === "out" && "text-destructive",
+                    tx.amountCents > 0 && "text-success-foreground",
+                    tx.amountCents < 0 && "text-destructive",
                   )}
                 >
-                  {tx.direction === "in"
-                    ? "+"
-                    : tx.direction === "out"
-                      ? "-"
-                      : ""}
-                  {formatMoney(tx.amountCents, tx.currencyCode, undefined, 0)}
+                  {tx.amountCents > 0 ? "+" : tx.amountCents < 0 ? "-" : ""}
+                  {formatMoney(
+                    Math.abs(tx.amountCents),
+                    tx.currency,
+                    undefined,
+                    0,
+                  )}
                 </span>
 
                 {/* Date */}

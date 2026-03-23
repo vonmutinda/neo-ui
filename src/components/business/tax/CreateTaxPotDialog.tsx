@@ -19,9 +19,9 @@ export function CreateTaxPotDialog({
   onSubmit,
   isSubmitting,
 }: CreateTaxPotDialogProps) {
+  const [potId, setPotId] = useState("");
   const [taxType, setTaxType] = useState<TaxType>("vat");
   const [autoSweepPercent, setAutoSweepPercent] = useState("15");
-  const [targetAmount, setTargetAmount] = useState("");
   const [dueDate, setDueDate] = useState("");
   const [notes, setNotes] = useState("");
 
@@ -31,15 +31,12 @@ export function CreateTaxPotDialog({
     e.preventDefault();
     const pct = parseFloat(autoSweepPercent);
     if (isNaN(pct) || pct < 0 || pct > 100) return;
-
-    const targetCents = targetAmount
-      ? Math.round(parseFloat(targetAmount) * 100)
-      : undefined;
+    if (!potId) return;
 
     onSubmit({
+      potId,
       taxType,
       autoSweepPercent: pct,
-      targetCents: targetCents && targetCents > 0 ? targetCents : undefined,
       dueDate: dueDate || undefined,
       notes: notes.trim() || undefined,
     });
@@ -75,6 +72,24 @@ export function CreateTaxPotDialog({
         </div>
 
         <form onSubmit={handleSubmit} className="mt-5 space-y-4">
+          {/* Pot ID */}
+          <div>
+            <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/60">
+              Pot ID
+            </label>
+            <input
+              type="text"
+              value={potId}
+              onChange={(e) => setPotId(e.target.value)}
+              className={cn(
+                "mt-1 h-10 w-full rounded-xl bg-secondary px-3 text-sm outline-none",
+                "focus:ring-2 focus:ring-foreground/20",
+              )}
+              placeholder="Select a pot"
+              required
+            />
+          </div>
+
           {/* Tax type */}
           <div>
             <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/60">
@@ -114,25 +129,6 @@ export function CreateTaxPotDialog({
               )}
               placeholder="15"
               required
-            />
-          </div>
-
-          {/* Target amount */}
-          <div>
-            <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/60">
-              Target Amount
-            </label>
-            <input
-              type="number"
-              min="0"
-              step="0.01"
-              value={targetAmount}
-              onChange={(e) => setTargetAmount(e.target.value)}
-              className={cn(
-                "mt-1 h-10 w-full rounded-xl bg-secondary px-3 text-sm outline-none",
-                "focus:ring-2 focus:ring-foreground/20",
-              )}
-              placeholder="Optional"
             />
           </div>
 

@@ -9,15 +9,17 @@ interface DocumentMetricsProps {
 
 export function DocumentMetrics({ documents }: DocumentMetricsProps) {
   const total = documents.length;
-  const verified = documents.filter((d) => d.status === "verified").length;
-  const expired = documents.filter((d) => d.status === "expired").length;
-  const pending = documents.filter((d) => d.status === "pending").length;
+  const active = documents.filter((d) => !d.isArchived).length;
+  const archived = documents.filter((d) => d.isArchived).length;
+  const expiring = documents.filter(
+    (d) => d.expiresAt && new Date(d.expiresAt) < new Date(),
+  ).length;
 
   const cards = [
     { label: "Total", value: total, accent: "" },
-    { label: "Verified", value: verified, accent: "text-success-foreground" },
-    { label: "Expired", value: expired, accent: "text-destructive" },
-    { label: "Pending", value: pending, accent: "text-warning-foreground" },
+    { label: "Active", value: active, accent: "text-success-foreground" },
+    { label: "Expired", value: expiring, accent: "text-destructive" },
+    { label: "Archived", value: archived, accent: "text-warning-foreground" },
   ];
 
   return (

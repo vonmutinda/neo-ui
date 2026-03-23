@@ -109,13 +109,12 @@ export default function LoansPage() {
             activeLoans.map((loan) => (
               <div key={loan.id} className="space-y-4">
                 <LoanCard loan={loan} />
-                {loan.repaymentSchedule &&
-                  loan.repaymentSchedule.length > 0 && (
-                    <RepaymentScheduleTable
-                      schedule={loan.repaymentSchedule}
-                      currencyCode={loan.currencyCode}
-                    />
-                  )}
+                {loan.installments && loan.installments.length > 0 && (
+                  <RepaymentScheduleTable
+                    schedule={loan.installments}
+                    currencyCode="ETB"
+                  />
+                )}
               </div>
             ))
           )}
@@ -144,15 +143,15 @@ export default function LoansPage() {
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-foreground">
                       {formatMoney(
-                        loan.principalCents,
-                        loan.currencyCode,
+                        loan.principalAmountCents,
+                        "ETB",
                         undefined,
                         0,
                       )}
                     </p>
                     <p className="mt-0.5 text-xs text-muted-foreground">
-                      {loan.termMonths} months &middot; {loan.interestRate}%
-                      &middot; {formatDate(loan.createdAt)}
+                      {loan.durationDays} days &middot;{" "}
+                      {formatDate(loan.createdAt)}
                     </p>
                   </div>
                   <span

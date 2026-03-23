@@ -140,7 +140,7 @@ export function ImportsTable({
               >
                 {/* Import # */}
                 <p className="font-mono text-sm font-medium tracking-tight">
-                  {imp.importNumber}
+                  {imp.referenceNumber}
                 </p>
 
                 {/* Supplier */}
@@ -166,7 +166,9 @@ export function ImportsTable({
                 {/* Payment method */}
                 <div>
                   <span className="inline-flex items-center rounded-full bg-muted px-2.5 py-0.5 text-xs font-semibold text-muted-foreground">
-                    {getPaymentMethodLabel(imp.paymentMethod)}
+                    {imp.paymentMethod
+                      ? getPaymentMethodLabel(imp.paymentMethod)
+                      : "N/A"}
                   </span>
                 </div>
 

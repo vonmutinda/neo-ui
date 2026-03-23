@@ -20,9 +20,7 @@ export function CreateCategoryDialog({
   isSubmitting,
 }: CreateCategoryDialogProps) {
   const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
   const [color, setColor] = useState<string>(CATEGORY_COLORS[0]);
-  const [isTaxDeductible, setIsTaxDeductible] = useState(false);
 
   if (!open) return null;
 
@@ -31,9 +29,7 @@ export function CreateCategoryDialog({
     if (!name.trim()) return;
     onSubmit({
       name: name.trim(),
-      description: description.trim() || undefined,
       color,
-      isTaxDeductible: isTaxDeductible || undefined,
     });
   }
 
@@ -85,23 +81,6 @@ export function CreateCategoryDialog({
             />
           </div>
 
-          {/* Description */}
-          <div>
-            <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/60">
-              Description
-            </label>
-            <input
-              type="text"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              className={cn(
-                "mt-1 h-10 w-full rounded-xl bg-secondary px-3 text-sm outline-none",
-                "focus:ring-2 focus:ring-foreground/20",
-              )}
-              placeholder="Optional description"
-            />
-          </div>
-
           {/* Color */}
           <div>
             <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/60">
@@ -124,28 +103,6 @@ export function CreateCategoryDialog({
                 />
               ))}
             </div>
-          </div>
-
-          {/* Tax deductible */}
-          <div className="flex items-center gap-3">
-            <button
-              type="button"
-              role="switch"
-              aria-checked={isTaxDeductible}
-              onClick={() => setIsTaxDeductible(!isTaxDeductible)}
-              className={cn(
-                "relative h-6 w-11 rounded-full transition-colors",
-                isTaxDeductible ? "bg-foreground" : "bg-muted",
-              )}
-            >
-              <span
-                className={cn(
-                  "absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-card transition-transform",
-                  isTaxDeductible && "translate-x-5",
-                )}
-              />
-            </button>
-            <span className="text-sm text-foreground">Tax Deductible</span>
           </div>
 
           {/* Submit */}

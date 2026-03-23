@@ -18,36 +18,37 @@ function formatDate(iso: string): string {
 }
 
 export function LoanCard({ loan }: LoanCardProps) {
-  const paidMonths =
-    loan.repaymentSchedule?.filter((r) => r.isPaid).length ?? 0;
-  const totalMonths = loan.termMonths;
+  const paidInstallments =
+    loan.installments?.filter((r) => r.isPaid).length ?? 0;
+  const totalInstallments = loan.installments?.length ?? 0;
   const progressPct =
-    totalMonths > 0 ? Math.round((paidMonths / totalMonths) * 100) : 0;
+    totalInstallments > 0
+      ? Math.round((paidInstallments / totalInstallments) * 100)
+      : loan.totalDueCents > 0
+        ? Math.round((loan.totalPaidCents / loan.totalDueCents) * 100)
+        : 0;
+
+  const outstandingCents = loan.totalDueCents - loan.totalPaidCents;
 
   const metrics = [
     {
       label: "Principal",
-      value: formatMoney(loan.principalCents, loan.currencyCode, undefined, 0),
+      value: formatMoney(loan.principalAmountCents, "ETB", undefined, 0),
       accent: "",
     },
     {
       label: "Outstanding",
-      value: formatMoney(
-        loan.outstandingCents,
-        loan.currencyCode,
-        undefined,
-        0,
-      ),
-      accent: loan.outstandingCents > 0 ? "text-warning-foreground" : "",
+      value: formatMoney(outstandingCents, "ETB", undefined, 0),
+      accent: outstandingCents > 0 ? "text-warning-foreground" : "",
     },
     {
-      label: "Rate",
-      value: `${loan.interestRate}%`,
+      label: "Interest Fee",
+      value: formatMoney(loan.interestFeeCents, "ETB", undefined, 0),
       accent: "",
     },
     {
-      label: "Term",
-      value: `${loan.termMonths} mo`,
+      label: "Duration",
+      value: `${loan.durationDays} days`,
       accent: "",
     },
   ];
@@ -103,7 +104,7 @@ export function LoanCard({ loan }: LoanCardProps) {
       <div className="mt-4">
         <div className="flex items-center justify-between text-xs text-muted-foreground">
           <span>
-            {paidMonths} of {totalMonths} months paid
+            {paidInstallments} of {totalInstallments} installments paid
           </span>
           <span className="font-mono">{progressPct}%</span>
         </div>
@@ -116,9 +117,9 @@ export function LoanCard({ loan }: LoanCardProps) {
             style={{ width: `${progressPct}%` }}
           />
         </div>
-        {loan.maturityDate && (
+        {loan.dueDate && (
           <p className="mt-1.5 text-xs text-muted-foreground">
-            Maturity: {formatDate(loan.maturityDate)}
+            Due: {formatDate(loan.dueDate)}
           </p>
         )}
       </div>

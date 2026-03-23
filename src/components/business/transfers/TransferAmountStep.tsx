@@ -1,12 +1,12 @@
 "use client";
 
 import { ArrowLeft } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { currencySymbol, formatMoney } from "@/lib/format";
 import { useBusinessTransferStore } from "@/lib/business-transfer-store";
 import { useBusinessBalances } from "@/hooks/business/use-business-wallets";
 import { useBusinessStore } from "@/providers/business-store";
-import { PURPOSE_OPTIONS, CATEGORY_OPTIONS } from "@/lib/business-utils";
 import type { SupportedCurrency } from "@/lib/types";
 
 export function TransferAmountStep() {
@@ -20,10 +20,8 @@ export function TransferAmountStep() {
     setCurrencyCode,
     narration,
     setNarration,
-    purpose,
-    setPurpose,
-    category,
-    setCategory,
+    categoryId,
+    setCategoryId,
     setStep,
   } = useBusinessTransferStore();
 
@@ -139,50 +137,16 @@ export function TransferAmountStep() {
         />
       </div>
 
-      {/* Purpose and Category */}
-      <div className="grid gap-4 sm:grid-cols-2">
-        <div>
-          <label className="mb-1.5 block text-sm font-medium text-muted-foreground">
-            Purpose (optional)
-          </label>
-          <select
-            value={purpose}
-            onChange={(e) => setPurpose(e.target.value)}
-            className={cn(
-              "h-12 w-full rounded-xl border border-input bg-background px-4 text-sm outline-none",
-              "focus-visible:border-ring focus-visible:ring-ring/30 focus-visible:ring-[3px]",
-              "transition-[color,box-shadow]",
-            )}
-          >
-            <option value="">Select purpose</option>
-            {PURPOSE_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <label className="mb-1.5 block text-sm font-medium text-muted-foreground">
-            Category (optional)
-          </label>
-          <select
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            className={cn(
-              "h-12 w-full rounded-xl border border-input bg-background px-4 text-sm outline-none",
-              "focus-visible:border-ring focus-visible:ring-ring/30 focus-visible:ring-[3px]",
-              "transition-[color,box-shadow]",
-            )}
-          >
-            <option value="">Select category</option>
-            {CATEGORY_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
-        </div>
+      {/* Category */}
+      <div>
+        <label className="mb-1.5 block text-sm font-medium text-muted-foreground">
+          Category (optional)
+        </label>
+        <Input
+          placeholder="Category ID"
+          value={categoryId}
+          onChange={(e) => setCategoryId(e.target.value)}
+        />
       </div>
 
       {/* Actions */}

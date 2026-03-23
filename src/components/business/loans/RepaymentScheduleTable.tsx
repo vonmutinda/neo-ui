@@ -3,10 +3,10 @@
 import { cn } from "@/lib/utils";
 import { formatMoney } from "@/lib/format";
 import { Check } from "lucide-react";
-import type { LoanRepayment } from "@/lib/business-types";
+import type { BusinessLoanInstallment } from "@/lib/business-types";
 
 interface RepaymentScheduleTableProps {
-  schedule: LoanRepayment[];
+  schedule: BusinessLoanInstallment[];
   currencyCode: string;
 }
 
@@ -47,7 +47,7 @@ export function RepaymentScheduleTable({
       )}
     >
       {/* Header */}
-      <div className="hidden gap-4 bg-muted/30 px-5 py-3 md:grid md:grid-cols-[0.4fr_1fr_0.8fr_0.8fr_0.8fr_0.6fr]">
+      <div className="hidden gap-4 bg-muted/30 px-5 py-3 md:grid md:grid-cols-[0.4fr_1fr_0.8fr_0.8fr_0.6fr]">
         <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/60">
           #
         </span>
@@ -55,13 +55,10 @@ export function RepaymentScheduleTable({
           Due Date
         </span>
         <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/60 text-right">
-          Principal
+          Amount Due
         </span>
         <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/60 text-right">
-          Interest
-        </span>
-        <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/60 text-right">
-          Total
+          Amount Paid
         </span>
         <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/60 text-center">
           Status
@@ -77,14 +74,14 @@ export function RepaymentScheduleTable({
             <div
               key={r.id}
               className={cn(
-                "grid gap-2 px-5 py-3.5 md:grid-cols-[0.4fr_1fr_0.8fr_0.8fr_0.8fr_0.6fr] md:items-center md:gap-4",
+                "grid gap-2 px-5 py-3.5 md:grid-cols-[0.4fr_1fr_0.8fr_0.8fr_0.6fr] md:items-center md:gap-4",
                 r.isPaid && "opacity-60",
                 upcoming && "bg-warning/5",
               )}
             >
               {/* Index */}
               <p className="text-sm tabular-nums text-muted-foreground">
-                {idx + 1}
+                {r.installmentNumber}
               </p>
 
               {/* Due date */}
@@ -99,19 +96,14 @@ export function RepaymentScheduleTable({
                 {formatDate(r.dueDate)}
               </p>
 
-              {/* Principal */}
-              <p className="font-mono text-sm tracking-tight md:text-right">
-                {formatMoney(r.principalCents, currencyCode, undefined, 0)}
-              </p>
-
-              {/* Interest */}
-              <p className="font-mono text-sm tracking-tight text-muted-foreground md:text-right">
-                {formatMoney(r.interestCents, currencyCode, undefined, 0)}
-              </p>
-
-              {/* Total */}
+              {/* Amount Due */}
               <p className="font-mono text-sm font-medium tracking-tight md:text-right">
-                {formatMoney(r.totalCents, currencyCode, undefined, 0)}
+                {formatMoney(r.amountDueCents, currencyCode, undefined, 0)}
+              </p>
+
+              {/* Amount Paid */}
+              <p className="font-mono text-sm tracking-tight text-muted-foreground md:text-right">
+                {formatMoney(r.amountPaidCents, currencyCode, undefined, 0)}
               </p>
 
               {/* Status */}

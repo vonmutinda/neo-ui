@@ -72,3 +72,39 @@ export function useDeleteDocument(bizId: string | null) {
     },
   });
 }
+
+export function useGetUploadUrl(bizId: string | null) {
+  return useMutation<
+    { uploadUrl: string; fileKey: string },
+    Error,
+    { fileName: string; mimeType: string }
+  >({
+    mutationFn: (body) =>
+      api.post<{ uploadUrl: string; fileKey: string }>(
+        `/v1/business/${bizId}/documents/upload-url`,
+        body,
+      ),
+  });
+}
+
+export function useUpdateDocument(bizId: string | null) {
+  const qc = useQueryClient();
+
+  return useMutation<
+    BusinessDocument,
+    Error,
+    {
+      docId: string;
+      body: { name?: string; description?: string; tags?: string[] };
+    }
+  >({
+    mutationFn: ({ docId, body }) =>
+      api.patch<BusinessDocument>(
+        `/v1/business/${bizId}/documents/${docId}`,
+        body,
+      ),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["business", bizId, "documents"] });
+    },
+  });
+}

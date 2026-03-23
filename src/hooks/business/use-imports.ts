@@ -71,3 +71,31 @@ export function useCancelImport(bizId: string | null) {
     },
   });
 }
+
+export function useUpdateImport(bizId: string | null) {
+  const qc = useQueryClient();
+
+  return useMutation<
+    ImportRequest,
+    Error,
+    { importId: string; body: Partial<CreateImportRequest> }
+  >({
+    mutationFn: ({ importId, body }) =>
+      api.patch<ImportRequest>(
+        `/v1/business/${bizId}/imports/${importId}`,
+        body,
+      ),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["business", bizId, "imports"] });
+    },
+  });
+}
+
+export function useImportChecklist(bizId: string | null) {
+  return useQuery<{ documents: { type: string; required: boolean }[] }>({
+    queryKey: ["business", bizId, "imports", "checklist"],
+    queryFn: () => api.get(`/v1/business/${bizId}/imports/checklist-template`),
+    enabled: !!bizId,
+    staleTime: 300_000,
+  });
+}

@@ -108,6 +108,10 @@ export interface BusinessRole {
   name: string;
   description?: string;
   isSystem: boolean;
+  isDefault: boolean;
+  maxTransferCents?: number;
+  dailyTransferLimitCents?: number;
+  requiresApprovalAboveCents?: number;
   permissions: BusinessPermission[];
   createdAt: string;
   updatedAt: string;
@@ -242,21 +246,21 @@ export type BusinessTransactionDirection = "in" | "out" | "fx";
 
 export interface BusinessTransaction {
   id: string;
-  businessId: string;
-  currencyCode: SupportedCurrency;
+  businessId?: string;
+  currency: string;
   amountCents: number;
-  direction: BusinessTransactionDirection;
   type: string;
+  status: string;
   narration?: string;
   counterpartyName?: string;
-  category?: string;
-  balanceAfterCents: number;
+  feeCents: number;
   createdAt: string;
+  updatedAt: string;
 }
 
 export interface BusinessTransactionFilter {
-  currencyCode?: SupportedCurrency;
-  direction?: BusinessTransactionDirection;
+  currency?: SupportedCurrency;
+  type?: string;
   limit?: number;
   offset?: number;
 }
@@ -266,16 +270,15 @@ export interface BusinessTransactionFilter {
 export type BusinessTransferType = "internal" | "external";
 
 export interface InitiateTransferRequest {
-  transferType: BusinessTransferType;
-  recipientPhone?: string;
-  recipientAccountNumber?: string;
-  recipientBankCode?: string;
-  recipientName?: string;
+  type: BusinessTransferType;
   amountCents: number;
   currencyCode: SupportedCurrency;
+  recipientPhone?: string;
+  recipientBank?: string;
+  recipientAccount?: string;
+  recipientName: string;
   narration?: string;
-  purpose?: string;
-  category?: string;
+  categoryId?: string;
 }
 
 // --- Filter types for hooks ---
@@ -284,16 +287,12 @@ export interface BusinessTransferFilter {
   status?: BusinessTransferStatus;
   limit?: number;
   offset?: number;
-  search?: string;
-  currencyCode?: SupportedCurrency;
-  transferType?: BusinessTransferType;
-  initiatedBy?: string;
 }
 
 // --- Member & Role Management ---
 
 export interface InviteMemberRequest {
-  phoneNumber: string;
+  phoneNumber: PhoneNumber;
   roleId: string;
   title?: string;
 }
@@ -305,12 +304,18 @@ export interface UpdateMemberRequest {
 export interface CreateRoleRequest {
   name: string;
   description?: string;
+  maxTransferCents?: number;
+  dailyTransferLimitCents?: number;
+  requiresApprovalAboveCents?: number;
   permissions: BusinessPermission[];
 }
 
 export interface UpdateRoleRequest {
   name?: string;
   description?: string;
+  maxTransferCents?: number;
+  dailyTransferLimitCents?: number;
+  requiresApprovalAboveCents?: number;
   permissions?: BusinessPermission[];
 }
 
@@ -474,7 +479,7 @@ export interface BusinessCard {
   memberId: string;
   cardId: string;
   label: string;
-  cardType: BusinessCardType;
+  cardType?: BusinessCardType;
   spendLimitCents: number;
   spentCents: number;
   periodType: "daily" | "weekly" | "monthly";
@@ -494,8 +499,9 @@ export interface IssueBusinessCardRequest {
 }
 
 export interface UpdateCardLimitsRequest {
-  spendLimitCents: number;
-  periodType: "daily" | "weekly" | "monthly";
+  label?: string;
+  spendLimitCents?: number;
+  periodType?: "daily" | "weekly" | "monthly";
 }
 
 export interface BusinessCardFilter {
@@ -509,7 +515,7 @@ export interface UpdateBusinessRequest {
   name?: string;
   tradeName?: string;
   email?: string;
-  phoneNumber?: string;
+  phoneNumber?: PhoneNumber;
   address?: string;
   city?: string;
   subRegion?: string;
@@ -540,34 +546,45 @@ export type ImportPaymentMethod =
 export interface ImportRequest {
   id: string;
   businessId: string;
-  importNumber: string;
+  referenceNumber: string;
+  status: ImportStatus;
   supplierName: string;
   supplierCountry: string;
   goodsDescription: string;
   hsCode?: string;
   proformaAmountCents: number;
   proformaCurrency: SupportedCurrency;
-  paymentMethod: ImportPaymentMethod;
-  etbEquivalentCents?: number;
-  fxRate?: number;
+  paymentMethod?: ImportPaymentMethod;
   insuranceAmountCents?: number;
   insuranceProvider?: string;
+  allocatedFxAmountCents?: number;
+  allocatedFxRate?: number;
+  conversionTransactionId?: string;
+  bankPermitNumber?: string;
+  eswReference?: string;
   portOfEntry?: string;
   expectedArrivalDate?: string;
-  status: ImportStatus;
-  documents?: ImportDocument[];
+  notes?: string;
   createdBy: string;
+  reviewedBy?: string;
+  reviewedAt?: string;
+  rejectionReason?: string;
+  cancelledAt?: string;
+  cancelledBy?: string;
   createdAt: string;
   updatedAt: string;
+  documents?: ImportRequestDocument[];
 }
 
-export interface ImportDocument {
+export interface ImportRequestDocument {
   id: string;
-  importId: string;
+  importRequestId: string;
   documentType: string;
-  name: string;
   fileKey: string;
-  status: "pending" | "verified" | "rejected";
+  fileName: string;
+  status: string;
+  notes?: string;
+  uploadedBy: string;
   createdAt: string;
 }
 
@@ -611,7 +628,8 @@ export type ExportType = "goods" | "services";
 export interface ExportRequest {
   id: string;
   businessId: string;
-  exportNumber: string;
+  referenceNumber: string;
+  status: ExportStatus;
   exportType: ExportType;
   buyerName: string;
   buyerCountry: string;
@@ -619,12 +637,39 @@ export interface ExportRequest {
   hsCode?: string;
   contractAmountCents: number;
   contractCurrency: SupportedCurrency;
+  surrenderPercentage: number;
+  surrenderedAmountCents: number;
+  retainedAmountCents: number;
+  shipmentDate?: string;
+  repatriationDeadline?: string;
   expectedProceedsDate?: string;
-  status: ExportStatus;
-  documents?: ImportDocument[];
+  actualRepatriationDate?: string;
+  proceedsAmountCents?: number;
+  bankPermitNumber?: string;
+  eswReference?: string;
+  customsDeclarationNumber?: string;
+  notes?: string;
   createdBy: string;
+  reviewedBy?: string;
+  reviewedAt?: string;
+  rejectionReason?: string;
+  cancelledAt?: string;
+  cancelledBy?: string;
   createdAt: string;
   updatedAt: string;
+  documents?: ExportRequestDocument[];
+}
+
+export interface ExportRequestDocument {
+  id: string;
+  exportRequestId: string;
+  documentType: string;
+  fileKey: string;
+  fileName: string;
+  status: string;
+  notes?: string;
+  uploadedBy: string;
+  createdAt: string;
 }
 
 export interface CreateExportRequest {
@@ -664,28 +709,35 @@ export interface BusinessLoanEligibility {
 export interface BusinessLoan {
   id: string;
   businessId: string;
-  principalCents: number;
-  outstandingCents: number;
-  currencyCode: SupportedCurrency;
-  interestRate: number;
-  termMonths: number;
+  principalAmountCents: number;
+  interestFeeCents: number;
+  totalDueCents: number;
+  totalPaidCents: number;
+  durationDays: number;
+  disbursedAt: string;
+  dueDate: string;
   status: BusinessLoanStatus;
-  disbursedAt?: string;
-  maturityDate?: string;
-  repaymentSchedule?: LoanRepayment[];
+  daysPastDue: number;
+  purpose?: string;
+  collateralDescription?: string;
+  appliedBy: string;
+  approvedBy?: string;
   createdAt: string;
   updatedAt: string;
+  installments?: BusinessLoanInstallment[];
 }
 
-export interface LoanRepayment {
+export interface BusinessLoanInstallment {
   id: string;
   loanId: string;
+  installmentNumber: number;
+  amountDueCents: number;
+  amountPaidCents: number;
   dueDate: string;
-  principalCents: number;
-  interestCents: number;
-  totalCents: number;
   isPaid: boolean;
   paidAt?: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface ApplyLoanRequest {
@@ -705,31 +757,24 @@ export interface BusinessLoanFilter {
 
 export interface TransactionCategory {
   id: string;
-  businessId: string;
+  businessId?: string;
   name: string;
-  description?: string;
-  color: string;
+  color?: string;
   icon?: string;
   isSystem: boolean;
-  isTaxDeductible?: boolean;
-  totalCents?: number;
-  transactionCount?: number;
   createdAt: string;
-  updatedAt: string;
 }
 
 export interface CreateCategoryRequest {
   name: string;
-  description?: string;
-  color: string;
-  isTaxDeductible?: boolean;
+  color?: string;
+  icon?: string;
 }
 
 export interface UpdateCategoryRequest {
   name?: string;
-  description?: string;
   color?: string;
-  isTaxDeductible?: boolean;
+  icon?: string;
 }
 
 export type TaxType =
@@ -746,30 +791,32 @@ export interface TaxPot {
   businessId: string;
   potId: string;
   taxType: TaxType;
-  autoSweepPercent: number;
+  autoSweepPercent?: number;
   dueDate?: string;
   notes?: string;
-  balanceCents?: number;
-  targetCents?: number;
-  isActive: boolean;
+  pot?: {
+    id: string;
+    name: string;
+    balanceCents: number;
+    targetCents?: number;
+    isActive: boolean;
+  };
   createdAt: string;
   updatedAt: string;
 }
 
 export interface CreateTaxPotRequest {
+  potId: string;
   taxType: TaxType;
-  autoSweepPercent: number;
-  targetCents?: number;
+  autoSweepPercent?: number;
   dueDate?: string;
   notes?: string;
 }
 
 export interface UpdateTaxPotRequest {
   autoSweepPercent?: number;
-  targetCents?: number;
   dueDate?: string;
   notes?: string;
-  isActive?: boolean;
 }
 
 // --- Documents ---
@@ -784,11 +831,11 @@ export interface BusinessDocument {
   fileKey: string;
   fileSizeBytes: number;
   mimeType: string;
+  uploadedBy: string;
   description?: string;
   tags?: string[];
+  isArchived: boolean;
   expiresAt?: string;
-  status: DocumentStatus;
-  uploadedBy: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -817,25 +864,34 @@ export interface ExpiringDocumentsResponse {
 
 // --- Statements & Accounting ---
 
-export type StatementFormat = "pdf" | "csv" | "xlsx";
+export type StatementFormat = "pdf" | "csv";
 
 export interface StatementRequest {
-  currencyCode?: SupportedCurrency;
-  fromDate: string;
-  toDate: string;
   format: StatementFormat;
+  currency: string;
+  dateFrom: string;
+  dateTo: string;
 }
 
 export interface BusinessStatement {
   id: string;
-  businessId: string;
-  currencyCode?: SupportedCurrency;
-  fromDate: string;
-  toDate: string;
+  businessId?: string;
+  type: string;
   format: StatementFormat;
+  variant: string;
+  currency: string;
+  dateFrom: string;
+  dateTo: string;
+  status: "queued" | "generating" | "ready" | "failed" | "expired";
   downloadUrl?: string;
-  status: "generating" | "ready" | "failed";
+  downloadExpiry?: string;
+  errorMessage?: string;
+  openingBalanceCents?: number;
+  closingBalanceCents?: number;
+  transactionCount: number;
+  generatedAt?: string;
   createdAt: string;
+  updatedAt: string;
 }
 
 export interface ReportType {

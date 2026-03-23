@@ -40,7 +40,7 @@ export function InviteMemberDialog({
     e.preventDefault();
     if (!phone || !roleId) return;
     onInvite({
-      phoneNumber: `+251${phone}`,
+      phoneNumber: { countryCode: "+251", number: phone },
       roleId,
       title: title.trim() || undefined,
     });

@@ -8,11 +8,7 @@ import { formatMoney, currencySymbol } from "@/lib/format";
 import { useBusinessTransferStore } from "@/lib/business-transfer-store";
 import { useBusinessStore } from "@/providers/business-store";
 import { useInitiateTransfer } from "@/hooks/business/use-initiate-transfer";
-import {
-  getTransferTypeLabel,
-  PURPOSE_OPTIONS,
-  CATEGORY_OPTIONS,
-} from "@/lib/business-utils";
+import { getTransferTypeLabel } from "@/lib/business-utils";
 
 export function TransferReviewStep() {
   const router = useRouter();
@@ -23,38 +19,30 @@ export function TransferReviewStep() {
     transferType,
     recipientPhone,
     recipientName,
-    recipientAccountNumber,
-    recipientBankCode,
+    recipientAccount,
+    recipientBank,
     amountCents,
     currencyCode,
     narration,
-    purpose,
-    category,
+    categoryId,
     setStep,
     reset,
   } = useBusinessTransferStore();
 
   const isInternal = transferType === "internal";
-  const purposeLabel = PURPOSE_OPTIONS.find((o) => o.value === purpose)?.label;
-  const categoryLabel = CATEGORY_OPTIONS.find(
-    (o) => o.value === category,
-  )?.label;
 
   function handleConfirm() {
     initiateMutation.mutate(
       {
-        transferType,
+        type: transferType,
         recipientPhone: isInternal ? recipientPhone : undefined,
-        recipientAccountNumber: !isInternal
-          ? recipientAccountNumber
-          : undefined,
-        recipientBankCode: !isInternal ? recipientBankCode : undefined,
-        recipientName: recipientName || undefined,
+        recipientAccount: !isInternal ? recipientAccount : undefined,
+        recipientBank: !isInternal ? recipientBank : undefined,
+        recipientName: recipientName || "Recipient",
         amountCents,
         currencyCode,
         narration: narration || undefined,
-        purpose: purpose || undefined,
-        category: category || undefined,
+        categoryId: categoryId || undefined,
       },
       {
         onSuccess: () => {
@@ -105,7 +93,7 @@ export function TransferReviewStep() {
           <p className="text-xs text-muted-foreground">
             {isInternal
               ? recipientPhone
-              : `${recipientBankCode} - ${recipientAccountNumber}`}
+              : `${recipientBank} - ${recipientAccount}`}
           </p>
         </div>
 
@@ -134,7 +122,7 @@ export function TransferReviewStep() {
         </div>
 
         {/* Optional details */}
-        {(narration || purposeLabel || categoryLabel) && (
+        {(narration || categoryId) && (
           <div className="space-y-2 px-5 py-4">
             {narration && (
               <div>
@@ -142,16 +130,10 @@ export function TransferReviewStep() {
                 <p className="mt-0.5 text-sm">{narration}</p>
               </div>
             )}
-            {purposeLabel && (
-              <div>
-                <p className="text-xs text-muted-foreground">Purpose</p>
-                <p className="mt-0.5 text-sm">{purposeLabel}</p>
-              </div>
-            )}
-            {categoryLabel && (
+            {categoryId && (
               <div>
                 <p className="text-xs text-muted-foreground">Category</p>
-                <p className="mt-0.5 text-sm">{categoryLabel}</p>
+                <p className="mt-0.5 text-sm">{categoryId}</p>
               </div>
             )}
           </div>

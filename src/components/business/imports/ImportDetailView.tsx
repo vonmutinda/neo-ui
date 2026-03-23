@@ -52,7 +52,7 @@ export function ImportDetailView({
           <div>
             <div className="flex items-center gap-3">
               <h2 className="font-mono text-lg font-semibold tracking-tight">
-                {importReq.importNumber}
+                {importReq.referenceNumber}
               </h2>
               <ImportStatusBadge status={importReq.status} />
             </div>
@@ -69,12 +69,12 @@ export function ImportDetailView({
                 0,
               )}
             </p>
-            {importReq.etbEquivalentCents != null &&
-              importReq.etbEquivalentCents > 0 && (
+            {importReq.allocatedFxAmountCents != null &&
+              importReq.allocatedFxAmountCents > 0 && (
                 <p className="mt-0.5 text-xs text-muted-foreground">
                   ~
                   {formatMoney(
-                    importReq.etbEquivalentCents,
+                    importReq.allocatedFxAmountCents,
                     "ETB",
                     undefined,
                     0,
@@ -110,12 +110,17 @@ export function ImportDetailView({
           {importReq.hsCode && (
             <DetailRow label="HS Code" value={importReq.hsCode} />
           )}
-          <DetailRow
-            label="Payment Method"
-            value={getPaymentMethodLabel(importReq.paymentMethod)}
-          />
-          {importReq.fxRate != null && (
-            <DetailRow label="FX Rate" value={String(importReq.fxRate)} />
+          {importReq.paymentMethod && (
+            <DetailRow
+              label="Payment Method"
+              value={getPaymentMethodLabel(importReq.paymentMethod)}
+            />
+          )}
+          {importReq.allocatedFxRate != null && (
+            <DetailRow
+              label="FX Rate"
+              value={String(importReq.allocatedFxRate)}
+            />
           )}
           {importReq.insuranceAmountCents != null &&
             importReq.insuranceAmountCents > 0 && (
@@ -160,7 +165,7 @@ export function ImportDetailView({
                 className="flex items-center justify-between py-2.5"
               >
                 <div>
-                  <p className="text-sm font-medium">{doc.name}</p>
+                  <p className="text-sm font-medium">{doc.fileName}</p>
                   <p className="text-xs text-muted-foreground">
                     {doc.documentType}
                   </p>

@@ -48,8 +48,8 @@ export default function WalletsPage() {
   const activeCurrency = selectedCurrency ?? primaryCurrency;
 
   const { data: txResult } = useBusinessTransactions(activeBusinessId, {
-    currencyCode: activeCurrency as SupportedCurrency,
-    direction,
+    currency: activeCurrency as SupportedCurrency,
+    type: direction,
     limit: PAGE_SIZE,
     offset: page * PAGE_SIZE,
   });

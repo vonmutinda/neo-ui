@@ -139,7 +139,7 @@ export function ExportsTable({
               >
                 {/* Export # */}
                 <p className="font-mono text-sm font-medium tracking-tight">
-                  {exp.exportNumber}
+                  {exp.referenceNumber}
                 </p>
 
                 {/* Buyer */}

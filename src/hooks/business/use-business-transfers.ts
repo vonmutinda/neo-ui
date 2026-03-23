@@ -16,10 +16,6 @@ export function useBusinessTransfers(
   if (filter?.status) params.set("status", filter.status);
   if (filter?.limit) params.set("limit", String(filter.limit));
   if (filter?.offset) params.set("offset", String(filter.offset));
-  if (filter?.search) params.set("search", filter.search);
-  if (filter?.currencyCode) params.set("currencyCode", filter.currencyCode);
-  if (filter?.transferType) params.set("transferType", filter.transferType);
-  if (filter?.initiatedBy) params.set("initiatedBy", filter.initiatedBy);
   const qs = params.toString();
 
   return useQuery<PaginatedResult<BusinessTransfer>>({

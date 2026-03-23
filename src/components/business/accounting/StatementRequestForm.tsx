@@ -25,7 +25,6 @@ const CURRENCIES = [
 const FORMATS: { value: StatementFormat; label: string }[] = [
   { value: "pdf", label: "PDF" },
   { value: "csv", label: "CSV" },
-  { value: "xlsx", label: "Excel" },
 ];
 
 export function StatementRequestForm({
@@ -42,9 +41,9 @@ export function StatementRequestForm({
     if (!fromDate || !toDate) return;
 
     onSubmit({
-      currencyCode: (currencyCode as SupportedCurrency) || undefined,
-      fromDate,
-      toDate,
+      currency: currencyCode || "",
+      dateFrom: fromDate,
+      dateTo: toDate,
       format,
     });
   }

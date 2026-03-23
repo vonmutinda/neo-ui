@@ -24,12 +24,12 @@ export function WalletsMonthlySummary({
     for (const tx of transactions) {
       const txDate = new Date(tx.createdAt);
       if (txDate < startOfMonth) continue;
-      if (tx.currencyCode !== currencyCode) continue;
+      if (tx.currency !== currencyCode) continue;
 
-      if (tx.direction === "in") {
+      if (tx.amountCents > 0) {
         inTotal += tx.amountCents;
-      } else if (tx.direction === "out") {
-        outTotal += tx.amountCents;
+      } else {
+        outTotal += Math.abs(tx.amountCents);
       }
     }
 

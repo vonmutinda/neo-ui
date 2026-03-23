@@ -37,8 +37,9 @@ export function BusinessHeroBalance({
         {formatted}
       </h1>
       <div className="mt-3 flex items-center gap-3 text-sm text-muted-foreground">
-        <span className="font-medium text-success-foreground">
-          &#8593; 12.4% this month
+        {/* TODO: wire to real analytics endpoint when available */}
+        <span className="font-medium text-muted-foreground">
+          Business account
         </span>
         <span className="h-1 w-1 rounded-full bg-border" />
         <span>

@@ -25,10 +25,10 @@ export function TransferRecipientStep() {
     setRecipientPhone,
     recipientName,
     setRecipientName,
-    recipientAccountNumber,
-    setRecipientAccountNumber,
-    recipientBankCode,
-    setRecipientBankCode,
+    recipientAccount,
+    setRecipientAccount,
+    recipientBank,
+    setRecipientBank,
     setStep,
   } = useBusinessTransferStore();
 
@@ -36,7 +36,7 @@ export function TransferRecipientStep() {
 
   const canContinue = isInternal
     ? recipientPhone.length >= 9
-    : recipientBankCode && recipientAccountNumber && recipientName;
+    : recipientBank && recipientAccount && recipientName;
 
   function handleResolve() {
     if (recipientPhone.length >= 9) {
@@ -103,8 +103,8 @@ export function TransferRecipientStep() {
               Bank
             </label>
             <select
-              value={recipientBankCode}
-              onChange={(e) => setRecipientBankCode(e.target.value)}
+              value={recipientBank}
+              onChange={(e) => setRecipientBank(e.target.value)}
               className={cn(
                 "h-12 w-full rounded-xl border border-input bg-background px-4 text-sm outline-none",
                 "focus-visible:border-ring focus-visible:ring-ring/30 focus-visible:ring-[3px]",
@@ -126,8 +126,8 @@ export function TransferRecipientStep() {
             </label>
             <Input
               placeholder="Enter account number"
-              value={recipientAccountNumber}
-              onChange={(e) => setRecipientAccountNumber(e.target.value)}
+              value={recipientAccount}
+              onChange={(e) => setRecipientAccount(e.target.value)}
             />
           </div>
 

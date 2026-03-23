@@ -13,14 +13,14 @@ export function TransferSummaryCard() {
     transferType,
     recipientName,
     recipientPhone,
-    recipientAccountNumber,
-    recipientBankCode,
+    recipientAccount,
+    recipientBank,
     amountCents,
     currencyCode,
   } = useBusinessTransferStore();
 
   const isInternal = transferType === "internal";
-  const hasRecipient = isInternal ? !!recipientPhone : !!recipientAccountNumber;
+  const hasRecipient = isInternal ? !!recipientPhone : !!recipientAccount;
   const hasAmount = amountCents > 0;
 
   return (
@@ -63,7 +63,7 @@ export function TransferSummaryCard() {
             <p className="text-xs text-muted-foreground">
               {isInternal
                 ? recipientPhone
-                : `${recipientBankCode} - ${recipientAccountNumber}`}
+                : `${recipientBank} - ${recipientAccount}`}
             </p>
           </>
         ) : (
