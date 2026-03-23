@@ -5,14 +5,19 @@ const withBundleAnalyzer = bundleAnalyzer({
   enabled: process.env.ANALYZE === "true",
 });
 
-// Allow API URL in CSP connect-src (e.g. Railway neo-api URL when UI is deployed)
+// Allow API URL in CSP connect-src (e.g. Railway enviar-api URL when UI is deployed)
 // Normalize common typo "htts" -> "https" so CSP and connections work
 function normalizeApiUrl(url: string): string {
   return url.replace(/^htts:\/\//i, "https://");
 }
 const rawApiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 const apiUrl = normalizeApiUrl(rawApiUrl);
-const connectSrc = ["'self'", "http://localhost:8080", "https://api.neo.et"];
+const connectSrc = [
+  "'self'",
+  "http://localhost:8080",
+  "https://api.enviar.et",
+  "https://unpkg.com",
+];
 if (apiUrl && !apiUrl.includes("localhost")) {
   connectSrc.push(apiUrl);
 }
@@ -30,9 +35,9 @@ const securityHeaders = [
     key: "Content-Security-Policy",
     value: [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://telegram.org",
+      "script-src 'self' 'unsafe-eval' 'unsafe-inline'",
       "style-src 'self' 'unsafe-inline'",
-      "img-src 'self' data: https://*.telegram.org",
+      "img-src 'self' data: https://unpkg.com https://*.openstreetmap.org",
       "font-src 'self'",
       `connect-src ${connectSrc.join(" ")}`,
       "frame-ancestors 'none'",
@@ -46,9 +51,7 @@ const nextConfig: NextConfig = {
     NEXT_PUBLIC_API_URL:
       process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080",
   },
-  images: {
-    remotePatterns: [{ protocol: "https", hostname: "**.telegram.org" }],
-  },
+  images: {},
   async headers() {
     return [
       {

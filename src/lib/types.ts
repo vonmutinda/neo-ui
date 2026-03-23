@@ -1,6 +1,14 @@
 // Domain enums -- 1:1 match with the Go backend
 
-export type SupportedCurrency = "ETB" | "USD" | "EUR";
+export type SupportedCurrency =
+  | "ETB"
+  | "USD"
+  | "EUR"
+  | "GBP"
+  | "AED"
+  | "SAR"
+  | "CNY"
+  | "KES";
 
 export type KYCLevel = 1 | 2 | 3;
 
@@ -18,7 +26,10 @@ export type ReceiptType =
   | "convert_in"
   | "batch_send"
   | "pot_deposit"
-  | "pot_withdraw";
+  | "pot_withdraw"
+  | "bill_payment"
+  | "business_transfer_out"
+  | "business_transfer_in";
 
 export type ReceiptStatus = "pending" | "completed" | "failed" | "reversed";
 
@@ -179,7 +190,14 @@ export interface User {
   kycLevel: KYCLevel;
   isFrozen: boolean;
   ledgerWalletId: string;
-  telegramId?: number;
+  email?: string;
+  language?: string;
+  market?: string;
+  mfaEnabled?: boolean;
+  gender?: string;
+  dateOfBirth?: string;
+  accountType?: string;
+  spendWaterfallOrder?: string[];
   createdAt: string;
   updatedAt: string;
 }
@@ -223,8 +241,11 @@ export interface TransactionReceipt {
   currency: SupportedCurrency;
   counterpartyName?: string;
   counterpartyPhone?: string;
+  counterpartyInstitution?: string;
   narration?: string;
+  purpose?: string;
   feeCents: number;
+  feeBreakdown?: Record<string, number>;
   metadata?: Record<string, unknown>;
   createdAt: string;
   updatedAt: string;
@@ -446,7 +467,7 @@ export interface ExchangeRate {
 
 // --- Recipients ---
 
-export type RecipientType = "neo_user" | "bank_account";
+export type RecipientType = "enviar_user" | "bank_account";
 export type RecipientStatus = "active" | "archived";
 
 export interface Recipient {
@@ -454,7 +475,7 @@ export interface Recipient {
   ownerUserId: string;
   type: RecipientType;
   displayName: string;
-  neoUserId?: string;
+  enviarUserId?: string;
   countryCode?: string;
   number?: string;
   username?: string;
@@ -638,6 +659,211 @@ export interface CreateRecipientRequest {
   institutionCode?: string;
   accountNumber?: string;
   displayName?: string;
+}
+
+// --- Scheduled Transfers ---
+
+export type ScheduledFrequency = "daily" | "weekly" | "biweekly" | "monthly";
+export type ScheduledTransferStatus =
+  | "active"
+  | "paused"
+  | "completed"
+  | "cancelled";
+
+export interface ScheduledTransfer {
+  id: string;
+  userId: string;
+  recipientId: string;
+  recipientName: string;
+  amountCents: number;
+  currency: SupportedCurrency;
+  frequency: ScheduledFrequency;
+  narration: string;
+  nextRunAt: string;
+  lastRunAt?: string;
+  runsCompleted: number;
+  maxRuns?: number;
+  status: ScheduledTransferStatus;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateScheduledTransferRequest {
+  recipientId: string;
+  amountCents: number;
+  currency: SupportedCurrency;
+  frequency: ScheduledFrequency;
+  narration: string;
+  maxRuns?: number;
+}
+
+// --- Bill Payments ---
+
+export interface Biller {
+  code: string;
+  name: string;
+  category: string;
+  isActive: boolean;
+}
+
+export interface BillPayment {
+  id: string;
+  userId: string;
+  billerCode: string;
+  billerName: string;
+  customerReference: string;
+  amountCents: number;
+  currency: SupportedCurrency;
+  status: string;
+  transactionId?: string;
+  createdAt: string;
+}
+
+export interface PayBillRequest {
+  billerCode: string;
+  accountNumber: string;
+  amountCents: number;
+  currency: SupportedCurrency;
+}
+
+// --- Statements ---
+
+export interface Statement {
+  id: string;
+  userId: string;
+  fromDate: string;
+  toDate: string;
+  currency: SupportedCurrency;
+  status: string;
+  downloadUrl?: string;
+  createdAt: string;
+}
+
+export interface RequestStatementBody {
+  fromDate: string;
+  toDate: string;
+  currency: SupportedCurrency;
+}
+
+// --- Confirmation Letters ---
+
+export interface ConfirmationLetter {
+  id: string;
+  userId: string;
+  currencyCode: SupportedCurrency;
+  status: string;
+  downloadUrl?: string;
+  publicUrl?: string;
+  expiresAt: string;
+  revokedAt?: string;
+  createdAt: string;
+}
+
+// --- Notification Preferences ---
+
+export interface NotificationPreferences {
+  transferReceived: boolean;
+  transferSent: boolean;
+  loanDisbursed: boolean;
+  loanDueReminder: boolean;
+  loginAlert: boolean;
+  cardTransaction: boolean;
+  paymentRequestReceived: boolean;
+  billPaymentConfirmation: boolean;
+}
+
+// --- Analytics ---
+
+export interface SpendingCategory {
+  category: string;
+  totalCents: number;
+  percentage: number;
+  transactionCount: number;
+}
+
+export interface SpendingSummary {
+  totalInCents: number;
+  totalOutCents: number;
+  netCents: number;
+  currency: SupportedCurrency;
+  periodStart: string;
+  periodEnd: string;
+}
+
+export interface SpendingTrend {
+  month: string;
+  inCents: number;
+  outCents: number;
+}
+
+// --- Fee Quote ---
+
+export interface FeeQuote {
+  feeCents: number;
+  currency: SupportedCurrency;
+  feeType: string;
+  breakdown: Record<string, number>;
+}
+
+// --- Spend Waterfall ---
+
+export interface SpendWaterfall {
+  order: SupportedCurrency[];
+}
+
+// --- Challenges (Push Pre-Auth) ---
+
+export interface Challenge {
+  id: string;
+  type: string;
+  status: string;
+  metadata: Record<string, unknown>;
+  expiresAt: string;
+  createdAt: string;
+}
+
+// --- Device Registration ---
+
+export interface Device {
+  id: string;
+  userId: string;
+  fcmToken: string;
+  platform: string;
+  deviceName?: string;
+  createdAt: string;
+}
+
+// --- MFA ---
+
+export interface MFASetupResponse {
+  secret: string;
+  qrCodeUri: string;
+  backupCodes: string[];
+}
+
+// --- Forgot/Reset Password ---
+
+export interface ForgotPasswordRequest {
+  phoneNumber: PhoneNumber;
+}
+
+export interface ResetPasswordRequest {
+  phoneNumber: PhoneNumber;
+  otp: string;
+  newPassword: string;
+}
+
+// --- Change Password ---
+
+export interface ChangePasswordRequest {
+  currentPassword: string;
+  newPassword: string;
+}
+
+// --- Transaction Label ---
+
+export interface TransactionLabel {
+  label: string;
 }
 
 // --- API envelope ---
