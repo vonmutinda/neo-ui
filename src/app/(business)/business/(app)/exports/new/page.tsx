@@ -10,6 +10,23 @@ import { PageHeader } from "@/components/shared/PageHeader";
 import type { CreateExportRequest, ExportType } from "@/lib/business-types";
 import type { SupportedCurrency } from "@/lib/types";
 
+const COUNTRIES: { code: string; name: string }[] = [
+  { code: "CN", name: "China" },
+  { code: "US", name: "United States" },
+  { code: "DE", name: "Germany" },
+  { code: "GB", name: "United Kingdom" },
+  { code: "JP", name: "Japan" },
+  { code: "KR", name: "South Korea" },
+  { code: "IN", name: "India" },
+  { code: "TR", name: "Turkey" },
+  { code: "IT", name: "Italy" },
+  { code: "AE", name: "UAE" },
+  { code: "SA", name: "Saudi Arabia" },
+  { code: "KE", name: "Kenya" },
+  { code: "DJ", name: "Djibouti" },
+  { code: "ET", name: "Ethiopia" },
+];
+
 const CURRENCIES: SupportedCurrency[] = [
   "ETB",
   "USD",
@@ -125,14 +142,19 @@ export default function NewExportPage() {
             </div>
             <div>
               <label className={labelClass}>Buyer Country *</label>
-              <input
-                type="text"
+              <select
                 value={buyerCountry}
                 onChange={(e) => setBuyerCountry(e.target.value)}
-                placeholder="e.g. United States"
-                className={cn(inputClass, "mt-1.5")}
+                className={cn(inputClass, "mt-1.5 appearance-none")}
                 required
-              />
+              >
+                <option value="">Select country</option>
+                {COUNTRIES.map((c) => (
+                  <option key={c.code} value={c.code}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
         </div>

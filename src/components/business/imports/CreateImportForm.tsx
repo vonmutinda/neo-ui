@@ -26,6 +26,23 @@ const PAYMENT_METHODS: { value: ImportPaymentMethod; label: string }[] = [
   { value: "open_account", label: "Open Account" },
 ];
 
+const COUNTRIES: { code: string; name: string }[] = [
+  { code: "CN", name: "China" },
+  { code: "US", name: "United States" },
+  { code: "DE", name: "Germany" },
+  { code: "GB", name: "United Kingdom" },
+  { code: "JP", name: "Japan" },
+  { code: "KR", name: "South Korea" },
+  { code: "IN", name: "India" },
+  { code: "TR", name: "Turkey" },
+  { code: "IT", name: "Italy" },
+  { code: "AE", name: "UAE" },
+  { code: "SA", name: "Saudi Arabia" },
+  { code: "KE", name: "Kenya" },
+  { code: "DJ", name: "Djibouti" },
+  { code: "ET", name: "Ethiopia" },
+];
+
 interface CreateImportFormProps {
   onSubmit: (data: CreateImportRequest) => void;
   isSubmitting: boolean;
@@ -114,14 +131,19 @@ export function CreateImportForm({
           </div>
           <div>
             <label className={labelClass}>Supplier Country *</label>
-            <input
-              type="text"
+            <select
               value={supplierCountry}
               onChange={(e) => setSupplierCountry(e.target.value)}
-              placeholder="e.g. China"
-              className={cn(inputClass, "mt-1.5")}
+              className={cn(inputClass, "mt-1.5 appearance-none")}
               required
-            />
+            >
+              <option value="">Select country</option>
+              {COUNTRIES.map((c) => (
+                <option key={c.code} value={c.code}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
       </div>
