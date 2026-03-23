@@ -74,11 +74,27 @@ export function useCreateCard() {
   return useMutation<Card, Error, CreateCardRequest>({
     mutationFn: (req) => api.post<Card>("/v1/cards", req),
     onSuccess: (card) => {
-      toast.success(`${card.type.charAt(0).toUpperCase() + card.type.slice(1)} card created`);
+      toast.success(
+        `${card.type.charAt(0).toUpperCase() + card.type.slice(1)} card created`,
+      );
       qc.invalidateQueries({ queryKey: ["cards"] });
     },
     onError: (err) => {
       toast.error("Failed to create card", { description: err.message });
+    },
+  });
+}
+
+export function useDeleteCard(id: string) {
+  const qc = useQueryClient();
+  return useMutation<void, Error, void>({
+    mutationFn: () => api.delete<void>(`/v1/cards/${id}`),
+    onSuccess: () => {
+      toast.success("Card cancelled");
+      qc.invalidateQueries({ queryKey: ["cards"] });
+    },
+    onError: (err) => {
+      toast.error("Failed to cancel card", { description: err.message });
     },
   });
 }
