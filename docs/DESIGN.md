@@ -489,6 +489,26 @@ Subtle colored backgrounds at ~6-8% opacity for contextual tinting.
 - UI scope: exports list page, create export form, export detail page, admin exports ops page
 - Zod schema (`createExportSchema`) ready to restore from git history
 
+**Business Wallet Top-Up (dev/test funding, planned):**
+
+- **Problem:** No way to fund a business wallet in dev/test. The admin deposit endpoint (`POST /admin/v1/customers/{id}/deposit`) only works for personal wallets. Business wallets have no deposit/credit API.
+- **Backend prerequisite:** New endpoint `POST /admin/v1/businesses/{id}/deposit` (or `POST /v1/business/{id}/wallets/deposit` gated by environment flag)
+  ```
+  Payload: { amountCents: number, asset: string (currency code), narration?: string }
+  Response: { status: "deposited", businessId, amountCents, asset }
+  ```
+
+  - Should reuse the existing ledger credit pattern from personal deposit (`WalletOpsService.Deposit`)
+  - Gate behind `APP_ENV != production` or an admin permission like `PermBusinessDeposit`
+  - The ledger wallet ID is on `business.ledgerWalletId` — credit that wallet directly
+- **Backend migration:** Add `biz:wallets:deposit` permission to owner/admin system roles (dev only)
+- **UI scope:**
+  - Add "Top Up" button on business wallets page (only visible when `NEXT_PUBLIC_APP_ENV !== "production"`)
+  - Dialog: amount input + currency selector + optional narration
+  - Hook: `useBusinessDeposit(bizId)` calling the new admin or business endpoint
+  - Invalidate wallet summary + balance queries on success
+- **Alternative workaround (no backend change):** Admin deposits to owner's personal wallet via existing `/admin/v1/customers/{ownerId}/deposit`, then owner transfers to business. Clunky but works today.
+
 **Cross-cutting — Phase 8 complete, remaining:**
 
 - Extend Zod validation to remaining forms (pots, recipients, send, admin forms)
