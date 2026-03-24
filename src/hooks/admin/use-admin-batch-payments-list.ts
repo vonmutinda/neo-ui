@@ -30,10 +30,30 @@ export function useAdminBatchPaymentList(limit = 20, offset = 0) {
   });
 }
 
+export interface AdminBatchPaymentItem {
+  id: string;
+  batchId: string;
+  recipientName: string;
+  recipientPhone?: string;
+  recipientBank?: string;
+  recipientAccount?: string;
+  amountCents: number;
+  narration?: string;
+  status: string;
+  transactionId?: string;
+  errorMessage?: string;
+}
+
+export interface AdminBatchPaymentDetail {
+  batch: AdminBatchPaymentRow;
+  items: AdminBatchPaymentItem[];
+}
+
 export function useAdminBatchPayment(id: string) {
   return useQuery({
     queryKey: ["admin", "batch-payments", id],
-    queryFn: () => adminApi.get<AdminBatchPaymentRow>(`/batch-payments/${id}`),
+    queryFn: () =>
+      adminApi.get<AdminBatchPaymentDetail>(`/batch-payments/${id}`),
     enabled: !!id,
   });
 }

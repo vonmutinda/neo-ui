@@ -6,7 +6,6 @@ import { useAdminBusinessCards } from "@/hooks/admin/use-admin-business-cards";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StatusBadge } from "@/components/admin/StatusBadge";
 import { formatMoney } from "@/lib/format";
-import type { SupportedCurrency } from "@/lib/types";
 
 export default function AdminBusinessCardsPage() {
   const [page, setPage] = useState(0);
@@ -64,24 +63,29 @@ export default function AdminBusinessCardsPage() {
                       href={`/admin/businesses/${c.businessId}`}
                       className="text-primary hover:underline"
                     >
-                      {c.businessName}
+                      {c.businessId.slice(0, 8)}…
                     </Link>
                   </td>
-                  <td className="px-4 py-3">{c.memberName}</td>
+                  <td className="px-4 py-3">{c.memberName ?? "—"}</td>
                   <td className="px-4 py-3">
-                    <span className="capitalize">{c.type}</span>{" "}
-                    <span className="text-muted-foreground">••{c.last4}</span>
+                    <span className="capitalize">
+                      {c.card?.type ?? c.label}
+                    </span>{" "}
+                    <span className="text-muted-foreground">
+                      ••{c.card?.lastFour ?? "????"}
+                    </span>
                   </td>
                   <td className="px-4 py-3">
-                    <StatusBadge status={c.status} />
+                    <StatusBadge
+                      status={
+                        c.card?.status ?? (c.isActive ? "active" : "inactive")
+                      }
+                    />
                   </td>
                   <td className="px-4 py-3 text-right font-tabular">
-                    {formatMoney(c.spentCents, c.currency as SupportedCurrency)}{" "}
+                    {formatMoney(c.spentCents, "ETB")}{" "}
                     <span className="text-muted-foreground">/</span>{" "}
-                    {formatMoney(
-                      c.spendLimitCents,
-                      c.currency as SupportedCurrency,
-                    )}
+                    {formatMoney(c.spendLimitCents, "ETB")}
                   </td>
                 </tr>
               ))
