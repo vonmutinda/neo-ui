@@ -2,6 +2,9 @@
 
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { createImportSchema } from "@/lib/schemas";
+import { useFormErrors } from "@/hooks/use-form-errors";
+import { FormField } from "@/components/ui/form-field";
 import type {
   CreateImportRequest,
   ImportPaymentMethod,
@@ -97,17 +100,33 @@ export function CreateImportForm({
   );
   const [notes, setNotes] = useState(initialData?.notes ?? "");
 
+  const formData = {
+    supplierName,
+    supplierCountry,
+    goodsDescription,
+    hsCode: hsCode || "",
+    proformaAmountCents: Math.round(parseFloat(amount || "0") * 100),
+    proformaCurrency: currency,
+    paymentMethod,
+    insuranceAmountCents: insuranceAmount
+      ? Math.round(parseFloat(insuranceAmount) * 100)
+      : undefined,
+    insuranceProvider: insuranceProvider || undefined,
+    portOfEntry: portOfEntry || undefined,
+    expectedArrivalDate: expectedArrival || undefined,
+    notes: notes.trim() || undefined,
+  };
+
+  const { errors, validate, clearField } = useFormErrors(
+    createImportSchema,
+    formData,
+  );
+
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (!validate()) return;
 
     const amountCents = Math.round(parseFloat(amount || "0") * 100);
-    if (
-      !supplierName ||
-      !supplierCountry ||
-      !goodsDescription ||
-      amountCents <= 0
-    )
-      return;
 
     const data: CreateImportRequest = {
       supplierName,
@@ -152,24 +171,26 @@ export function CreateImportForm({
           Supplier
         </h3>
         <div className="grid gap-4 sm:grid-cols-2">
-          <div>
-            <label className={labelClass}>Supplier Name *</label>
+          <FormField label="Supplier Name *" error={errors.supplierName}>
             <input
               type="text"
               value={supplierName}
-              onChange={(e) => setSupplierName(e.target.value)}
+              onChange={(e) => {
+                setSupplierName(e.target.value);
+                clearField("supplierName");
+              }}
               placeholder="e.g. Shenzhen Electronics Co."
-              className={cn(inputClass, "mt-1.5")}
-              required
+              className={cn(inputClass)}
             />
-          </div>
-          <div>
-            <label className={labelClass}>Supplier Country *</label>
+          </FormField>
+          <FormField label="Supplier Country *" error={errors.supplierCountry}>
             <select
               value={supplierCountry}
-              onChange={(e) => setSupplierCountry(e.target.value)}
-              className={cn(inputClass, "mt-1.5 appearance-none")}
-              required
+              onChange={(e) => {
+                setSupplierCountry(e.target.value);
+                clearField("supplierCountry");
+              }}
+              className={cn(inputClass, "appearance-none")}
             >
               <option value="">Select country</option>
               {COUNTRIES.map((c) => (
@@ -178,7 +199,7 @@ export function CreateImportForm({
                 </option>
               ))}
             </select>
-          </div>
+          </FormField>
         </div>
       </div>
 
@@ -188,32 +209,38 @@ export function CreateImportForm({
           Goods
         </h3>
         <div className="grid gap-4">
-          <div>
-            <label className={labelClass}>Description of Goods *</label>
+          <FormField
+            label="Description of Goods *"
+            error={errors.goodsDescription}
+          >
             <textarea
               value={goodsDescription}
-              onChange={(e) => setGoodsDescription(e.target.value)}
+              onChange={(e) => {
+                setGoodsDescription(e.target.value);
+                clearField("goodsDescription");
+              }}
               placeholder="Describe the goods being imported..."
               rows={3}
               className={cn(
                 "w-full rounded-xl bg-secondary/60 px-4 py-3 text-sm outline-none",
                 "placeholder:text-muted-foreground/50",
                 "focus:ring-2 focus:ring-foreground/10",
-                "transition-shadow resize-none mt-1.5",
+                "transition-shadow resize-none",
               )}
-              required
             />
-          </div>
-          <div className="max-w-xs">
-            <label className={labelClass}>HS Code</label>
+          </FormField>
+          <FormField label="HS Code" error={errors.hsCode} className="max-w-xs">
             <input
               type="text"
               value={hsCode}
-              onChange={(e) => setHsCode(e.target.value)}
+              onChange={(e) => {
+                setHsCode(e.target.value);
+                clearField("hsCode");
+              }}
               placeholder="e.g. 8471.30"
-              className={cn(inputClass, "mt-1.5")}
+              className={cn(inputClass)}
             />
-          </div>
+          </FormField>
         </div>
       </div>
 
@@ -223,25 +250,31 @@ export function CreateImportForm({
           Payment
         </h3>
         <div className="grid gap-4 sm:grid-cols-2">
-          <div>
-            <label className={labelClass}>Proforma Amount *</label>
+          <FormField
+            label="Proforma Amount *"
+            error={errors.proformaAmountCents}
+          >
             <input
               type="number"
               min="0"
               step="0.01"
               value={amount}
-              onChange={(e) => setAmount(e.target.value)}
+              onChange={(e) => {
+                setAmount(e.target.value);
+                clearField("proformaAmountCents");
+              }}
               placeholder="0.00"
-              className={cn(inputClass, "mt-1.5 font-mono")}
-              required
+              className={cn(inputClass, "font-mono")}
             />
-          </div>
-          <div>
-            <label className={labelClass}>Currency *</label>
+          </FormField>
+          <FormField label="Currency *" error={errors.proformaCurrency}>
             <select
               value={currency}
-              onChange={(e) => setCurrency(e.target.value as SupportedCurrency)}
-              className={cn(inputClass, "mt-1.5 appearance-none")}
+              onChange={(e) => {
+                setCurrency(e.target.value as SupportedCurrency);
+                clearField("proformaCurrency");
+              }}
+              className={cn(inputClass, "appearance-none")}
             >
               {CURRENCIES.map((c) => (
                 <option key={c} value={c}>
@@ -249,7 +282,7 @@ export function CreateImportForm({
                 </option>
               ))}
             </select>
-          </div>
+          </FormField>
           <div className="sm:col-span-2">
             <label className={labelClass}>Payment Method *</label>
             <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
@@ -279,47 +312,64 @@ export function CreateImportForm({
           Insurance & Logistics
         </h3>
         <div className="grid gap-4 sm:grid-cols-2">
-          <div>
-            <label className={labelClass}>Insurance Amount (ETB)</label>
+          <FormField
+            label="Insurance Amount (ETB)"
+            error={errors.insuranceAmountCents}
+          >
             <input
               type="number"
               min="0"
               step="0.01"
               value={insuranceAmount}
-              onChange={(e) => setInsuranceAmount(e.target.value)}
+              onChange={(e) => {
+                setInsuranceAmount(e.target.value);
+                clearField("insuranceAmountCents");
+              }}
               placeholder="0.00"
-              className={cn(inputClass, "mt-1.5 font-mono")}
+              className={cn(inputClass, "font-mono")}
             />
-          </div>
-          <div>
-            <label className={labelClass}>Insurance Provider</label>
+          </FormField>
+          <FormField
+            label="Insurance Provider"
+            error={errors.insuranceProvider}
+          >
             <input
               type="text"
               value={insuranceProvider}
-              onChange={(e) => setInsuranceProvider(e.target.value)}
+              onChange={(e) => {
+                setInsuranceProvider(e.target.value);
+                clearField("insuranceProvider");
+              }}
               placeholder="e.g. Ethiopian Insurance Corp."
-              className={cn(inputClass, "mt-1.5")}
+              className={cn(inputClass)}
             />
-          </div>
-          <div>
-            <label className={labelClass}>Port of Entry</label>
+          </FormField>
+          <FormField label="Port of Entry" error={errors.portOfEntry}>
             <input
               type="text"
               value={portOfEntry}
-              onChange={(e) => setPortOfEntry(e.target.value)}
+              onChange={(e) => {
+                setPortOfEntry(e.target.value);
+                clearField("portOfEntry");
+              }}
               placeholder="e.g. Djibouti"
-              className={cn(inputClass, "mt-1.5")}
+              className={cn(inputClass)}
             />
-          </div>
-          <div>
-            <label className={labelClass}>Expected Arrival</label>
+          </FormField>
+          <FormField
+            label="Expected Arrival"
+            error={errors.expectedArrivalDate}
+          >
             <input
               type="date"
               value={expectedArrival}
-              onChange={(e) => setExpectedArrival(e.target.value)}
-              className={cn(inputClass, "mt-1.5")}
+              onChange={(e) => {
+                setExpectedArrival(e.target.value);
+                clearField("expectedArrivalDate");
+              }}
+              className={cn(inputClass)}
             />
-          </div>
+          </FormField>
         </div>
       </div>
 

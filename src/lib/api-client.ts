@@ -130,7 +130,22 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
 
   if (!res.ok) {
     const text = await res.text();
-    throw new ApiClientError(res.status, text);
+    // Try to extract the "error" field from JSON envelope
+    let message = text;
+    try {
+      const parsed = JSON.parse(text);
+      if (
+        parsed &&
+        typeof parsed === "object" &&
+        typeof parsed.error === "string" &&
+        parsed.error
+      ) {
+        message = parsed.error;
+      }
+    } catch {
+      // Not JSON — use raw text
+    }
+    throw new ApiClientError(res.status, message);
   }
 
   if (res.status === 204) {

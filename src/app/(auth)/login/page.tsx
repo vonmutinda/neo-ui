@@ -7,9 +7,12 @@ import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { FormField } from "@/components/ui/form-field";
 import { useAuthStore } from "@/providers/auth-store";
 import { EnviarLogo } from "@/components/shared/EnviarLogo";
 import { api } from "@/lib/api-client";
+import { loginSchema } from "@/lib/schemas";
+import { useFormErrors } from "@/hooks/use-form-errors";
 import type { TokenResponse } from "@/lib/types";
 
 export default function LoginPage() {
@@ -23,16 +26,21 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const {
+    errors: fieldErrors,
+    validate,
+    clearField,
+  } = useFormErrors(loginSchema, { identifier, password });
+
   const redirect = searchParams.get("redirect") || "/";
 
   useEffect(() => {
     if (isAuthenticated) router.replace(redirect);
   }, [isAuthenticated, router, redirect]);
 
-  const formValid = identifier.trim().length >= 3 && password.length >= 8;
-
   async function handleLogin() {
-    if (isSubmitting || !formValid) return;
+    if (isSubmitting) return;
+    if (!validate()) return;
     setError("");
     setIsSubmitting(true);
     try {
@@ -76,37 +84,52 @@ export default function LoginPage() {
           </div>
 
           <div className="space-y-3">
-            <div className="relative">
-              <User className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-primary/60" />
-              <Input
-                type="text"
-                placeholder="Username or phone number"
-                value={identifier}
-                onChange={(e) => setIdentifier(e.target.value)}
-                className="h-12 rounded-xl border border-border/60 bg-card pl-10 text-base"
-                autoFocus
-                autoComplete="username"
-                aria-required="true"
-              />
-            </div>
+            <FormField label="Username or phone" error={fieldErrors.identifier}>
+              <div className="relative">
+                <User className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-primary/60" />
+                <Input
+                  type="text"
+                  placeholder="Username or phone number"
+                  value={identifier}
+                  onChange={(e) => {
+                    setIdentifier(e.target.value);
+                    clearField("identifier");
+                  }}
+                  className="h-12 rounded-xl border border-border/60 bg-card pl-10 text-base"
+                  autoFocus
+                  autoComplete="username"
+                  aria-required="true"
+                />
+              </div>
+            </FormField>
 
-            <div className="relative">
-              <Lock className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-primary/60" />
-              <Input
-                type="password"
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="h-12 rounded-xl border border-border/60 bg-card pl-10 text-base"
-                autoComplete="current-password"
-                aria-required="true"
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && formValid && !isSubmitting) {
-                    handleLogin();
-                  }
-                }}
-              />
-            </div>
+            <FormField label="Password" error={fieldErrors.password}>
+              <div className="relative">
+                <Lock className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-primary/60" />
+                <Input
+                  type="password"
+                  placeholder="Password"
+                  value={password}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    clearField("password");
+                  }}
+                  className="h-12 rounded-xl border border-border/60 bg-card pl-10 text-base"
+                  autoComplete="current-password"
+                  aria-required="true"
+                  onKeyDown={(e) => {
+                    if (
+                      e.key === "Enter" &&
+                      identifier.length >= 3 &&
+                      password.length >= 1 &&
+                      !isSubmitting
+                    ) {
+                      handleLogin();
+                    }
+                  }}
+                />
+              </div>
+            </FormField>
           </div>
 
           <AnimatePresence>
@@ -127,7 +150,9 @@ export default function LoginPage() {
         <div className="mt-6 space-y-3">
           <Button
             size="lg"
-            disabled={!formValid || isSubmitting}
+            disabled={
+              !(identifier.length >= 3 && password.length >= 1) || isSubmitting
+            }
             onClick={handleLogin}
             className="h-12 w-full rounded-xl text-base font-semibold"
           >

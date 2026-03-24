@@ -8,8 +8,11 @@ import { Loader2, Phone, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { FormField } from "@/components/ui/form-field";
 import { EnviarLogo } from "@/components/shared/EnviarLogo";
 import { api } from "@/lib/api-client";
+import { businessRegisterSchema } from "@/lib/schemas";
+import { useFormErrors } from "@/hooks/use-form-errors";
 import type { Business, IndustryCategory } from "@/lib/business-types";
 import { BUSINESS_INDUSTRY_OPTIONS } from "@/lib/business-types";
 
@@ -67,15 +70,26 @@ export default function BusinessCreatePage() {
     },
   });
 
-  const phoneValid = phone.length === 9;
-  const formValid =
-    name.trim().length >= 2 &&
-    taxId.trim().length >= 8 &&
-    registrationNumber.trim().length >= 5 &&
-    phoneValid;
+  const formData = {
+    name: name.trim(),
+    tradeName: tradeName.trim() || undefined,
+    taxId: taxId.trim(),
+    registrationNumber: registrationNumber.trim(),
+    industryCategory,
+    phoneNumber: phone,
+    email: email.trim(),
+    city: city.trim(),
+    subRegion: subRegion.trim(),
+  };
+
+  const { errors, validate, clearField } = useFormErrors(
+    businessRegisterSchema,
+    formData,
+  );
 
   function handleSubmit() {
-    if (!formValid || registerMutation.isPending) return;
+    if (registerMutation.isPending) return;
+    if (!validate()) return;
     registerMutation.mutate();
   }
 
@@ -101,59 +115,56 @@ export default function BusinessCreatePage() {
       </div>
 
       <div className="flex flex-1 flex-col gap-4">
-        <div className="space-y-1.5">
-          <label className="text-xs font-medium text-muted-foreground">
-            Legal name
-          </label>
+        <FormField label="Legal name" error={errors.name}>
           <Input
             value={name}
-            onChange={(e) => setName(e.target.value)}
+            onChange={(e) => {
+              setName(e.target.value);
+              clearField("name");
+            }}
             placeholder="Business legal name"
             className="h-11 rounded-xl"
           />
-        </div>
+        </FormField>
 
-        <div className="space-y-1.5">
-          <label className="text-xs font-medium text-muted-foreground">
-            Trade name (optional)
-          </label>
+        <FormField label="Trade name (optional)">
           <Input
             value={tradeName}
             onChange={(e) => setTradeName(e.target.value)}
             placeholder="Trading as"
             className="h-11 rounded-xl"
           />
-        </div>
+        </FormField>
 
         <div className="grid gap-4 sm:grid-cols-2">
-          <div className="space-y-1.5">
-            <label className="text-xs font-medium text-muted-foreground">
-              Tax ID
-            </label>
+          <FormField label="Tax ID" error={errors.taxId}>
             <Input
               value={taxId}
-              onChange={(e) => setTaxId(e.target.value)}
-              placeholder="Min 8 characters"
+              onChange={(e) => {
+                setTaxId(e.target.value);
+                clearField("taxId");
+              }}
+              placeholder="TIN"
               className="h-11 rounded-xl"
             />
-          </div>
-          <div className="space-y-1.5">
-            <label className="text-xs font-medium text-muted-foreground">
-              Registration number
-            </label>
+          </FormField>
+          <FormField
+            label="Registration number"
+            error={errors.registrationNumber}
+          >
             <Input
               value={registrationNumber}
-              onChange={(e) => setRegistrationNumber(e.target.value)}
-              placeholder="Min 5 characters"
+              onChange={(e) => {
+                setRegistrationNumber(e.target.value);
+                clearField("registrationNumber");
+              }}
+              placeholder="Business registration no."
               className="h-11 rounded-xl"
             />
-          </div>
+          </FormField>
         </div>
 
-        <div className="space-y-1.5">
-          <label className="text-xs font-medium text-muted-foreground">
-            Industry
-          </label>
+        <FormField label="Industry" error={errors.industryCategory}>
           <select
             value={industryCategory}
             onChange={(e) =>
@@ -167,24 +178,18 @@ export default function BusinessCreatePage() {
               </option>
             ))}
           </select>
-        </div>
+        </FormField>
 
-        <div className="space-y-1.5">
-          <label className="text-xs font-medium text-muted-foreground">
-            Industry sub-category (optional)
-          </label>
+        <FormField label="Industry sub-category (optional)">
           <Input
             value={industrySubCategory}
             onChange={(e) => setIndustrySubCategory(e.target.value)}
             placeholder="e.g. electronics retail"
             className="h-11 rounded-xl"
           />
-        </div>
+        </FormField>
 
-        <div className="space-y-1.5">
-          <label className="text-xs font-medium text-muted-foreground">
-            Business phone
-          </label>
+        <FormField label="Business phone" error={errors.phoneNumber}>
           <div className="relative">
             <div className="pointer-events-none absolute left-3.5 top-1/2 flex -translate-y-1/2 items-center gap-1.5">
               <span className="text-muted-foreground">+251</span>
@@ -194,53 +199,56 @@ export default function BusinessCreatePage() {
               inputMode="numeric"
               placeholder="9XX XXX XXXX"
               value={formatPhoneDisplay(phone)}
-              onChange={(e) => handlePhoneChange(e.target.value)}
+              onChange={(e) => {
+                handlePhoneChange(e.target.value);
+                clearField("phoneNumber");
+              }}
               className="h-11 rounded-xl border border-border/60 bg-card pl-14 text-base"
             />
             <Phone className="absolute right-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-primary/60" />
           </div>
-        </div>
+        </FormField>
 
-        <div className="space-y-1.5">
-          <label className="text-xs font-medium text-muted-foreground">
-            Email (optional)
-          </label>
+        <FormField label="Email (optional)" error={errors.email}>
           <Input
             type="email"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e) => {
+              setEmail(e.target.value);
+              clearField("email");
+            }}
             placeholder="contact@company.com"
             className="h-11 rounded-xl"
           />
-        </div>
+        </FormField>
 
         <div className="grid gap-4 sm:grid-cols-2">
-          <div className="space-y-1.5">
-            <label className="text-xs font-medium text-muted-foreground">
-              City (optional)
-            </label>
+          <FormField label="City (optional)" error={errors.city}>
             <Input
               value={city}
-              onChange={(e) => setCity(e.target.value)}
+              onChange={(e) => {
+                setCity(e.target.value);
+                clearField("city");
+              }}
               className="h-11 rounded-xl"
             />
-          </div>
-          <div className="space-y-1.5">
-            <label className="text-xs font-medium text-muted-foreground">
-              Sub-region (optional)
-            </label>
+          </FormField>
+          <FormField label="Sub-region (optional)" error={errors.subRegion}>
             <Input
               value={subRegion}
-              onChange={(e) => setSubRegion(e.target.value)}
+              onChange={(e) => {
+                setSubRegion(e.target.value);
+                clearField("subRegion");
+              }}
               className="h-11 rounded-xl"
             />
-          </div>
+          </FormField>
         </div>
 
         <Button
           type="button"
           className="mt-1 h-12 w-full rounded-xl text-base font-semibold"
-          disabled={!formValid || registerMutation.isPending}
+          disabled={registerMutation.isPending}
           onClick={handleSubmit}
         >
           {registerMutation.isPending ? (

@@ -2,7 +2,7 @@
 
 > Single source of truth for Enviar UI's architecture, feature inventory, design system, and roadmap.
 > **Keep this file up to date** when UI architecture, routes, components, or design system changes.
-> Last updated: 2026-03-23
+> Last updated: 2026-03-24
 
 ---
 
@@ -448,12 +448,13 @@ Subtle colored backgrounds at ~6-8% opacity for contextual tinting.
 - Bill payments admin page ✅
 - Detailed user action views — **blocked on backend**: no admin endpoints for payment-requests, challenges, or confirmations (see Known Gaps)
 
-### Phase 8: Form Validation & API Error Handling
+### Phase 8: Form Validation & API Error Handling ✅
 
-- Backend validation error mapping to inline field errors
-- Client-side Zod validation schemas
-- Standardized error toasts with detail extraction from API envelope
-- Form-level error summaries for non-field-specific errors
+- Zod v4 validation schemas in `src/lib/schemas.ts` (auth, business, trade finance, invoices, batch payments) ✅
+- `useFormErrors` hook (`src/hooks/use-form-errors.ts`) — lightweight on-demand validation compatible with existing useState patterns ✅
+- `FormField` component (`src/components/ui/form-field.tsx`) — label + inline error display wrapper ✅
+- API error parsing improved in `api-client.ts` — extracts `error` field from JSON envelope for cleaner messages ✅
+- Applied to 6 high-impact forms: Register, Login, Create Import, Create Export, Create Invoice, Business Register ✅
 
 ### Phase 9: Polish & Production
 
@@ -482,9 +483,10 @@ Subtle colored backgrounds at ~6-8% opacity for contextual tinting.
 - Admin views for payment requests, challenges, confirmations — requires backend `/admin/v1/payment-requests`, `/admin/v1/challenges`, `/admin/v1/confirmations` endpoints first
 - Transfer approval history admin view — requires backend endpoint
 
-**Cross-cutting — not yet implemented (Phase 8):**
+**Cross-cutting — Phase 8 complete, remaining:**
 
-- Form validation (Zod schemas, inline field errors from backend, form-level error summaries)
+- Extend Zod validation to remaining forms (pots, recipients, send, admin forms)
+- Backend structured error responses (field-level errors) — requires backend changes
 
 ---
 

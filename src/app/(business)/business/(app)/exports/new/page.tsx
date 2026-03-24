@@ -9,6 +9,9 @@ import { useCreateExport } from "@/hooks/business/use-exports";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { ExportsSkeleton } from "@/components/business/exports/ExportsSkeleton";
 import { useBusinessPermissionCheck } from "@/hooks/business/use-business-members";
+import { createExportSchema } from "@/lib/schemas";
+import { useFormErrors } from "@/hooks/use-form-errors";
+import { FormField } from "@/components/ui/form-field";
 import type { CreateExportRequest, ExportType } from "@/lib/business-types";
 import type { SupportedCurrency } from "@/lib/types";
 
@@ -59,11 +62,28 @@ export default function NewExportPage() {
   const [expectedProceedsDate, setExpectedProceedsDate] = useState("");
   const [notes, setNotes] = useState("");
 
+  const formData = {
+    exportType,
+    buyerName,
+    buyerCountry,
+    description,
+    hsCode: hsCode || "",
+    contractAmountCents: Math.round(parseFloat(amount || "0") * 100),
+    contractCurrency: currency,
+    expectedProceedsDate: expectedProceedsDate || undefined,
+    notes: notes.trim() || undefined,
+  };
+
+  const { errors, validate, clearField } = useFormErrors(
+    createExportSchema,
+    formData,
+  );
+
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (!validate()) return;
 
     const amountCents = Math.round(parseFloat(amount || "0") * 100);
-    if (!buyerName || !buyerCountry || !description || amountCents <= 0) return;
 
     const data: CreateExportRequest = {
       exportType,
@@ -98,8 +118,6 @@ export default function NewExportPage() {
     "focus:ring-2 focus:ring-foreground/10",
     "transition-shadow",
   );
-
-  const labelClass = "text-xs font-medium text-muted-foreground";
 
   if (isChecking) {
     return <ExportsSkeleton />;
@@ -152,24 +170,26 @@ export default function NewExportPage() {
             Buyer
           </h3>
           <div className="grid gap-4 sm:grid-cols-2">
-            <div>
-              <label className={labelClass}>Buyer Name *</label>
+            <FormField label="Buyer Name *" error={errors.buyerName}>
               <input
                 type="text"
                 value={buyerName}
-                onChange={(e) => setBuyerName(e.target.value)}
+                onChange={(e) => {
+                  setBuyerName(e.target.value);
+                  clearField("buyerName");
+                }}
                 placeholder="e.g. ABC Trading Ltd."
-                className={cn(inputClass, "mt-1.5")}
-                required
+                className={cn(inputClass)}
               />
-            </div>
-            <div>
-              <label className={labelClass}>Buyer Country *</label>
+            </FormField>
+            <FormField label="Buyer Country *" error={errors.buyerCountry}>
               <select
                 value={buyerCountry}
-                onChange={(e) => setBuyerCountry(e.target.value)}
-                className={cn(inputClass, "mt-1.5 appearance-none")}
-                required
+                onChange={(e) => {
+                  setBuyerCountry(e.target.value);
+                  clearField("buyerCountry");
+                }}
+                className={cn(inputClass, "appearance-none")}
               >
                 <option value="">Select country</option>
                 {COUNTRIES.map((c) => (
@@ -178,7 +198,7 @@ export default function NewExportPage() {
                   </option>
                 ))}
               </select>
-            </div>
+            </FormField>
           </div>
         </div>
 
@@ -188,11 +208,13 @@ export default function NewExportPage() {
             {exportType === "goods" ? "Goods" : "Services"}
           </h3>
           <div className="grid gap-4">
-            <div>
-              <label className={labelClass}>Description *</label>
+            <FormField label="Description *" error={errors.description}>
               <textarea
                 value={description}
-                onChange={(e) => setDescription(e.target.value)}
+                onChange={(e) => {
+                  setDescription(e.target.value);
+                  clearField("description");
+                }}
                 placeholder={
                   exportType === "goods"
                     ? "Describe the goods being exported..."
@@ -203,22 +225,27 @@ export default function NewExportPage() {
                   "w-full rounded-xl bg-secondary/60 px-4 py-3 text-sm outline-none",
                   "placeholder:text-muted-foreground/50",
                   "focus:ring-2 focus:ring-foreground/10",
-                  "transition-shadow resize-none mt-1.5",
+                  "transition-shadow resize-none",
                 )}
-                required
               />
-            </div>
+            </FormField>
             {exportType === "goods" && (
-              <div className="max-w-xs">
-                <label className={labelClass}>HS Code</label>
+              <FormField
+                label="HS Code"
+                error={errors.hsCode}
+                className="max-w-xs"
+              >
                 <input
                   type="text"
                   value={hsCode}
-                  onChange={(e) => setHsCode(e.target.value)}
+                  onChange={(e) => {
+                    setHsCode(e.target.value);
+                    clearField("hsCode");
+                  }}
                   placeholder="e.g. 0901.11"
-                  className={cn(inputClass, "mt-1.5")}
+                  className={cn(inputClass)}
                 />
-              </div>
+              </FormField>
             )}
           </div>
         </div>
@@ -229,27 +256,31 @@ export default function NewExportPage() {
             Contract
           </h3>
           <div className="grid gap-4 sm:grid-cols-2">
-            <div>
-              <label className={labelClass}>Contract Amount *</label>
+            <FormField
+              label="Contract Amount *"
+              error={errors.contractAmountCents}
+            >
               <input
                 type="number"
                 min="0"
                 step="0.01"
                 value={amount}
-                onChange={(e) => setAmount(e.target.value)}
+                onChange={(e) => {
+                  setAmount(e.target.value);
+                  clearField("contractAmountCents");
+                }}
                 placeholder="0.00"
-                className={cn(inputClass, "mt-1.5 font-mono")}
-                required
+                className={cn(inputClass, "font-mono")}
               />
-            </div>
-            <div>
-              <label className={labelClass}>Currency *</label>
+            </FormField>
+            <FormField label="Currency *" error={errors.contractCurrency}>
               <select
                 value={currency}
-                onChange={(e) =>
-                  setCurrency(e.target.value as SupportedCurrency)
-                }
-                className={cn(inputClass, "mt-1.5 appearance-none")}
+                onChange={(e) => {
+                  setCurrency(e.target.value as SupportedCurrency);
+                  clearField("contractCurrency");
+                }}
+                className={cn(inputClass, "appearance-none")}
               >
                 {CURRENCIES.map((c) => (
                   <option key={c} value={c}>
@@ -257,16 +288,15 @@ export default function NewExportPage() {
                   </option>
                 ))}
               </select>
-            </div>
-            <div>
-              <label className={labelClass}>Expected Proceeds Date</label>
+            </FormField>
+            <FormField label="Expected Proceeds Date">
               <input
                 type="date"
                 value={expectedProceedsDate}
                 onChange={(e) => setExpectedProceedsDate(e.target.value)}
-                className={cn(inputClass, "mt-1.5")}
+                className={cn(inputClass)}
               />
-            </div>
+            </FormField>
           </div>
         </div>
 

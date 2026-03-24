@@ -4,6 +4,9 @@ import { useState, useCallback, useMemo, useEffect } from "react";
 import { Plus, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatMoney } from "@/lib/format";
+import { createInvoiceSchema } from "@/lib/schemas";
+import { useFormErrors } from "@/hooks/use-form-errors";
+import { FormField } from "@/components/ui/form-field";
 import type { Invoice, CreateInvoiceRequest } from "@/lib/business-types";
 import type { SupportedCurrency } from "@/lib/types";
 
@@ -122,6 +125,29 @@ export function InvoiceForm({
   );
   const totalCents = subtotalCents + taxCents;
 
+  const schemaData = {
+    customerName: customerName.trim(),
+    customerEmail: customerEmail.trim(),
+    customerPhone: customerPhone.trim() || undefined,
+    currencyCode,
+    subtotalCents,
+    taxCents,
+    totalCents,
+    issueDate,
+    dueDate,
+    notes: notes.trim() || undefined,
+    lineItems: lineItems.map((li) => ({
+      description: li.description,
+      quantity: li.quantity,
+      unitPriceCents: li.unitPriceCents,
+    })),
+  };
+
+  const { errors, validate, clearField } = useFormErrors(
+    createInvoiceSchema,
+    schemaData,
+  );
+
   // Sync form state to parent for live preview
   useEffect(() => {
     onChange?.({
@@ -218,34 +244,31 @@ export function InvoiceForm({
         <h3 className="text-sm font-semibold">Customer</h3>
 
         <div className="grid gap-3 sm:grid-cols-2">
-          <div>
-            <label className="mb-1 block text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/60">
-              Name *
-            </label>
+          <FormField label="Name *" error={errors.customerName}>
             <input
               type="text"
               value={customerName}
-              onChange={(e) => setCustomerName(e.target.value)}
+              onChange={(e) => {
+                setCustomerName(e.target.value);
+                clearField("customerName");
+              }}
               placeholder="Customer name"
               className={inputClass}
             />
-          </div>
-          <div>
-            <label className="mb-1 block text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/60">
-              Email
-            </label>
+          </FormField>
+          <FormField label="Email" error={errors.customerEmail}>
             <input
               type="email"
               value={customerEmail}
-              onChange={(e) => setCustomerEmail(e.target.value)}
+              onChange={(e) => {
+                setCustomerEmail(e.target.value);
+                clearField("customerEmail");
+              }}
               placeholder="customer@email.com"
               className={inputClass}
             />
-          </div>
-          <div>
-            <label className="mb-1 block text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/60">
-              Phone
-            </label>
+          </FormField>
+          <FormField label="Phone">
             <input
               type="tel"
               value={customerPhone}
@@ -253,11 +276,8 @@ export function InvoiceForm({
               placeholder="+251..."
               className={inputClass}
             />
-          </div>
-          <div>
-            <label className="mb-1 block text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/60">
-              Currency
-            </label>
+          </FormField>
+          <FormField label="Currency" error={errors.currencyCode}>
             <select
               value={currencyCode}
               onChange={(e) =>
@@ -271,7 +291,7 @@ export function InvoiceForm({
                 </option>
               ))}
             </select>
-          </div>
+          </FormField>
         </div>
       </div>
 
@@ -431,34 +451,31 @@ export function InvoiceForm({
         <h3 className="text-sm font-semibold">Details</h3>
 
         <div className="grid gap-3 sm:grid-cols-2">
-          <div>
-            <label className="mb-1 block text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/60">
-              Issue Date
-            </label>
+          <FormField label="Issue Date" error={errors.issueDate}>
             <input
               type="date"
               value={issueDate}
-              onChange={(e) => setIssueDate(e.target.value)}
+              onChange={(e) => {
+                setIssueDate(e.target.value);
+                clearField("issueDate");
+              }}
               className={inputClass}
             />
-          </div>
-          <div>
-            <label className="mb-1 block text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/60">
-              Due Date
-            </label>
+          </FormField>
+          <FormField label="Due Date" error={errors.dueDate}>
             <input
               type="date"
               value={dueDate}
-              onChange={(e) => setDueDate(e.target.value)}
+              onChange={(e) => {
+                setDueDate(e.target.value);
+                clearField("dueDate");
+              }}
               className={inputClass}
             />
-          </div>
+          </FormField>
         </div>
 
-        <div>
-          <label className="mb-1 block text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/60">
-            Notes
-          </label>
+        <FormField label="Notes">
           <textarea
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
@@ -466,14 +483,17 @@ export function InvoiceForm({
             rows={3}
             className={cn(inputClass, "h-auto py-3 resize-none")}
           />
-        </div>
+        </FormField>
       </div>
 
       {/* Action buttons */}
       <div className="flex items-center justify-end gap-3 pb-8">
         <button
           type="button"
-          onClick={() => onSaveDraft(buildRequest())}
+          onClick={() => {
+            if (!validate()) return;
+            onSaveDraft(buildRequest());
+          }}
           disabled={!isValid || isSubmitting}
           className={cn(
             "h-11 rounded-xl border border-foreground/20 px-6 text-sm font-medium",
@@ -485,7 +505,10 @@ export function InvoiceForm({
         </button>
         <button
           type="button"
-          onClick={() => onSend(buildRequest())}
+          onClick={() => {
+            if (!validate()) return;
+            onSend(buildRequest());
+          }}
           disabled={!isValid || isSubmitting}
           className={cn(
             "h-11 rounded-xl bg-foreground px-6 text-sm font-medium text-background",
