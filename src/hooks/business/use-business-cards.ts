@@ -20,7 +20,7 @@ export function useBusinessCards(
   const qs = params.toString();
 
   return useQuery<PaginatedResult<BusinessCard>>({
-    queryKey: ["business", bizId, "cards", filter],
+    queryKey: ["business", bizId, "cards", qs],
     queryFn: () =>
       api.get<PaginatedResult<BusinessCard>>(
         `/v1/business/${bizId}/cards${qs ? `?${qs}` : ""}`,

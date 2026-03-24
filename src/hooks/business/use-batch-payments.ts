@@ -20,7 +20,7 @@ export function useBatchPayments(
   const qs = params.toString();
 
   return useQuery<PaginatedResult<BatchPayment>>({
-    queryKey: ["business", bizId, "batch-payments", filter],
+    queryKey: ["business", bizId, "batch-payments", qs],
     queryFn: () =>
       api.get<PaginatedResult<BatchPayment>>(
         `/v1/business/${bizId}/batch-payments${qs ? `?${qs}` : ""}`,

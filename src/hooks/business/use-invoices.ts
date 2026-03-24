@@ -17,7 +17,7 @@ export function useInvoices(bizId: string | null, filter?: InvoiceFilter) {
   const qs = params.toString();
 
   return useQuery<PaginatedResult<Invoice>>({
-    queryKey: ["business", bizId, "invoices", filter],
+    queryKey: ["business", bizId, "invoices", qs],
     queryFn: () =>
       api.get<PaginatedResult<Invoice>>(
         `/v1/business/${bizId}/invoices${qs ? `?${qs}` : ""}`,

@@ -20,7 +20,7 @@ export function useBusinessTransactions(
   const qs = params.toString();
 
   return useQuery<PaginatedResult<BusinessTransaction>>({
-    queryKey: ["business", bizId, "wallets", "transactions", filter],
+    queryKey: ["business", bizId, "wallets", "transactions", qs],
     queryFn: () =>
       api.get<PaginatedResult<BusinessTransaction>>(
         `/v1/business/${bizId}/wallets/transactions${qs ? `?${qs}` : ""}`,

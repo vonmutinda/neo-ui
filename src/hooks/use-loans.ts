@@ -15,9 +15,18 @@ import type {
 } from "@/lib/types";
 
 export function useLoanEligibility() {
-  return useQuery<LoanEligibility>({
+  return useQuery<LoanEligibility | null>({
     queryKey: ["loans", "eligibility"],
-    queryFn: () => api.get<LoanEligibility>("/v1/loans/eligibility"),
+    queryFn: async () => {
+      try {
+        return await api.get<LoanEligibility>("/v1/loans/eligibility");
+      } catch (err) {
+        // 404 = no credit profile yet — not an error
+        if (err instanceof Error && err.message.includes("404")) return null;
+        throw err;
+      }
+    },
+    retry: false,
   });
 }
 
@@ -42,7 +51,9 @@ export function useApplyLoan() {
   return useMutation<Loan, Error, LoanApplyRequest>({
     mutationFn: (req) => api.post<Loan>("/v1/loans/apply", req),
     onSuccess: () => {
-      toast.success("Loan approved", { description: "Funds have been disbursed to your wallet" });
+      toast.success("Loan approved", {
+        description: "Funds have been disbursed to your wallet",
+      });
       qc.invalidateQueries({ queryKey: ["loans"] });
       qc.invalidateQueries({ queryKey: ["wallets"] });
     },
@@ -56,7 +67,9 @@ export function useRepayLoan() {
   const qc = useQueryClient();
   return useMutation<void, Error, { id: string; amountCents: number }>({
     mutationFn: ({ id, amountCents }) =>
-      api.post<void>(`/v1/loans/${id}/repay`, { amountCents } satisfies LoanRepayRequest),
+      api.post<void>(`/v1/loans/${id}/repay`, {
+        amountCents,
+      } satisfies LoanRepayRequest),
     onSuccess: () => {
       toast.success("Payment received", {
         description: "Your loan balance has been updated",
@@ -80,6 +93,7 @@ export function useCreditScore() {
 export function useCreditScoreHistory() {
   return useQuery<CreditScoreHistory>({
     queryKey: ["loans", "credit-score", "history"],
-    queryFn: () => api.get<CreditScoreHistory>("/v1/loans/credit-score/history"),
+    queryFn: () =>
+      api.get<CreditScoreHistory>("/v1/loans/credit-score/history"),
   });
 }

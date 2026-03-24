@@ -18,7 +18,7 @@ export function useExports(bizId: string | null, filter?: ExportFilter) {
   const qs = params.toString();
 
   return useQuery<PaginatedResult<ExportRequest>>({
-    queryKey: ["business", bizId, "exports", filter],
+    queryKey: ["business", bizId, "exports", qs],
     queryFn: () =>
       api.get<PaginatedResult<ExportRequest>>(
         `/v1/business/${bizId}/exports${qs ? `?${qs}` : ""}`,

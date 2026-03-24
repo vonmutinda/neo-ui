@@ -41,8 +41,8 @@ const HISTORY_STATUSES: BusinessLoanStatus[] = [
 
 export default function LoansPage() {
   const { activeBusinessId } = useBusinessStore();
-  const { data: permissions } = useMyPermissions(activeBusinessId);
-  const canApplyLoan = permissions?.includes("biz:loans:apply") ?? false;
+  const { data: perms } = useMyPermissions(activeBusinessId);
+  const canApplyLoan = perms?.includes("biz:loans:apply") ?? false;
   const [activeTab, setActiveTab] = useState<Tab>("active");
 
   const { data: eligibility, isLoading: eligLoading } =
@@ -57,7 +57,8 @@ export default function LoansPage() {
     activeFilter,
   );
 
-  const { data: allResult } = useBusinessLoans(activeBusinessId, { limit: 50 });
+  const allFilter = useMemo(() => ({ limit: 50 }), []);
+  const { data: allResult } = useBusinessLoans(activeBusinessId, allFilter);
 
   const isLoading = eligLoading || activeLoading;
 

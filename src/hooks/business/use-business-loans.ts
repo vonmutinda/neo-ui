@@ -11,14 +11,22 @@ import type {
 } from "@/lib/business-types";
 
 export function useLoanEligibility(bizId: string | null) {
-  return useQuery<BusinessLoanEligibility>({
+  return useQuery<BusinessLoanEligibility | null>({
     queryKey: ["business", bizId, "loans", "eligibility"],
-    queryFn: () =>
-      api.get<BusinessLoanEligibility>(
-        `/v1/business/${bizId}/loans/eligibility`,
-      ),
+    queryFn: async () => {
+      try {
+        return await api.get<BusinessLoanEligibility>(
+          `/v1/business/${bizId}/loans/eligibility`,
+        );
+      } catch (err) {
+        // 404 = no credit profile yet — not an error
+        if (err instanceof Error && err.message.includes("404")) return null;
+        throw err;
+      }
+    },
     enabled: !!bizId,
     staleTime: 60_000,
+    retry: false,
   });
 }
 
@@ -33,7 +41,7 @@ export function useBusinessLoans(
   const qs = params.toString();
 
   return useQuery<PaginatedResult<BusinessLoan>>({
-    queryKey: ["business", bizId, "loans", filter],
+    queryKey: ["business", bizId, "loans", qs],
     queryFn: () =>
       api.get<PaginatedResult<BusinessLoan>>(
         `/v1/business/${bizId}/loans${qs ? `?${qs}` : ""}`,
