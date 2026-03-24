@@ -12,11 +12,14 @@ function normalizeApiUrl(url: string): string {
 }
 const rawApiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 const apiUrl = normalizeApiUrl(rawApiUrl);
+const storageSrc =
+  process.env.NEXT_PUBLIC_STORAGE_URL || "http://localhost:9000";
 const connectSrc = [
   "'self'",
   "http://localhost:8080",
   "https://api.enviar.et",
   "https://unpkg.com",
+  storageSrc,
 ];
 if (apiUrl && !apiUrl.includes("localhost")) {
   connectSrc.push(apiUrl);

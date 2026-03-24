@@ -32,16 +32,31 @@ export function useRequestStatement(bizId: string | null) {
   });
 }
 
+/**
+ * Download a statement. The backend returns 302 → presigned S3 URL, so
+ * we fetch with redirect:"manual" to extract the Location header, then
+ * open the presigned URL in a new tab (no auth needed for presigned).
+ */
 export function useDownloadStatement(bizId: string | null) {
   return useMutation({
     mutationFn: async (statementId: string) => {
-      const result = await api.get<{ downloadUrl: string }>(
-        `/v1/business/${bizId}/statements/${statementId}/download`,
-      );
-      if (result.downloadUrl && typeof window !== "undefined") {
-        window.open(result.downloadUrl, "_blank");
+      const url = `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080"}/v1/business/${bizId}/statements/${statementId}/download`;
+      const token =
+        typeof window !== "undefined"
+          ? sessionStorage.getItem("enviar_access_token")
+          : null;
+
+      const res = await fetch(url, {
+        redirect: "manual",
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+
+      const location = res.headers.get("Location");
+      if (location && typeof window !== "undefined") {
+        window.open(location, "_blank");
+      } else {
+        throw new Error("Download URL not available");
       }
-      return result;
     },
   });
 }

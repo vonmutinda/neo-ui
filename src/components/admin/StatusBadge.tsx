@@ -28,7 +28,14 @@ const STATUS_COLORS: Record<string, string> = {
   info: "bg-muted text-muted-foreground",
 };
 
-export function StatusBadge({ status, className }: { status: string; className?: string }) {
+export function StatusBadge({
+  status,
+  className,
+}: {
+  status?: string;
+  className?: string;
+}) {
+  if (!status) return null;
   const colors = STATUS_COLORS[status] ?? "bg-muted text-muted-foreground";
   const label = status.replace(/_/g, " ");
 
