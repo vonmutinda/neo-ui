@@ -6,7 +6,7 @@ import type { BusinessStatement } from "@/lib/business-types";
 
 interface StatementsTableProps {
   statements: BusinessStatement[];
-  onDownload: (id: string) => void;
+  onDownload: (downloadUrl: string) => void;
 }
 
 function formatDate(iso: string): string {
@@ -107,7 +107,9 @@ export function StatementsTable({
             <div className="flex md:justify-center">
               {stmt.status === "ready" ? (
                 <button
-                  onClick={() => onDownload(stmt.id)}
+                  onClick={() =>
+                    stmt.downloadUrl && onDownload(stmt.downloadUrl)
+                  }
                   className="flex h-8 w-8 items-center justify-center rounded-lg transition-colors hover:bg-muted"
                   aria-label="Download statement"
                 >

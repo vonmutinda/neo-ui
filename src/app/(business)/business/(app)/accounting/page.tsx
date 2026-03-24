@@ -87,7 +87,7 @@ export default function AccountingPage() {
 
   const { data: result, isLoading } = useStatements(activeBusinessId);
   const requestStatement = useRequestStatement(activeBusinessId);
-  const downloadStatement = useDownloadStatement(activeBusinessId);
+  const downloadStatement = useDownloadStatement();
 
   function handleGenerate(req: StatementRequest) {
     requestStatement.mutate(req, {
@@ -96,8 +96,8 @@ export default function AccountingPage() {
     });
   }
 
-  function handleDownload(id: string) {
-    downloadStatement.mutate(id, {
+  function handleDownload(downloadUrl: string) {
+    downloadStatement.mutate(downloadUrl, {
       onError: (err) => toast.error(err.message),
     });
   }
