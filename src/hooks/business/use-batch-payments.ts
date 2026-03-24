@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api-client";
 import type {
   BatchPayment,
+  BatchDetailResult,
   BatchPaymentFilter,
   CreateBatchPaymentRequest,
   PaginatedResult,
@@ -34,10 +35,12 @@ export function useBatchPaymentDetail(
   bizId: string | null,
   batchId: string | null,
 ) {
-  return useQuery<BatchPayment>({
+  return useQuery<BatchDetailResult>({
     queryKey: ["business", bizId, "batch-payments", batchId],
     queryFn: () =>
-      api.get<BatchPayment>(`/v1/business/${bizId}/batch-payments/${batchId}`),
+      api.get<BatchDetailResult>(
+        `/v1/business/${bizId}/batch-payments/${batchId}`,
+      ),
     enabled: !!bizId && !!batchId,
   });
 }

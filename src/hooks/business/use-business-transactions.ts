@@ -14,7 +14,7 @@ export function useBusinessTransactions(
 ) {
   const params = new URLSearchParams();
   if (filter?.currency) params.set("currency", filter.currency);
-  if (filter?.type) params.set("type", filter.type);
+  if (filter?.direction) params.set("direction", filter.direction);
   if (filter?.limit) params.set("limit", String(filter.limit));
   if (filter?.offset) params.set("offset", String(filter.offset));
   const qs = params.toString();

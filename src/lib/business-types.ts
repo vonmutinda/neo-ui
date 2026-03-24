@@ -234,8 +234,6 @@ export type BusinessPermission =
   | "biz:tax_pots:withdraw"
   | "biz:imports:manage"
   | "biz:imports:view"
-  | "biz:exports:manage"
-  | "biz:exports:view"
   | "biz:members:manage"
   | "biz:roles:manage"
   | "biz:settings:manage";
@@ -260,7 +258,7 @@ export interface BusinessTransaction {
 
 export interface BusinessTransactionFilter {
   currency?: SupportedCurrency;
-  type?: string;
+  direction?: BusinessTransactionDirection;
   limit?: number;
   offset?: number;
 }
@@ -449,6 +447,11 @@ export interface BatchPayment {
   updatedAt: string;
 }
 
+export interface BatchDetailResult {
+  batch: BatchPayment;
+  items: BatchPaymentItem[];
+}
+
 export interface CreateBatchPaymentRequest {
   name: string;
   currencyCode: SupportedCurrency;
@@ -605,88 +608,6 @@ export interface CreateImportRequest {
 
 export interface ImportFilter {
   status?: ImportStatus;
-  limit?: number;
-  offset?: number;
-}
-
-// --- Trade Finance: Exports ---
-
-export type ExportStatus =
-  | "draft"
-  | "submitted"
-  | "bank_reviewing"
-  | "approved"
-  | "shipped"
-  | "proceeds_pending"
-  | "proceeds_received"
-  | "surrender_pending"
-  | "completed"
-  | "rejected"
-  | "cancelled";
-
-export type ExportType = "goods" | "services";
-
-export interface ExportRequest {
-  id: string;
-  businessId: string;
-  referenceNumber: string;
-  status: ExportStatus;
-  exportType: ExportType;
-  buyerName: string;
-  buyerCountry: string;
-  description: string;
-  hsCode?: string;
-  contractAmountCents: number;
-  contractCurrency: SupportedCurrency;
-  surrenderPercentage: number;
-  surrenderedAmountCents: number;
-  retainedAmountCents: number;
-  shipmentDate?: string;
-  repatriationDeadline?: string;
-  expectedProceedsDate?: string;
-  actualRepatriationDate?: string;
-  proceedsAmountCents?: number;
-  bankPermitNumber?: string;
-  eswReference?: string;
-  customsDeclarationNumber?: string;
-  notes?: string;
-  createdBy: string;
-  reviewedBy?: string;
-  reviewedAt?: string;
-  rejectionReason?: string;
-  cancelledAt?: string;
-  cancelledBy?: string;
-  createdAt: string;
-  updatedAt: string;
-  documents?: ExportRequestDocument[];
-}
-
-export interface ExportRequestDocument {
-  id: string;
-  exportRequestId: string;
-  documentType: string;
-  fileKey: string;
-  fileName: string;
-  status: string;
-  notes?: string;
-  uploadedBy: string;
-  createdAt: string;
-}
-
-export interface CreateExportRequest {
-  exportType: ExportType;
-  buyerName: string;
-  buyerCountry: string;
-  description: string;
-  hsCode?: string;
-  contractAmountCents: number;
-  contractCurrency: SupportedCurrency;
-  expectedProceedsDate?: string;
-  notes?: string;
-}
-
-export interface ExportFilter {
-  status?: ExportStatus;
   limit?: number;
   offset?: number;
 }

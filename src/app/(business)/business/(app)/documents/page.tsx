@@ -35,7 +35,11 @@ const TAB_TYPES: Record<DocTab, string | undefined> = {
 
 export default function DocumentsPage() {
   const { activeBusinessId } = useBusinessStore();
-  const { data: permissions } = useMyPermissions(activeBusinessId);
+  const { data: permissions, isLoading: permsLoading } =
+    useMyPermissions(activeBusinessId);
+
+  const canView = permissions?.includes("biz:documents:view") ?? false;
+  const canManage = permissions?.includes("biz:documents:manage") ?? false;
 
   const [activeTab, setActiveTab] = useState<DocTab>("all");
 
@@ -47,13 +51,32 @@ export default function DocumentsPage() {
     [activeTab],
   );
 
-  const { data: result, isLoading } = useDocuments(activeBusinessId, filter);
-  const { data: expiring } = useExpiringDocuments(activeBusinessId);
+  const {
+    data: result,
+    isLoading,
+    isError,
+  } = useDocuments(canView ? activeBusinessId : null, filter);
+  const { data: expiring } = useExpiringDocuments(
+    canView ? activeBusinessId : null,
+  );
   const deleteDoc = useDeleteDocument(activeBusinessId);
 
-  const canManage = permissions?.includes("biz:documents:manage") ?? false;
+  if (permsLoading || isLoading) return <DocumentsSkeleton />;
 
-  if (isLoading) return <DocumentsSkeleton />;
+  if (!canView || isError) {
+    return (
+      <div className="space-y-6">
+        <PageHeader title="Documents" />
+        <div className="rounded-2xl border border-border/40 bg-card p-10 text-center">
+          <p className="text-sm text-muted-foreground">
+            {isError
+              ? "Unable to load documents. Please try again later."
+              : "You don\u2019t have permission to view documents for this business."}
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   const documents = result?.data ?? [];
   const expiringCount = expiring?.count ?? 0;

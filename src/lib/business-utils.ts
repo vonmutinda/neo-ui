@@ -9,7 +9,6 @@ import type {
   BatchItemStatus,
   BusinessCard,
   ImportStatus,
-  ExportStatus,
   ImportPaymentMethod,
   BusinessLoanStatus,
   DocumentStatus,
@@ -161,7 +160,6 @@ export const PERMISSION_GROUPS: PermissionGroup[] = [
       "biz:invoices:view",
       "biz:cards:view",
       "biz:loans:view",
-      "biz:exports:view",
     ],
   },
   {
@@ -199,11 +197,7 @@ export const PERMISSION_GROUPS: PermissionGroup[] = [
   },
   {
     label: "Trade Finance",
-    permissions: [
-      "biz:imports:manage",
-      "biz:imports:view",
-      "biz:exports:manage",
-    ],
+    permissions: ["biz:imports:manage", "biz:imports:view"],
   },
   {
     label: "Administration",
@@ -242,8 +236,6 @@ const PERMISSION_LABELS: Record<string, string> = {
   "biz:tax_pots:withdraw": "Withdraw from Tax Pots",
   "biz:imports:manage": "Manage Imports",
   "biz:imports:view": "View Imports",
-  "biz:exports:manage": "Manage Exports",
-  "biz:exports:view": "View Exports",
   "biz:members:manage": "Manage Members",
   "biz:roles:manage": "Manage Roles",
   "biz:settings:manage": "Manage Settings",
@@ -395,44 +387,6 @@ const PAYMENT_METHOD_LABELS: Record<ImportPaymentMethod, string> = {
 
 export function getPaymentMethodLabel(method: ImportPaymentMethod): string {
   return PAYMENT_METHOD_LABELS[method] ?? method;
-}
-
-// --- Export status helpers ---
-
-const EXPORT_STATUS_COLORS: Record<ExportStatus, string> = {
-  draft: "bg-muted text-muted-foreground",
-  submitted: "bg-primary/10 text-primary",
-  bank_reviewing: "bg-warning/10 text-warning-foreground",
-  approved: "bg-success/10 text-success-foreground",
-  shipped: "bg-primary/10 text-primary",
-  proceeds_pending: "bg-warning/10 text-warning-foreground",
-  proceeds_received: "bg-success/10 text-success-foreground",
-  surrender_pending: "bg-warning/10 text-warning-foreground",
-  completed: "bg-success/10 text-success-foreground",
-  rejected: "bg-destructive/10 text-destructive",
-  cancelled: "bg-muted text-muted-foreground",
-};
-
-export function getExportStatusColor(status: ExportStatus): string {
-  return EXPORT_STATUS_COLORS[status] ?? "bg-muted text-muted-foreground";
-}
-
-const EXPORT_STATUS_LABELS: Record<ExportStatus, string> = {
-  draft: "Draft",
-  submitted: "Submitted",
-  bank_reviewing: "Bank Review",
-  approved: "Approved",
-  shipped: "Shipped",
-  proceeds_pending: "Proceeds Pending",
-  proceeds_received: "Proceeds Received",
-  surrender_pending: "Surrender Pending",
-  completed: "Completed",
-  rejected: "Rejected",
-  cancelled: "Cancelled",
-};
-
-export function getExportStatusLabel(status: ExportStatus): string {
-  return EXPORT_STATUS_LABELS[status] ?? status;
 }
 
 // --- Business loan status helpers ---

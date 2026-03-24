@@ -41,14 +41,14 @@ function formatDate(iso: string) {
   });
 }
 
-export default function BillPaymentDetailPage() {
+export default function PaymentDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { data: payment, isLoading } = useBillPayment(id);
 
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <PageHeader title="Payment Details" backHref="/bill-payments" />
+        <PageHeader title="Payment Details" backHref="/payments" />
         <div className="space-y-4">
           <Skeleton className="h-32 w-full rounded-2xl" />
           <Skeleton className="h-48 w-full rounded-2xl" />
@@ -61,11 +61,8 @@ export default function BillPaymentDetailPage() {
     return (
       <div className="flex flex-col items-center justify-center gap-4 pt-20">
         <p className="text-muted-foreground">Payment not found</p>
-        <Link
-          href="/bill-payments"
-          className="text-sm font-medium text-primary"
-        >
-          Back to bill payments
+        <Link href="/payments" className="text-sm font-medium text-primary">
+          Back to payments
         </Link>
       </div>
     );
@@ -73,7 +70,7 @@ export default function BillPaymentDetailPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Payment Details" backHref="/bill-payments" />
+      <PageHeader title="Payment Details" backHref="/payments" />
 
       {/* Amount + Status */}
       <motion.div

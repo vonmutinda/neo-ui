@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { BusinessCardGrid } from "@/components/business/cards/BusinessCardGrid";
 import { IssueCardDialog } from "@/components/business/cards/IssueCardDialog";
+import { UpdateLimitsDialog } from "@/components/business/cards/UpdateLimitsDialog";
 import { CardsSkeleton } from "@/components/business/cards/CardsSkeleton";
 import { useBusinessStore } from "@/providers/business-store";
 import {
@@ -37,6 +38,7 @@ export default function CardsPage() {
   const updateLimitsMutation = useUpdateCardLimits(bizId);
 
   const [issueOpen, setIssueOpen] = useState(false);
+  const [limitsCard, setLimitsCard] = useState<BusinessCard | null>(null);
 
   const canManage = myPermissions?.includes("biz:cards:manage") ?? false;
 
@@ -63,25 +65,21 @@ export default function CardsPage() {
   }
 
   function handleUpdateLimits(card: BusinessCard) {
-    const input = window.prompt(
-      `Enter new spend limit (Br) for "${card.label}":`,
-      String(card.spendLimitCents / 100),
-    );
-    if (!input) return;
+    setLimitsCard(card);
+  }
 
-    const cents = Math.round(parseFloat(input) * 100);
-    if (isNaN(cents) || cents <= 0) {
-      toast.error("Invalid amount");
-      return;
-    }
-
+  function handleLimitsSubmit(
+    cardId: string,
+    spendLimitCents: number,
+    periodType: "daily" | "weekly" | "monthly",
+  ) {
     updateLimitsMutation.mutate(
+      { cardId, body: { spendLimitCents, periodType } },
       {
-        cardId: card.id,
-        body: { spendLimitCents: cents, periodType: card.periodType },
-      },
-      {
-        onSuccess: () => toast.success("Limits updated"),
+        onSuccess: () => {
+          toast.success("Limits updated");
+          setLimitsCard(null);
+        },
         onError: () => toast.error("Failed to update limits"),
       },
     );
@@ -134,6 +132,14 @@ export default function CardsPage() {
           });
         }}
         isSubmitting={issueCardMutation.isPending}
+      />
+
+      <UpdateLimitsDialog
+        open={!!limitsCard}
+        onClose={() => setLimitsCard(null)}
+        card={limitsCard}
+        onSubmit={handleLimitsSubmit}
+        isPending={updateLimitsMutation.isPending}
       />
     </div>
   );

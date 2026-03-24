@@ -41,28 +41,48 @@ const HISTORY_STATUSES: BusinessLoanStatus[] = [
 
 export default function LoansPage() {
   const { activeBusinessId } = useBusinessStore();
-  const { data: perms } = useMyPermissions(activeBusinessId);
+  const { data: perms, isLoading: permsLoading } =
+    useMyPermissions(activeBusinessId);
+  const canView = perms?.includes("biz:loans:view") ?? false;
   const canApplyLoan = perms?.includes("biz:loans:apply") ?? false;
   const [activeTab, setActiveTab] = useState<Tab>("active");
 
+  const bizId = canView ? activeBusinessId : null;
+
   const { data: eligibility, isLoading: eligLoading } =
-    useLoanEligibility(activeBusinessId);
+    useLoanEligibility(bizId);
 
   const activeFilter = useMemo(
     () => ({ status: "active" as BusinessLoanStatus, limit: 10 }),
     [],
   );
-  const { data: activeResult, isLoading: activeLoading } = useBusinessLoans(
-    activeBusinessId,
-    activeFilter,
-  );
+  const {
+    data: activeResult,
+    isLoading: activeLoading,
+    isError,
+  } = useBusinessLoans(bizId, activeFilter);
 
   const allFilter = useMemo(() => ({ limit: 50 }), []);
-  const { data: allResult } = useBusinessLoans(activeBusinessId, allFilter);
+  const { data: allResult } = useBusinessLoans(bizId, allFilter);
 
-  const isLoading = eligLoading || activeLoading;
+  const isLoading = permsLoading || eligLoading || activeLoading;
 
   if (isLoading) return <LoansSkeleton />;
+
+  if (!canView || isError) {
+    return (
+      <div className="space-y-6">
+        <PageHeader title="Loans" />
+        <div className="rounded-2xl border border-border/40 bg-card p-10 text-center">
+          <p className="text-sm text-muted-foreground">
+            {isError
+              ? "Unable to load loans. Please try again later."
+              : "You don\u2019t have permission to view loans for this business."}
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   const activeLoans = activeResult?.data ?? [];
   const allLoans = allResult?.data ?? [];

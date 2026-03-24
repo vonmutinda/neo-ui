@@ -17,7 +17,11 @@ const PAGE_SIZE = 20;
 
 export default function InvoicesPage() {
   const { activeBusinessId, activeBusiness } = useBusinessStore();
-  const { data: permissions } = useMyPermissions(activeBusinessId);
+  const { data: permissions, isLoading: permsLoading } =
+    useMyPermissions(activeBusinessId);
+
+  const canView = permissions?.includes("biz:invoices:view") ?? false;
+  const canManage = permissions?.includes("biz:invoices:manage") ?? false;
 
   const [statusFilter, setStatusFilter] = useState<InvoiceStatus | undefined>();
   const [page, setPage] = useState(1);
@@ -31,12 +35,31 @@ export default function InvoicesPage() {
     [statusFilter, page],
   );
 
-  const { data: result, isLoading } = useInvoices(activeBusinessId, filter);
-  const { data: summary } = useInvoiceSummary(activeBusinessId);
+  const {
+    data: result,
+    isLoading,
+    isError,
+  } = useInvoices(canView ? activeBusinessId : null, filter);
+  const { data: summary } = useInvoiceSummary(
+    canView ? activeBusinessId : null,
+  );
 
-  const canManage = permissions?.includes("biz:invoices:manage") ?? false;
+  if (permsLoading || isLoading) return <InvoicesSkeleton />;
 
-  if (isLoading) return <InvoicesSkeleton />;
+  if (!canView || isError) {
+    return (
+      <div className="space-y-6">
+        <PageHeader title="Invoices" />
+        <div className="rounded-2xl border border-border/40 bg-card p-10 text-center">
+          <p className="text-sm text-muted-foreground">
+            {isError
+              ? "Unable to load invoices. Please try again later."
+              : "You don\u2019t have permission to view invoices for this business."}
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   const invoices = result?.data ?? [];
   const total = result?.pagination?.total ?? 0;

@@ -85,7 +85,7 @@ export function CurrencyCarousel({
       })}
       {showAddCard && (
         <Link
-          href="/convert"
+          href="/balances/add"
           onClick={handleAddBalance}
           className="flex w-36 min-w-[9rem] shrink-0 flex-col items-center justify-center gap-1.5 rounded-xl border border-dashed border-border/60 bg-muted/30 p-3 transition-all active:scale-[0.97] hover:bg-muted/50"
         >

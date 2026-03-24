@@ -33,7 +33,7 @@ export default function BatchPaymentDetailPage() {
   const batchId = params.id as string;
   const { activeBusinessId } = useBusinessStore();
 
-  const { data: batch, isLoading } = useBatchPaymentDetail(
+  const { data: detail, isLoading } = useBatchPaymentDetail(
     activeBusinessId,
     batchId,
   );
@@ -44,6 +44,9 @@ export default function BatchPaymentDetailPage() {
 
   const canApprove = permissions?.includes("biz:batch:approve") ?? false;
   const canExecute = permissions?.includes("biz:batch:execute") ?? false;
+
+  const batch = detail?.batch;
+  const items = detail?.items ?? [];
 
   function handleApprove() {
     approveMutation.mutate(batchId, {
@@ -59,7 +62,7 @@ export default function BatchPaymentDetailPage() {
     });
   }
 
-  if (isLoading || !batch) {
+  if (isLoading || !detail || !batch) {
     return (
       <div className="space-y-6">
         <PageHeader title="Batch Payment" backHref="/business/payments" />
@@ -70,7 +73,6 @@ export default function BatchPaymentDetailPage() {
     );
   }
 
-  const items = batch.items ?? [];
   const showProgress =
     batch.status === "processing" ||
     batch.status === "completed" ||

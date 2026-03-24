@@ -6,7 +6,6 @@ import {
   FileText,
   CreditCard,
   PackageOpen,
-  Ship,
   Landmark,
   Tags,
   BookOpen,
@@ -40,10 +39,7 @@ export const BUSINESS_NAV_SECTIONS: readonly BusinessNavSection[] = [
   },
   {
     label: "Trade",
-    items: [
-      { href: "/business/imports", label: "Imports", icon: PackageOpen },
-      { href: "/business/exports", label: "Exports", icon: Ship },
-    ],
+    items: [{ href: "/business/imports", label: "Imports", icon: PackageOpen }],
   },
   {
     label: "Finance",

@@ -24,7 +24,6 @@ import {
   FileCheck,
   Cpu,
   Ship,
-  Package,
   ListOrdered,
   Receipt,
   PiggyBank,
@@ -98,12 +97,6 @@ const FINANCE_NAV: NavItem[] = [
     href: "/admin/imports",
     label: "Imports",
     icon: Ship,
-    permission: "users:read",
-  },
-  {
-    href: "/admin/exports",
-    label: "Exports",
-    icon: Package,
     permission: "users:read",
   },
   {

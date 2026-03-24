@@ -12,6 +12,7 @@ import { WalletsCurrencyGrid } from "@/components/business/wallets/WalletsCurren
 import { WalletsTransactionTable } from "@/components/business/wallets/WalletsTransactionTable";
 import { WalletsMonthlySummary } from "@/components/business/wallets/WalletsMonthlySummary";
 import { WalletsSkeleton } from "@/components/business/wallets/WalletsSkeleton";
+import { AddCurrencyDialog } from "@/components/business/wallets/AddCurrencyDialog";
 import { toast } from "sonner";
 import type { SupportedCurrency } from "@/lib/types";
 import type { BusinessTransactionDirection } from "@/lib/business-types";
@@ -49,36 +50,33 @@ export default function WalletsPage() {
 
   const { data: txResult } = useBusinessTransactions(activeBusinessId, {
     currency: activeCurrency as SupportedCurrency,
-    type: direction,
+    direction,
     limit: PAGE_SIZE,
     offset: page * PAGE_SIZE,
   });
 
   const createBalance = useCreateCurrencyBalance(activeBusinessId);
+  const [addCurrencyOpen, setAddCurrencyOpen] = useState(false);
+
+  const existingCodes = new Set(balances.map((b) => b.currencyCode));
+  const availableCurrencies = ALL_CURRENCIES.filter(
+    (c) => !existingCodes.has(c),
+  );
 
   function handleAddCurrency() {
-    const existingCodes = new Set(balances.map((b) => b.currencyCode));
-    const available = ALL_CURRENCIES.filter((c) => !existingCodes.has(c));
-
-    if (available.length === 0) {
+    if (availableCurrencies.length === 0) {
       toast.info("All currencies are already active");
       return;
     }
+    setAddCurrencyOpen(true);
+  }
 
-    const choice = window.prompt(
-      `Available currencies:\n${available.join(", ")}\n\nEnter currency code to add:`,
-    );
-
-    if (!choice) return;
-
-    const code = choice.trim().toUpperCase() as SupportedCurrency;
-    if (!available.includes(code)) {
-      toast.error(`Invalid currency: ${choice}`);
-      return;
-    }
-
+  function handleSelectCurrency(code: SupportedCurrency) {
     createBalance.mutate(code, {
-      onSuccess: () => toast.success(`${code} wallet added`),
+      onSuccess: () => {
+        toast.success(`${code} wallet added`);
+        setAddCurrencyOpen(false);
+      },
       onError: () => toast.error(`Failed to add ${code} wallet`),
     });
   }
@@ -140,6 +138,14 @@ export default function WalletsPage() {
           transactions={transactions}
         />
       </div>
+
+      <AddCurrencyDialog
+        open={addCurrencyOpen}
+        onClose={() => setAddCurrencyOpen(false)}
+        availableCurrencies={availableCurrencies}
+        onSelect={handleSelectCurrency}
+        isPending={createBalance.isPending}
+      />
     </div>
   );
 }

@@ -16,7 +16,11 @@ const PAGE_SIZE = 20;
 
 export default function ImportsPage() {
   const { activeBusinessId } = useBusinessStore();
-  const { data: permissions } = useMyPermissions(activeBusinessId);
+  const { data: permissions, isLoading: permsLoading } =
+    useMyPermissions(activeBusinessId);
+
+  const canView = permissions?.includes("biz:imports:view") ?? false;
+  const canManage = permissions?.includes("biz:imports:manage") ?? false;
 
   const [statusFilter, setStatusFilter] = useState<ImportStatus | undefined>();
   const [page, setPage] = useState(1);
@@ -30,11 +34,28 @@ export default function ImportsPage() {
     [statusFilter, page],
   );
 
-  const { data: result, isLoading } = useImports(activeBusinessId, filter);
+  const {
+    data: result,
+    isLoading,
+    isError,
+  } = useImports(canView ? activeBusinessId : null, filter);
 
-  const canManage = permissions?.includes("biz:imports:manage") ?? false;
+  if (permsLoading || isLoading) return <ImportsSkeleton />;
 
-  if (isLoading) return <ImportsSkeleton />;
+  if (!canView || isError) {
+    return (
+      <div className="space-y-6">
+        <PageHeader title="Imports" />
+        <div className="rounded-2xl border border-border/40 bg-card p-10 text-center">
+          <p className="text-sm text-muted-foreground">
+            {isError
+              ? "Unable to load imports. Please try again later."
+              : "You don\u2019t have permission to view imports for this business."}
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   const imports = result?.data ?? [];
   const total = result?.pagination?.total ?? 0;

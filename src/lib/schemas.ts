@@ -142,34 +142,6 @@ export const createImportSchema = z.object({
   notes: z.string().max(1000, "Notes are too long").optional(),
 });
 
-export const createExportSchema = z.object({
-  exportType: z.enum(["goods", "services"], {
-    message: "Export type must be goods or services",
-  }),
-  buyerName: z
-    .string()
-    .min(2, "Buyer name must be at least 2 characters")
-    .max(200, "Buyer name is too long"),
-  buyerCountry: z.string().length(2, "Country must be a 2-letter ISO code"),
-  description: z
-    .string()
-    .min(2, "Description must be at least 2 characters")
-    .max(500, "Description is too long"),
-  hsCode: z
-    .string()
-    .min(4, "HS code must be at least 4 characters")
-    .max(10, "HS code is too long")
-    .optional()
-    .or(z.literal("")),
-  contractAmountCents: z
-    .number()
-    .int("Amount must be a whole number")
-    .positive("Amount must be greater than zero"),
-  contractCurrency: z.string().length(3, "Currency must be a 3-letter code"),
-  expectedProceedsDate: z.string().optional(),
-  notes: z.string().max(1000, "Notes are too long").optional(),
-});
-
 export const createInvoiceSchema = z.object({
   customerName: z.string().min(1, "Customer name is required"),
   customerEmail: z.string().email("Invalid email").optional().or(z.literal("")),
