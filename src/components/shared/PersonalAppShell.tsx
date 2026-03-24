@@ -41,6 +41,7 @@ export function PersonalAppShell({
 
               <ErrorBoundary>
                 <main
+                  id="main-content"
                   className={cn(
                     "min-w-0 flex-1 px-4 pb-22 pt-10 md:px-8 md:pb-10 md:pt-12",
                     mainClassName,

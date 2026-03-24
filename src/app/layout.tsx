@@ -16,9 +16,13 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Enviar — Digital Banking",
+  title: {
+    default: "Enviar — Digital Banking",
+    template: "%s | Enviar",
+  },
   description:
     "Send money effortlessly. Multi-currency digital banking for Ethiopia.",
+  icons: { icon: "/icon.svg" },
 };
 
 export const viewport: Viewport = {
@@ -39,6 +43,12 @@ export default function RootLayout({
       <body
         className={`${dmSans.variable} ${geistMono.variable} font-sans antialiased`}
       >
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-xl focus:bg-foreground focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-background"
+        >
+          Skip to main content
+        </a>
         <Providers>{children}</Providers>
       </body>
     </html>

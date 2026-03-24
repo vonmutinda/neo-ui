@@ -456,12 +456,15 @@ Subtle colored backgrounds at ~6-8% opacity for contextual tinting.
 - API error parsing improved in `api-client.ts` — extracts `error` field from JSON envelope for cleaner messages ✅
 - Applied to 6 high-impact forms: Register, Login, Create Import, Create Export, Create Invoice, Business Register ✅
 
-### Phase 9: Polish & Production
+### Phase 9: Polish & Production ✅
 
-- Accessibility audit (WCAG 2.1 AA)
-- Performance optimization (bundle splitting, lazy loading)
-- E2E test coverage
-- Mobile-first responsive refinement
+- Route-level `error.tsx` for all 5 route groups (auth, dashboard, business, cards, admin) ✅
+- Route-level `loading.tsx` with Skeleton fallbacks for 4 heavy route groups ✅
+- Skip link ("Skip to main content") in root layout, `id="main-content"` on all `<main>` elements ✅
+- `FormField` enhanced with `role="alert"` on errors and unique IDs for `aria-describedby` ✅
+- SEO: root metadata with title template, auth layout metadata, `robots.ts`, `sitemap.ts` ✅
+- Custom 404 page (`not-found.tsx`) ✅
+- Remaining for future: E2E tests (Playwright), bundle splitting (alongside HeroUI migration), WCAG audit tools
 
 ---
 

@@ -1,3 +1,11 @@
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Sign In",
+  description:
+    "Sign in or create your Enviar account. Send money across borders with ease.",
+};
+
 export default function AuthLayout({
   children,
 }: {
