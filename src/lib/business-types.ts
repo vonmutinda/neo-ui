@@ -234,8 +234,7 @@ export type BusinessPermission =
   | "biz:loans:view"
   | "biz:loans:apply"
   | "biz:pots:manage"
-  | "biz:tax_pots:manage"
-  | "biz:tax_pots:withdraw"
+  | "biz:pots:withdraw"
   | "biz:imports:manage"
   | "biz:imports:view"
   | "biz:exports:manage"
@@ -761,37 +760,66 @@ export type TaxType =
   | "custom_duty"
   | "other";
 
-export interface TaxPot {
+// --- Business Pots ---
+
+export type PotCategory =
+  | "general"
+  | "tax"
+  | "petty_cash"
+  | "savings"
+  | "event"
+  | "reserve";
+
+export interface BusinessPot {
   id: string;
   businessId: string;
-  potId: string;
-  taxType: TaxType;
-  autoSweepPercent?: number;
-  dueDate?: string;
-  notes?: string;
-  pot?: {
-    id: string;
-    name: string;
-    balanceCents: number;
-    targetCents?: number;
-    isActive: boolean;
-  };
+  category: PotCategory;
+  name: string;
+  currencyCode: string;
+  targetCents?: number | null;
+  emoji?: string | null;
+  isArchived: boolean;
+  balanceCents: number;
+  display: string;
+  progressPercent?: number;
+  taxDetails?: {
+    taxType: TaxType;
+    dueDate?: string;
+    notes?: string;
+  } | null;
   createdAt: string;
   updatedAt: string;
 }
 
-export interface CreateTaxPotRequest {
-  potId: string;
-  taxType: TaxType;
-  autoSweepPercent?: number;
+export interface CreateBusinessPotRequest {
+  name: string;
+  currencyCode: string;
+  category: PotCategory;
+  targetCents?: number;
+  emoji?: string;
+  taxType?: TaxType;
   dueDate?: string;
   notes?: string;
 }
 
-export interface UpdateTaxPotRequest {
-  autoSweepPercent?: number;
+export interface UpdateBusinessPotRequest {
+  name?: string;
+  targetCents?: number;
+  emoji?: string;
   dueDate?: string;
   notes?: string;
+}
+
+export interface BusinessPotTransferRequest {
+  amountCents: number;
+}
+
+export interface BusinessPotArchiveResult {
+  archived: boolean;
+  fundsReturned: boolean;
+  amountReturnedCents: number;
+  currency: string;
+  display: string;
 }
 
 // --- Transaction Labels ---
@@ -826,10 +854,15 @@ export interface TaxSummaryRow {
   count: number;
 }
 
-export interface TaxPotSummaryItem {
-  taxType: TaxType;
+export interface BusinessPotSummaryItem {
+  id: string;
+  name: string;
+  category: PotCategory;
+  currencyCode: string;
+  balanceCents: number;
+  display: string;
+  taxType?: string;
   dueDate?: string;
-  potId: string;
 }
 
 // --- Documents ---

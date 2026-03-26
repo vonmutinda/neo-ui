@@ -194,8 +194,7 @@ export const PERMISSION_GROUPS: PermissionGroup[] = [
       "biz:cards:manage",
       "biz:loans:apply",
       "biz:pots:manage",
-      "biz:tax_pots:manage",
-      "biz:tax_pots:withdraw",
+      "biz:pots:withdraw",
     ],
   },
   {

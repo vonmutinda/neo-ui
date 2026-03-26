@@ -6,7 +6,7 @@ import type {
   TransactionLabel,
   LabeledTransactionFilter,
   TaxSummaryRow,
-  TaxPotSummaryItem,
+  BusinessPotSummaryItem,
   PaginatedResult,
 } from "@/lib/business-types";
 
@@ -128,10 +128,10 @@ export function useLabeledTransactions(
 }
 
 export function useTaxPotSummary(bizId: string | null) {
-  return useQuery<TaxPotSummaryItem[]>({
-    queryKey: ["business", bizId, "tax-pots", "summary"],
+  return useQuery<BusinessPotSummaryItem[]>({
+    queryKey: ["business", bizId, "pots", "summary"],
     queryFn: () =>
-      api.get<TaxPotSummaryItem[]>(`/v1/business/${bizId}/tax-pots/summary`),
+      api.get<BusinessPotSummaryItem[]>(`/v1/business/${bizId}/pots/summary`),
     enabled: !!bizId,
   });
 }

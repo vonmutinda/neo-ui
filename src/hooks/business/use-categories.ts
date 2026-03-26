@@ -6,9 +6,6 @@ import type {
   TransactionCategory,
   CreateCategoryRequest,
   UpdateCategoryRequest,
-  TaxPot,
-  CreateTaxPotRequest,
-  UpdateTaxPotRequest,
 } from "@/lib/business-types";
 
 // --- Transaction Categories ---
@@ -62,57 +59,6 @@ export function useDeleteCategory(bizId: string | null) {
       api.delete(`/v1/business/${bizId}/categories/${categoryId}`),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["business", bizId, "categories"] });
-    },
-  });
-}
-
-// --- Tax Pots ---
-
-export function useTaxPots(bizId: string | null) {
-  return useQuery<TaxPot[]>({
-    queryKey: ["business", bizId, "tax-pots"],
-    queryFn: () => api.get<TaxPot[]>(`/v1/business/${bizId}/tax-pots`),
-    enabled: !!bizId,
-    staleTime: 30_000,
-  });
-}
-
-export function useCreateTaxPot(bizId: string | null) {
-  const qc = useQueryClient();
-
-  return useMutation<TaxPot, Error, CreateTaxPotRequest>({
-    mutationFn: (body) =>
-      api.post<TaxPot>(`/v1/business/${bizId}/tax-pots`, body),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["business", bizId, "tax-pots"] });
-    },
-  });
-}
-
-export function useUpdateTaxPot(bizId: string | null) {
-  const qc = useQueryClient();
-
-  return useMutation<
-    TaxPot,
-    Error,
-    { taxPotId: string; body: UpdateTaxPotRequest }
-  >({
-    mutationFn: ({ taxPotId, body }) =>
-      api.patch<TaxPot>(`/v1/business/${bizId}/tax-pots/${taxPotId}`, body),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["business", bizId, "tax-pots"] });
-    },
-  });
-}
-
-export function useDeleteTaxPot(bizId: string | null) {
-  const qc = useQueryClient();
-
-  return useMutation({
-    mutationFn: (taxPotId: string) =>
-      api.delete(`/v1/business/${bizId}/tax-pots/${taxPotId}`),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["business", bizId, "tax-pots"] });
     },
   });
 }

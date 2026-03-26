@@ -115,6 +115,23 @@ export function useAdminRelationshipManagers() {
   });
 }
 
+interface BusinessDepositRequest {
+  id: string;
+  amountCents: number;
+  asset?: string;
+  narration?: string;
+}
+
+export function useAdminBusinessDeposit() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, ...body }: BusinessDepositRequest) =>
+      adminApi.post<{ status: string }>(`/businesses/${id}/deposit`, body),
+    onSuccess: (_, vars) =>
+      qc.invalidateQueries({ queryKey: ["admin", "businesses", vars.id] }),
+  });
+}
+
 export function useAdminRMSuggestions() {
   return useQuery({
     queryKey: ["admin", "relationship-managers", "suggestions"],

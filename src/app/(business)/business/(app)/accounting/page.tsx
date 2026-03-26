@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { Plus } from "lucide-react";
 import {
   ArrowRightLeft,
   TrendingUp,
@@ -17,17 +18,31 @@ import {
   useRequestStatement,
   useDownloadStatement,
 } from "@/hooks/business/use-statements";
+import {
+  useCategories,
+  useCreateCategory,
+  useDeleteCategory,
+} from "@/hooks/business/use-categories";
+import { useMyPermissions } from "@/hooks/business/use-business-members";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { StatementRequestForm } from "@/components/business/accounting/StatementRequestForm";
 import { StatementsTable } from "@/components/business/accounting/StatementsTable";
+import { CategoriesList } from "@/components/business/tax/CategoriesList";
+import { CategorySummaryChart } from "@/components/business/tax/CategorySummaryChart";
+import { CreateCategoryDialog } from "@/components/business/tax/CreateCategoryDialog";
 import { Skeleton } from "@/components/ui/skeleton";
-import type { StatementRequest } from "@/lib/business-types";
+import type {
+  StatementRequest,
+  CreateCategoryRequest,
+  TransactionCategory,
+} from "@/lib/business-types";
 
-type Tab = "statements" | "reports";
+type Tab = "statements" | "reports" | "categories";
 
 const TABS: { value: Tab; label: string }[] = [
   { value: "statements", label: "Statements" },
   { value: "reports", label: "Reports" },
+  { value: "categories", label: "Categories" },
 ];
 
 const REPORT_TYPES = [
@@ -82,12 +97,27 @@ const REPORT_TYPES = [
 ];
 
 export default function AccountingPage() {
-  const { activeBusinessId } = useBusinessStore();
+  const { activeBusinessId, activeBusiness } = useBusinessStore();
+  const { data: permissions } = useMyPermissions(activeBusinessId);
   const [activeTab, setActiveTab] = useState<Tab>("statements");
+  const [showCreateCategory, setShowCreateCategory] = useState(false);
 
-  const { data: result, isLoading } = useStatements(activeBusinessId);
+  // Statements
+  const { data: result, isLoading: statementsLoading } =
+    useStatements(activeBusinessId);
   const requestStatement = useRequestStatement(activeBusinessId);
   const downloadStatement = useDownloadStatement();
+
+  // Categories
+  const { data: categories, isLoading: categoriesLoading } =
+    useCategories(activeBusinessId);
+  const createCategory = useCreateCategory(activeBusinessId);
+  const deleteCategory = useDeleteCategory(activeBusinessId);
+
+  const canManageCategories =
+    permissions?.includes("biz:transactions:label") ?? false;
+
+  const currencyCode = activeBusiness?.market === "US" ? "USD" : "ETB";
 
   function handleGenerate(req: StatementRequest) {
     requestStatement.mutate(req, {
@@ -102,11 +132,45 @@ export default function AccountingPage() {
     });
   }
 
+  function handleCreateCategory(req: CreateCategoryRequest) {
+    createCategory.mutate(req, {
+      onSuccess: () => {
+        toast.success("Category created");
+        setShowCreateCategory(false);
+      },
+      onError: (err) => toast.error(err.message),
+    });
+  }
+
+  function handleDeleteCategory(cat: TransactionCategory) {
+    if (cat.isSystem) return;
+    deleteCategory.mutate(cat.id, {
+      onSuccess: () => toast.success("Category deleted"),
+      onError: (err) => toast.error(err.message),
+    });
+  }
+
   const statements = result?.data ?? [];
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Statements & Reports" />
+      <PageHeader
+        title="Accounting"
+        rightSlot={
+          activeTab === "categories" && canManageCategories ? (
+            <button
+              onClick={() => setShowCreateCategory(true)}
+              className={cn(
+                "flex h-10 items-center gap-2 rounded-xl bg-foreground px-4 text-sm font-medium text-background",
+                "transition-opacity hover:opacity-90 active:opacity-80",
+              )}
+            >
+              <Plus className="h-4 w-4" />
+              New Category
+            </button>
+          ) : undefined
+        }
+      />
 
       {/* Tabs */}
       <div className="flex gap-2 overflow-x-auto">
@@ -134,7 +198,7 @@ export default function AccountingPage() {
             isSubmitting={requestStatement.isPending}
           />
           <div>
-            {isLoading ? (
+            {statementsLoading ? (
               <div className="space-y-3">
                 {Array.from({ length: 4 }).map((_, i) => (
                   <Skeleton key={i} className="h-14 rounded-xl" />
@@ -175,20 +239,10 @@ export default function AccountingPage() {
                   {report.description}
                 </p>
                 <div className="mt-3 flex gap-2">
-                  <span
-                    className={cn(
-                      "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold",
-                      "bg-muted text-muted-foreground",
-                    )}
-                  >
+                  <span className="inline-flex items-center rounded-full bg-muted px-2.5 py-0.5 text-xs font-semibold text-muted-foreground">
                     {report.formats}
                   </span>
-                  <span
-                    className={cn(
-                      "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold",
-                      "bg-muted text-muted-foreground",
-                    )}
-                  >
+                  <span className="inline-flex items-center rounded-full bg-muted px-2.5 py-0.5 text-xs font-semibold text-muted-foreground">
                     {report.range}
                   </span>
                 </div>
@@ -197,6 +251,38 @@ export default function AccountingPage() {
           })}
         </div>
       )}
+
+      {/* Categories tab */}
+      {activeTab === "categories" &&
+        (categoriesLoading ? (
+          <div className="space-y-3 animate-pulse">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="h-14 rounded-xl bg-muted" />
+            ))}
+          </div>
+        ) : (
+          <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
+            <CategoriesList
+              categories={categories ?? []}
+              canManage={canManageCategories}
+              currencyCode={currencyCode}
+              onEdit={() => toast.info("Edit coming soon")}
+              onDelete={handleDeleteCategory}
+            />
+            <CategorySummaryChart
+              categories={categories ?? []}
+              currencyCode={currencyCode}
+            />
+          </div>
+        ))}
+
+      {/* Create category dialog */}
+      <CreateCategoryDialog
+        open={showCreateCategory}
+        onClose={() => setShowCreateCategory(false)}
+        onSubmit={handleCreateCategory}
+        isSubmitting={createCategory.isPending}
+      />
     </div>
   );
 }

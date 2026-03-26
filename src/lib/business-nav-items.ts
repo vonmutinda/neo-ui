@@ -1,16 +1,16 @@
 import {
   LayoutDashboard,
-  Wallet,
+  ArrowLeftRight,
   ArrowUpRight,
-  Layers,
+  PiggyBank,
   FileText,
   CreditCard,
   PackageOpen,
   PackageCheck,
   Landmark,
-  Tags,
   BookOpen,
   Users,
+  FolderOpen,
   Settings,
   type LucideIcon,
 } from "lucide-react";
@@ -31,9 +31,13 @@ export const BUSINESS_NAV_SECTIONS: readonly BusinessNavSection[] = [
   {
     items: [
       { href: "/business", label: "Dashboard", icon: LayoutDashboard },
-      { href: "/business/wallets", label: "Wallets", icon: Wallet },
-      { href: "/business/transfers", label: "Transfers", icon: ArrowUpRight },
-      { href: "/business/payments", label: "Payments", icon: Layers },
+      {
+        href: "/business/transactions",
+        label: "Transactions",
+        icon: ArrowLeftRight,
+      },
+      { href: "/business/payments", label: "Payments", icon: ArrowUpRight },
+      { href: "/business/pots", label: "Pots", icon: PiggyBank },
       { href: "/business/invoices", label: "Invoices", icon: FileText },
       { href: "/business/cards", label: "Cards", icon: CreditCard },
     ],
@@ -49,7 +53,6 @@ export const BUSINESS_NAV_SECTIONS: readonly BusinessNavSection[] = [
     label: "Finance",
     items: [
       { href: "/business/loans", label: "Loans", icon: Landmark },
-      { href: "/business/tax", label: "Tax", icon: Tags },
       { href: "/business/accounting", label: "Accounting", icon: BookOpen },
     ],
   },
@@ -57,6 +60,7 @@ export const BUSINESS_NAV_SECTIONS: readonly BusinessNavSection[] = [
     label: "Admin",
     items: [
       { href: "/business/team", label: "Team", icon: Users },
+      { href: "/business/documents", label: "Documents", icon: FolderOpen },
       { href: "/business/settings", label: "Settings", icon: Settings },
     ],
   },

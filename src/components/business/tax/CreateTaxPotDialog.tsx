@@ -1,15 +1,17 @@
+// DEPRECATED: Tax pots are now part of the general Pots system.
+// Use components/business/pots/CreatePotDialog.tsx instead.
 "use client";
 
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { X } from "lucide-react";
 import { TAX_TYPE_OPTIONS } from "@/lib/business-utils";
-import type { CreateTaxPotRequest, TaxType } from "@/lib/business-types";
+import type { CreateBusinessPotRequest, TaxType } from "@/lib/business-types";
 
 interface CreateTaxPotDialogProps {
   open: boolean;
   onClose: () => void;
-  onSubmit: (req: CreateTaxPotRequest) => void;
+  onSubmit: (req: CreateBusinessPotRequest) => void;
   isSubmitting: boolean;
 }
 
@@ -19,9 +21,8 @@ export function CreateTaxPotDialog({
   onSubmit,
   isSubmitting,
 }: CreateTaxPotDialogProps) {
-  const [potId, setPotId] = useState("");
+  const [name, setName] = useState("");
   const [taxType, setTaxType] = useState<TaxType>("vat");
-  const [autoSweepPercent, setAutoSweepPercent] = useState("15");
   const [dueDate, setDueDate] = useState("");
   const [notes, setNotes] = useState("");
 
@@ -29,14 +30,13 @@ export function CreateTaxPotDialog({
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    const pct = parseFloat(autoSweepPercent);
-    if (isNaN(pct) || pct < 0 || pct > 100) return;
-    if (!potId) return;
+    if (!name) return;
 
     onSubmit({
-      potId,
+      name,
+      currencyCode: "ETB",
+      category: "tax",
       taxType,
-      autoSweepPercent: pct,
       dueDate: dueDate || undefined,
       notes: notes.trim() || undefined,
     });
@@ -44,14 +44,12 @@ export function CreateTaxPotDialog({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
-      {/* Backdrop */}
       <div
         className="absolute inset-0 bg-black/40 backdrop-blur-sm"
         aria-hidden="true"
         onClick={onClose}
       />
 
-      {/* Panel */}
       <div
         className={cn(
           "relative z-10 w-full max-w-md rounded-2xl bg-card p-6",
@@ -59,14 +57,9 @@ export function CreateTaxPotDialog({
         )}
         role="dialog"
         aria-modal="true"
-        aria-labelledby="create-tax-pot-title"
       >
-        {/* Header */}
         <div className="flex items-center justify-between">
-          <h2
-            id="create-tax-pot-title"
-            className="text-base font-semibold text-foreground"
-          >
+          <h2 className="text-base font-semibold text-foreground">
             New Tax Pot
           </h2>
           <button
@@ -79,25 +72,23 @@ export function CreateTaxPotDialog({
         </div>
 
         <form onSubmit={handleSubmit} className="mt-5 space-y-4">
-          {/* Pot ID */}
           <div>
             <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/60">
-              Pot ID
+              Name
             </label>
             <input
               type="text"
-              value={potId}
-              onChange={(e) => setPotId(e.target.value)}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
               className={cn(
                 "mt-1 h-10 w-full rounded-xl bg-secondary px-3 text-sm outline-none",
                 "focus:ring-2 focus:ring-foreground/20",
               )}
-              placeholder="Select a pot"
+              placeholder="e.g. VAT Reserve"
               required
             />
           </div>
 
-          {/* Tax type */}
           <div>
             <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/60">
               Tax Type
@@ -118,28 +109,6 @@ export function CreateTaxPotDialog({
             </select>
           </div>
 
-          {/* Auto-sweep % */}
-          <div>
-            <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/60">
-              Auto-sweep %
-            </label>
-            <input
-              type="number"
-              min="0"
-              max="100"
-              step="0.5"
-              value={autoSweepPercent}
-              onChange={(e) => setAutoSweepPercent(e.target.value)}
-              className={cn(
-                "mt-1 h-10 w-full rounded-xl bg-secondary px-3 text-sm outline-none",
-                "focus:ring-2 focus:ring-foreground/20",
-              )}
-              placeholder="15"
-              required
-            />
-          </div>
-
-          {/* Due date */}
           <div>
             <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/60">
               Due Date
@@ -155,7 +124,6 @@ export function CreateTaxPotDialog({
             />
           </div>
 
-          {/* Notes */}
           <div>
             <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/60">
               Notes
@@ -172,7 +140,6 @@ export function CreateTaxPotDialog({
             />
           </div>
 
-          {/* Submit */}
           <button
             type="submit"
             disabled={isSubmitting}
