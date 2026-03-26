@@ -555,36 +555,6 @@ export interface AdminAnalyticsOverview {
   asOf: string;
 }
 
-export interface MoneyFlowPoint {
-  lat: number;
-  lon: number;
-  amountCents: number;
-  currency: string;
-  type: string;
-  createdAt: string;
-  transactionId: string;
-  city?: string;
-  country?: string;
-}
-
-export interface MoneyFlowCoord {
-  lat: number;
-  lon: number;
-}
-
-export interface MoneyFlowFlow {
-  from: MoneyFlowCoord;
-  to: MoneyFlowCoord;
-  amountCents: number;
-  currency: string;
-  transactionId?: string;
-}
-
-export interface MoneyFlowMapResponse {
-  points: MoneyFlowPoint[];
-  flows: MoneyFlowFlow[];
-}
-
 export interface AdminFXRate {
   id: string;
   fromCurrency: string;

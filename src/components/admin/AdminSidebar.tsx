@@ -16,7 +16,6 @@ import {
   Settings,
   LogOut,
   ChevronDown,
-  MapPin,
   Building2,
   ShieldCheck,
   Coins,
@@ -179,12 +178,6 @@ const COMPLIANCE_NAV: NavItem[] = [
     label: "Flags",
     icon: Flag,
     permission: "flags:manage",
-  },
-  {
-    href: "/admin/map",
-    label: "Money flow map",
-    icon: MapPin,
-    permission: "analytics:read",
   },
 ];
 

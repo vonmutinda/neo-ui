@@ -13,7 +13,6 @@ const PAGE_TITLES: Record<string, string> = {
   "/admin/reconciliation": "Reconciliation",
   "/admin/audit": "Audit Log",
   "/admin/flags": "Flags",
-  "/admin/map": "Money flow map",
   "/admin/staff": "Staff Management",
   "/admin/settings": "Settings",
 };
@@ -38,7 +37,10 @@ export function AdminHeader() {
     <header className="flex h-16 items-center justify-between border-b border-border bg-card px-6">
       <h1 className="text-lg font-semibold">{title}</h1>
       <div className="flex items-center gap-3">
-        <StatusBadge status={staff?.role ?? "unknown"} className="bg-primary/10 text-primary" />
+        <StatusBadge
+          status={staff?.role ?? "unknown"}
+          className="bg-primary/10 text-primary"
+        />
         <span className="text-sm text-muted-foreground">{staff?.fullName}</span>
       </div>
     </header>
