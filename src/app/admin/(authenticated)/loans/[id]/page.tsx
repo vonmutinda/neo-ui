@@ -8,7 +8,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 
-export default function LoanDetailPage({ params }: { params: Promise<{ id: string }> }) {
+export default function LoanDetailPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
   const { id } = use(params);
   const { data: loan, isLoading } = useAdminLoan(id);
 
@@ -26,56 +30,81 @@ export default function LoanDetailPage({ params }: { params: Promise<{ id: strin
   }
 
   if (!loan) {
-    return <p className="py-12 text-center text-muted-foreground">Loan not found</p>;
+    return (
+      <p className="py-12 text-center text-muted-foreground">Loan not found</p>
+    );
   }
 
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
         <Link href="/admin/loans">
-          <Button variant="ghost" size="sm"><ArrowLeft className="mr-1 h-4 w-4" /> Back</Button>
+          <Button variant="ghost" size="sm">
+            <ArrowLeft className="mr-1 h-4 w-4" /> Back
+          </Button>
         </Link>
         <div>
           <h2 className="text-xl font-semibold font-mono">{loan.id}</h2>
-          <p className="text-sm text-muted-foreground">User ID: {loan.userId}</p>
+          <p className="text-sm text-muted-foreground">
+            User ID: {loan.userId}
+          </p>
         </div>
         <StatusBadge status={loan.status} />
       </div>
 
       <div className="rounded-2xl border border-border bg-card p-5">
-        <h3 className="mb-4 text-sm font-semibold text-muted-foreground">Loan Summary</h3>
+        <h3 className="mb-4 text-sm font-semibold text-muted-foreground">
+          Loan Summary
+        </h3>
         <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <div>
             <dt className="text-xs text-muted-foreground">Principal</dt>
             <dd className="font-tabular text-lg font-semibold">
-              ETB {(loan.principalAmountCents / 100).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+              ETB{" "}
+              {((loan.principalAmountCents ?? 0) / 100).toLocaleString(
+                undefined,
+                { minimumFractionDigits: 2 },
+              )}
             </dd>
           </div>
           <div>
             <dt className="text-xs text-muted-foreground">Interest Fee</dt>
             <dd className="font-tabular text-lg font-semibold">
-              ETB {(loan.interestFeeCents / 100).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+              ETB{" "}
+              {((loan.interestFeeCents ?? 0) / 100).toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+              })}
             </dd>
           </div>
           <div>
             <dt className="text-xs text-muted-foreground">Total Due</dt>
             <dd className="font-tabular text-lg font-semibold">
-              ETB {(loan.totalDueCents / 100).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+              ETB{" "}
+              {((loan.totalDueCents ?? 0) / 100).toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+              })}
             </dd>
           </div>
           <div>
             <dt className="text-xs text-muted-foreground">Remaining</dt>
             <dd className="font-tabular text-lg font-semibold">
-              ETB {(loan.remainingCents / 100).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+              ETB{" "}
+              {((loan.remainingCents ?? 0) / 100).toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+              })}
             </dd>
           </div>
           <div>
             <dt className="text-xs text-muted-foreground">Disbursed</dt>
-            <dd className="text-sm">{new Date(loan.disbursedAt).toLocaleDateString()}</dd>
+            <dd className="text-sm">
+              {new Date(loan.disbursedAt).toLocaleDateString()}
+            </dd>
           </div>
           <div>
             <dt className="text-xs text-muted-foreground">Due Date</dt>
-            <dd className="text-sm">{new Date(loan.dueDate).toLocaleDateString()}</dd>
+            <dd className="text-sm">
+              {new Date(loan.dueDate).toLocaleDateString()}
+            </dd>
           </div>
           <div>
             <dt className="text-xs text-muted-foreground">Days Past Due</dt>
@@ -90,7 +119,9 @@ export default function LoanDetailPage({ params }: { params: Promise<{ id: strin
 
       {loan.installments && loan.installments.length > 0 && (
         <div className="rounded-2xl border border-border bg-card p-5">
-          <h3 className="mb-4 text-sm font-semibold text-muted-foreground">Installments</h3>
+          <h3 className="mb-4 text-sm font-semibold text-muted-foreground">
+            Installments
+          </h3>
           <div className="overflow-hidden rounded-xl border border-border">
             <table className="w-full text-sm">
               <thead>
@@ -104,12 +135,31 @@ export default function LoanDetailPage({ params }: { params: Promise<{ id: strin
               </thead>
               <tbody>
                 {loan.installments.map((inst) => (
-                  <tr key={inst.installmentNumber} className="border-b border-border last:border-0">
+                  <tr
+                    key={inst.installmentNumber}
+                    className="border-b border-border last:border-0"
+                  >
                     <td className="px-4 py-3">{inst.installmentNumber}</td>
-                    <td className="px-4 py-3 font-tabular">{(inst.amountDueCents / 100).toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
-                    <td className="px-4 py-3 font-tabular">{(inst.amountPaidCents / 100).toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
-                    <td className="px-4 py-3 text-muted-foreground">{new Date(inst.dueDate).toLocaleDateString()}</td>
-                    <td className="px-4 py-3"><StatusBadge status={inst.isPaid ? "completed" : "pending"} /></td>
+                    <td className="px-4 py-3 font-tabular">
+                      {((inst.amountDueCents ?? 0) / 100).toLocaleString(
+                        undefined,
+                        { minimumFractionDigits: 2 },
+                      )}
+                    </td>
+                    <td className="px-4 py-3 font-tabular">
+                      {((inst.amountPaidCents ?? 0) / 100).toLocaleString(
+                        undefined,
+                        { minimumFractionDigits: 2 },
+                      )}
+                    </td>
+                    <td className="px-4 py-3 text-muted-foreground">
+                      {new Date(inst.dueDate).toLocaleDateString()}
+                    </td>
+                    <td className="px-4 py-3">
+                      <StatusBadge
+                        status={inst.isPaid ? "completed" : "pending"}
+                      />
+                    </td>
                   </tr>
                 ))}
               </tbody>

@@ -34,7 +34,7 @@ export default function ScheduledTransfersPage() {
 
   const filtered = transfers?.filter(
     (t) =>
-      t.recipientName.toLowerCase().includes(search.toLowerCase()) ||
+      t.recipient.toLowerCase().includes(search.toLowerCase()) ||
       t.narration?.toLowerCase().includes(search.toLowerCase()),
   );
 
@@ -111,7 +111,7 @@ export default function ScheduledTransfersPage() {
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
                       <p className="truncate text-sm font-medium">
-                        {transfer.recipientName}
+                        {transfer.recipient}
                       </p>
                       <Badge
                         variant="outline"

@@ -12,6 +12,7 @@ export type BusinessStatus =
 
 export type BusinessTransferStatus =
   | "pending"
+  | "pending_second_approval"
   | "approved"
   | "rejected"
   | "expired"
@@ -94,6 +95,7 @@ export interface Business {
   status: BusinessStatus;
   ledgerWalletId: string;
   kybLevel: number;
+  dualAuthThresholdCents?: number;
   relationshipManagerId?: string;
   isFrozen: boolean;
   frozenReason?: string;
@@ -180,6 +182,8 @@ export interface BusinessTransfer {
   reason?: string;
   approvedBy?: string;
   approvedAt?: string;
+  firstApprovedBy?: string;
+  firstApprovedAt?: string;
   rejectedBy?: string;
   rejectedAt?: string;
   expiresAt: string;
@@ -234,6 +238,8 @@ export type BusinessPermission =
   | "biz:tax_pots:withdraw"
   | "biz:imports:manage"
   | "biz:imports:view"
+  | "biz:exports:manage"
+  | "biz:exports:view"
   | "biz:members:manage"
   | "biz:roles:manage"
   | "biz:settings:manage";
@@ -359,6 +365,8 @@ export interface Invoice {
   notes?: string;
   paymentLink?: string;
   createdBy: string;
+  predictedPaymentDate?: string;
+  paymentProbability?: number;
   lineItems: InvoiceLineItem[];
   createdAt: string;
   updatedAt: string;
@@ -404,7 +412,9 @@ export interface InvoiceFilter {
 
 export type BatchPaymentStatus =
   | "draft"
+  | "pending_second_approval"
   | "approved"
+  | "rejected"
   | "processing"
   | "completed"
   | "partial"
@@ -437,9 +447,14 @@ export interface BatchPayment {
   totalCents: number;
   itemCount: number;
   status: BatchPaymentStatus;
-  initiatedBy?: string;
+  initiatedBy: string;
   approvedBy?: string;
   approvedAt?: string;
+  firstApprovedBy?: string;
+  firstApprovedAt?: string;
+  rejectedBy?: string;
+  rejectedAt?: string;
+  rejectionReason?: string;
   processedAt?: string;
   completedAt?: string;
   items?: BatchPaymentItem[];
@@ -489,6 +504,28 @@ export interface BusinessCard {
   periodResetAt?: string;
   isActive: boolean;
   memberName?: string;
+  card?: {
+    id: string;
+    lastFour: string;
+    expiryMonth: number;
+    expiryYear: number;
+    type: "physical" | "virtual" | "ephemeral";
+    status:
+      | "active"
+      | "frozen"
+      | "cancelled"
+      | "expired"
+      | "pending_activation";
+    allowOnline: boolean;
+    allowContactless: boolean;
+    allowAtm: boolean;
+    allowInternational: boolean;
+    dailyLimitCents: number;
+    monthlyLimitCents: number;
+    perTxnLimitCents: number;
+    createdAt: string;
+    updatedAt: string;
+  };
   createdAt: string;
   updatedAt: string;
 }
@@ -585,6 +622,8 @@ export interface ImportRequestDocument {
   documentType: string;
   fileKey: string;
   fileName: string;
+  fileSizeBytes: number;
+  mimeType: string;
   status: string;
   notes?: string;
   uploadedBy: string;
@@ -823,4 +862,232 @@ export interface ReportType {
   description: string;
   formats: StatementFormat[];
   icon: string;
+}
+
+// --- Invoice Payments ---
+
+export interface InvoicePayment {
+  id: string;
+  invoiceId: string;
+  transactionId?: string;
+  amountCents: number;
+  note?: string;
+  recordedBy: string;
+  createdAt: string;
+}
+
+// --- Recurring Invoices ---
+
+export type RecurringInvoiceStatus =
+  | "active"
+  | "cancelled"
+  | "completed"
+  | "paused";
+
+export interface RecurringInvoice {
+  id: string;
+  businessId: string;
+  customerName: string;
+  customerPhone?: string;
+  customerEmail?: string;
+  currencyCode: SupportedCurrency;
+  subtotalCents: number;
+  taxCents: number;
+  totalCents: number;
+  notes?: string;
+  lineItems: InvoiceLineItem[] | Record<string, unknown>[];
+  frequency: "daily" | "weekly" | "biweekly" | "monthly";
+  autoSend: boolean;
+  nextRunAt: string;
+  lastRunAt?: string;
+  status: RecurringInvoiceStatus;
+  runCount: number;
+  maxRuns?: number;
+  lastError?: string;
+  createdBy: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateRecurringInvoiceRequest {
+  customerName: string;
+  customerPhone?: string;
+  customerEmail?: string;
+  currencyCode: SupportedCurrency;
+  subtotalCents: number;
+  taxCents: number;
+  totalCents: number;
+  notes?: string;
+  lineItems: Omit<InvoiceLineItem, "id" | "invoiceId" | "createdAt">[];
+  frequency: "daily" | "weekly" | "biweekly" | "monthly";
+  autoSend: boolean;
+  maxRuns?: number;
+}
+
+export interface RecurringInvoiceFilter {
+  status?: RecurringInvoiceStatus;
+  limit?: number;
+  offset?: number;
+}
+
+// --- Trade Finance: Exports ---
+
+export type ExportStatus =
+  | "draft"
+  | "submitted"
+  | "bank_reviewing"
+  | "approved"
+  | "shipped"
+  | "proceeds_pending"
+  | "proceeds_received"
+  | "surrender_pending"
+  | "completed"
+  | "rejected"
+  | "cancelled";
+
+export type ExportType = "goods" | "services";
+
+export type ExportDocumentType =
+  | "export_license"
+  | "sales_contract"
+  | "bank_permit"
+  | "customs_declaration"
+  | "bill_of_lading"
+  | "commercial_invoice"
+  | "certificate_of_origin"
+  | "quality_certificate"
+  | "shipping_instruction"
+  | "other";
+
+export interface ExportRequestDocument {
+  id: string;
+  exportRequestId: string;
+  documentType: ExportDocumentType;
+  fileKey: string;
+  fileName: string;
+  fileSizeBytes: number;
+  mimeType: string;
+  status: string;
+  notes?: string;
+  uploadedBy: string;
+  createdAt: string;
+}
+
+export interface ExportRequest {
+  id: string;
+  businessId: string;
+  referenceNumber: string;
+  status: ExportStatus;
+  exportType: ExportType;
+  buyerName: string;
+  buyerCountry: string;
+  description: string;
+  hsCode?: string;
+  contractAmountCents: number;
+  contractCurrency: SupportedCurrency;
+  surrenderPercentage: number;
+  surrenderedAmountCents: number;
+  retainedAmountCents: number;
+  shipmentDate?: string;
+  repatriationDeadline?: string;
+  expectedProceedsDate?: string;
+  actualRepatriationDate?: string;
+  proceedsAmountCents?: number;
+  bankPermitNumber?: string;
+  eswReference?: string;
+  customsDeclarationNumber?: string;
+  notes?: string;
+  createdBy: string;
+  reviewedBy?: string;
+  reviewedAt?: string;
+  rejectionReason?: string;
+  cancelledAt?: string;
+  cancelledBy?: string;
+  createdAt: string;
+  updatedAt: string;
+  documents?: ExportRequestDocument[];
+}
+
+export interface CreateExportRequest {
+  exportType: ExportType;
+  buyerName: string;
+  buyerCountry: string;
+  description: string;
+  hsCode?: string;
+  contractAmountCents: number;
+  contractCurrency: SupportedCurrency;
+  surrenderPercentage: number;
+  shipmentDate?: string;
+  repatriationDeadline?: string;
+  expectedProceedsDate?: string;
+  notes?: string;
+}
+
+export interface ExportFilter {
+  status?: ExportStatus;
+  limit?: number;
+  offset?: number;
+}
+
+// --- KYB Submissions ---
+
+export type KYBStatus = "pending" | "approved" | "rejected" | "expired";
+
+export type KYBDocumentType =
+  | "trade_license"
+  | "tin_certificate"
+  | "memorandum"
+  | "articles_of_association"
+  | "bank_statement"
+  | "tax_return"
+  | "contract"
+  | "invoice_attachment"
+  | "receipt"
+  | "id_document"
+  | "other";
+
+export interface KYBDocument {
+  id: string;
+  submissionId: string;
+  documentType: KYBDocumentType;
+  fileKey: string;
+  fileName: string;
+  status: string;
+  notes?: string;
+  createdAt: string;
+}
+
+export interface KYBSubmission {
+  id: string;
+  businessId: string;
+  level: number;
+  status: KYBStatus;
+  submittedBy: string;
+  reviewedBy?: string;
+  reviewedAt?: string;
+  rejectionReason?: string;
+  documents: KYBDocument[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+// --- Business Credit Profile ---
+
+export interface BusinessCreditProfile {
+  businessId: string;
+  trustScore: number;
+  approvedLimitCents: number;
+  avgMonthlyRevenueCents: number;
+  avgMonthlyExpensesCents: number;
+  cashFlowScore: number;
+  timeInBusinessMonths: number;
+  industryRiskScore: number;
+  totalLoansRepaid: number;
+  latePaymentsCount: number;
+  currentOutstandingCents: number;
+  collateralValueCents: number;
+  isBlacklisted: boolean;
+  lastCalculatedAt: string;
+  createdAt: string;
+  updatedAt: string;
 }

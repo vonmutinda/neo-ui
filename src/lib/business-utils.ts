@@ -19,6 +19,7 @@ const STATUS_COLORS: Record<BusinessTransferStatus, string> = {
   pending: "bg-warning/10 text-warning-foreground",
   approved: "bg-success/10 text-success-foreground",
   rejected: "bg-destructive/10 text-destructive",
+  pending_second_approval: "bg-warning/10 text-warning-foreground",
   expired: "bg-muted text-muted-foreground",
   executed: "bg-success/10 text-success-foreground",
   failed: "bg-destructive/10 text-destructive",
@@ -32,6 +33,7 @@ const STATUS_LABELS: Record<BusinessTransferStatus, string> = {
   pending: "Pending",
   approved: "Approved",
   rejected: "Rejected",
+  pending_second_approval: "Pending 2nd Approval",
   expired: "Expired",
   executed: "Done",
   failed: "Failed",
@@ -279,7 +281,9 @@ export function getInvoiceStatusLabel(status: InvoiceStatus): string {
 
 const BATCH_STATUS_COLORS: Record<BatchPaymentStatus, string> = {
   draft: "bg-muted text-muted-foreground",
+  pending_second_approval: "bg-warning/10 text-warning-foreground",
   approved: "bg-primary/10 text-primary",
+  rejected: "bg-destructive/10 text-destructive",
   processing: "bg-warning/10 text-warning-foreground",
   completed: "bg-success/10 text-success-foreground",
   partial: "bg-warning/10 text-warning-foreground",
@@ -292,7 +296,9 @@ export function getBatchStatusColor(status: BatchPaymentStatus): string {
 
 const BATCH_STATUS_LABELS: Record<BatchPaymentStatus, string> = {
   draft: "Draft",
+  pending_second_approval: "Pending 2nd Approval",
   approved: "Approved",
+  rejected: "Rejected",
   processing: "Processing",
   completed: "Completed",
   partial: "Partial",

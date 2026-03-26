@@ -110,7 +110,7 @@ export function MoneyFlowMap({
         ))}
         {flows.map((f, i) => (
           <Polyline
-            key={i}
+            key={`${f.from.lat},${f.from.lon}-${f.to.lat},${f.to.lon}`}
             positions={[
               [f.from.lat, f.from.lon],
               [f.to.lat, f.to.lon],

@@ -1,5 +1,6 @@
 "use client";
 
+import { Fragment } from "react";
 import { cn } from "@/lib/utils";
 import { Check, Minus } from "lucide-react";
 import { PERMISSION_GROUPS, getPermissionLabel } from "@/lib/business-utils";
@@ -53,9 +54,9 @@ export function PermissionsMatrix({ roles }: PermissionsMatrixProps) {
         </thead>
         <tbody>
           {PERMISSION_GROUPS.map((group) => (
-            <>
+            <Fragment key={group.label}>
               {/* Group header */}
-              <tr key={`group-${group.label}`}>
+              <tr>
                 <td
                   colSpan={roles.length + 1}
                   className="bg-muted/30 px-4 py-2 text-xs font-semibold tracking-tight text-foreground/70"
@@ -83,7 +84,7 @@ export function PermissionsMatrix({ roles }: PermissionsMatrixProps) {
                   })}
                 </tr>
               ))}
-            </>
+            </Fragment>
           ))}
         </tbody>
       </table>

@@ -15,7 +15,7 @@ import { toast } from "sonner";
 
 const STATUS_STYLES: Record<string, string> = {
   ready: "bg-success/10 text-success border-success/20",
-  processing: "bg-yellow-500/10 text-yellow-600 border-yellow-500/20",
+  generating: "bg-yellow-500/10 text-yellow-600 border-yellow-500/20",
   failed: "bg-destructive/10 text-destructive border-destructive/20",
 };
 
@@ -206,8 +206,8 @@ export default function StatementsPage() {
                 </div>
                 <p className="mt-0.5 text-xs text-muted-foreground">
                   <Calendar className="mr-1 inline h-3 w-3" />
-                  {formatDate(statement.fromDate)} &ndash;{" "}
-                  {formatDate(statement.toDate)}
+                  {formatDate(statement.dateFrom)} &ndash;{" "}
+                  {formatDate(statement.dateTo)}
                 </p>
               </div>
               {statement.status === "ready" && statement.downloadUrl && (
@@ -220,7 +220,7 @@ export default function StatementsPage() {
                   <Download className="h-4 w-4" />
                 </a>
               )}
-              {statement.status === "processing" && (
+              {statement.status === "generating" && (
                 <Loader2 className="h-4 w-4 animate-spin text-yellow-600" />
               )}
             </motion.div>

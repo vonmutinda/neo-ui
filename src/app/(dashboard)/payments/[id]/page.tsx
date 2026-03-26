@@ -104,12 +104,12 @@ export default function PaymentDetailPage() {
         <DetailRow
           icon={<Building2 className="h-4 w-4" />}
           label="Biller"
-          value={payment.billerName}
+          value={payment.billerName ?? "Unknown Biller"}
         />
         <DetailRow
           icon={<Hash className="h-4 w-4" />}
           label="Account / Reference"
-          value={payment.customerReference}
+          value={payment.accountNumber}
         />
         <DetailRow
           icon={<CreditCard className="h-4 w-4" />}
@@ -121,11 +121,11 @@ export default function PaymentDetailPage() {
           label="Date"
           value={formatDate(payment.createdAt)}
         />
-        {payment.transactionId && (
+        {payment.receiptId && (
           <DetailRow
             icon={<Hash className="h-4 w-4" />}
-            label="Transaction Reference"
-            value={payment.transactionId}
+            label="Receipt Reference"
+            value={payment.receiptId}
           />
         )}
       </motion.div>

@@ -155,7 +155,7 @@ export default function ScheduledTransferDetailPage() {
         <DetailRow
           icon={<User className="h-4 w-4" />}
           label="Recipient"
-          value={transfer.recipientName}
+          value={transfer.recipient}
         />
         <DetailRow
           icon={<Calendar className="h-4 w-4" />}
@@ -173,7 +173,7 @@ export default function ScheduledTransferDetailPage() {
           <DetailRow
             icon={<Clock className="h-4 w-4" />}
             label="Max Runs"
-            value={`${transfer.runsCompleted ?? 0} / ${transfer.maxRuns}`}
+            value={`${transfer.runCount ?? 0} / ${transfer.maxRuns}`}
           />
         )}
         {transfer.createdAt && (

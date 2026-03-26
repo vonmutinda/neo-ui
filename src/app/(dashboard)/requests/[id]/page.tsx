@@ -65,8 +65,11 @@ export default function RequestDetailPage() {
   const StatusIcon = statusCfg.icon;
   const isPending = request.status === "pending";
   const isRequester = request.requesterId === userId;
+  const payerPhoneStr = request.payerPhone
+    ? `${request.payerPhone.countryCode}${request.payerPhone.number}`
+    : undefined;
   const counterpartyName = isRequester
-    ? (request.payerName ?? request.payerPhone ?? "Someone")
+    ? (request.payerName ?? payerPhoneStr ?? "Someone")
     : (request.requesterName ?? "Someone");
   const createdDate = new Date(request.createdAt).toLocaleDateString(
     undefined,

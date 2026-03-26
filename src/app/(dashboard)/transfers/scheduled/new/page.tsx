@@ -41,7 +41,8 @@ export default function NewScheduledTransferPage() {
 
     try {
       await createTransfer.mutateAsync({
-        recipientId,
+        recipient: recipientId,
+        transferType: "inbound",
         amountCents,
         currency,
         frequency,

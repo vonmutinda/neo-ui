@@ -24,10 +24,10 @@ import {
 import { toast } from "sonner";
 
 const STATUS_STYLES: Record<string, string> = {
-  active: "bg-success/10 text-success border-success/20",
-  processing: "bg-yellow-500/10 text-yellow-600 border-yellow-500/20",
+  pending: "bg-yellow-500/10 text-yellow-600 border-yellow-500/20",
+  ready: "bg-success/10 text-success border-success/20",
+  failed: "bg-destructive/10 text-destructive border-destructive/20",
   revoked: "bg-muted text-muted-foreground border-border/60",
-  expired: "bg-destructive/10 text-destructive border-destructive/20",
 };
 
 function formatDate(iso: string) {
@@ -185,9 +185,7 @@ export default function ConfirmationsPage() {
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
-                  <p className="text-sm font-medium">
-                    {conf.currencyCode} Confirmation
-                  </p>
+                  <p className="text-sm font-medium">Confirmation Letter</p>
                   <Badge
                     variant="outline"
                     className={`text-[10px] ${STATUS_STYLES[conf.status] ?? ""}`}
@@ -204,7 +202,7 @@ export default function ConfirmationsPage() {
                 </p>
               </div>
               <div className="flex items-center gap-1">
-                {conf.status === "active" && conf.downloadUrl && (
+                {conf.status === "ready" && conf.downloadUrl && (
                   <a
                     href={conf.downloadUrl}
                     target="_blank"
@@ -214,7 +212,7 @@ export default function ConfirmationsPage() {
                     <Download className="h-4 w-4" />
                   </a>
                 )}
-                {conf.status === "active" && (
+                {conf.status === "ready" && (
                   <button
                     onClick={() => handleRevoke(conf.id)}
                     disabled={revoking === conf.id}
@@ -227,7 +225,7 @@ export default function ConfirmationsPage() {
                     )}
                   </button>
                 )}
-                {conf.status === "processing" && (
+                {conf.status === "pending" && (
                   <Loader2 className="h-4 w-4 animate-spin text-yellow-600" />
                 )}
               </div>

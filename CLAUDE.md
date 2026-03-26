@@ -45,11 +45,11 @@
 
 ## Design System
 
-- **Comprehensive doc:** `docs/DESIGN.md` — full architecture, feature inventory, design system, and roadmap. Keep it up to date when UI architecture, routes, components, or design system changes.
+- **Comprehensive doc:** `docs/DOCS_PROMPT.md` — single source of truth for architecture, feature inventory, design system, API sync status, and roadmap. Keep it up to date when UI architecture, routes, components, or design system changes.
 - **Visual source of truth:** `docs/mockups/00-design-system.html` — all design/aesthetic changes must be reflected here first, then implemented in code
 - Business app screen mockups: `docs/mockups/01-*.html` through `15-*.html`
 - Design philosophy: Apple-grade simplicity, monochrome palette with functional color only (blue=action, green=inflow, red=outflow, orange=attention)
-- Future migration planned to HeroUI components and design aesthetics
+- **Priority order:** Business app → Personal app → Admin app
 
 ## Code Patterns
 

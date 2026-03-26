@@ -192,6 +192,7 @@ export interface User {
   ledgerWalletId: string;
   email?: string;
   language?: string;
+  faydaPhotoUrl?: string;
   market?: string;
   mfaEnabled?: boolean;
   gender?: string;
@@ -541,7 +542,7 @@ export interface PaymentRequest {
   id: string;
   requesterId: string;
   payerId?: string;
-  payerPhone: string;
+  payerPhone: PhoneNumber;
   amountCents: number;
   currencyCode: SupportedCurrency;
   narration: string;
@@ -673,50 +674,82 @@ export type ScheduledTransferStatus =
 export interface ScheduledTransfer {
   id: string;
   userId: string;
-  recipientId: string;
-  recipientName: string;
+  transferType: string;
+  recipient: string;
+  destInstitution?: string;
   amountCents: number;
   currency: SupportedCurrency;
-  frequency: ScheduledFrequency;
   narration: string;
+  purpose?: string;
+  frequency: ScheduledFrequency;
   nextRunAt: string;
   lastRunAt?: string;
-  runsCompleted: number;
-  maxRuns?: number;
   status: ScheduledTransferStatus;
+  runCount: number;
+  maxRuns?: number;
+  lastError?: string;
   createdAt: string;
   updatedAt: string;
 }
 
 export interface CreateScheduledTransferRequest {
-  recipientId: string;
+  transferType: string;
+  recipient: string;
+  destInstitution?: string;
   amountCents: number;
   currency: SupportedCurrency;
   frequency: ScheduledFrequency;
   narration: string;
+  purpose?: string;
   maxRuns?: number;
 }
 
 // --- Bill Payments ---
 
+export type BillerCategory =
+  | "electricity"
+  | "water"
+  | "telecom"
+  | "internet"
+  | "tv"
+  | "government"
+  | "other";
+
 export interface Biller {
+  id: string;
   code: string;
   name: string;
-  category: string;
+  category: BillerCategory;
+  minAmountCents: number;
+  maxAmountCents: number;
   isActive: boolean;
+  createdBy?: string;
+  createdAt: string;
+  updatedAt: string;
 }
+
+export type BillPaymentStatus =
+  | "pending"
+  | "processing"
+  | "completed"
+  | "failed"
+  | "reversed";
 
 export interface BillPayment {
   id: string;
   userId: string;
-  billerCode: string;
-  billerName: string;
-  customerReference: string;
+  billerId: string;
+  accountNumber: string;
   amountCents: number;
   currency: SupportedCurrency;
-  status: string;
-  transactionId?: string;
+  feeCents: number;
+  status: BillPaymentStatus;
+  receiptId?: string;
+  errorMessage?: string;
   createdAt: string;
+  updatedAt: string;
+  billerName?: string;
+  billerCode?: string;
 }
 
 export interface PayBillRequest {
@@ -728,15 +761,37 @@ export interface PayBillRequest {
 
 // --- Statements ---
 
+export type StatementFormat = "pdf" | "csv";
+export type StatementStatus =
+  | "queued"
+  | "generating"
+  | "ready"
+  | "failed"
+  | "expired";
+export type StatementType = "on_demand" | "monthly" | "daily";
+export type StatementVariant = "personal" | "standard" | "accounting";
+
 export interface Statement {
   id: string;
-  userId: string;
-  fromDate: string;
-  toDate: string;
+  userId?: string;
+  businessId?: string;
+  type: StatementType;
+  format: StatementFormat;
+  variant: StatementVariant;
   currency: SupportedCurrency;
-  status: string;
+  dateFrom: string;
+  dateTo: string;
+  status: StatementStatus;
+  storageKey?: string;
   downloadUrl?: string;
+  downloadExpiry?: string;
+  errorMessage?: string;
+  openingBalanceCents?: number;
+  closingBalanceCents?: number;
+  transactionCount: number;
+  generatedAt?: string;
   createdAt: string;
+  updatedAt: string;
 }
 
 export interface RequestStatementBody {
@@ -747,16 +802,34 @@ export interface RequestStatementBody {
 
 // --- Confirmation Letters ---
 
+export type ConfirmationPurpose =
+  | "visa"
+  | "employment"
+  | "third_party"
+  | "regulatory"
+  | "other";
+export type ConfirmationStatus = "pending" | "ready" | "failed" | "revoked";
+export type ConfirmationLanguage = "en" | "am";
+
 export interface ConfirmationLetter {
   id: string;
   userId: string;
-  currencyCode: SupportedCurrency;
-  status: string;
+  businessId?: string;
+  letterNumber: string;
+  purpose: ConfirmationPurpose;
+  language: ConfirmationLanguage;
+  recipientName?: string;
+  recipientInstitution?: string;
+  includeBalance: boolean;
+  status: ConfirmationStatus;
+  storageKey?: string;
   downloadUrl?: string;
-  publicUrl?: string;
-  expiresAt: string;
-  revokedAt?: string;
+  downloadExpiry?: string;
+  verificationHash: string;
+  generatedAt?: string;
+  expiresAt?: string;
   createdAt: string;
+  updatedAt: string;
 }
 
 // --- Notification Preferences ---

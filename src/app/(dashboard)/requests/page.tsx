@@ -74,7 +74,10 @@ export default function RequestsPage() {
               <p className="text-sm font-medium text-foreground">
                 {tab === "received"
                   ? (r.requesterName ?? "Request")
-                  : (r.payerName ?? r.payerPhone ?? "Recipient")}
+                  : (r.payerName ??
+                    (r.payerPhone
+                      ? `${r.payerPhone.countryCode}${r.payerPhone.number}`
+                      : "Recipient"))}
               </p>
               <p className="text-xs text-muted-foreground">{r.status}</p>
             </div>
