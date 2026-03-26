@@ -3,23 +3,16 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { api } from "@/lib/api-client";
-
-interface KYBStatus {
-  level: number;
-  status: string;
-  submittedAt?: string;
-  reviewedAt?: string;
-  documents: { type: string; status: string; reviewedAt?: string }[];
-}
+import type { KYBSubmission, KYBDocumentType } from "@/lib/business-types";
 
 interface SubmitKYBRequest {
-  documents: { type: string; fileKey: string; fileName: string }[];
+  documents: { type: KYBDocumentType; fileKey: string; fileName: string }[];
 }
 
 export function useBusinessKYBStatus(bizId: string | null) {
-  return useQuery<KYBStatus>({
+  return useQuery<KYBSubmission>({
     queryKey: ["business", bizId, "kyb"],
-    queryFn: () => api.get<KYBStatus>(`/v1/business/${bizId}/kyb`),
+    queryFn: () => api.get<KYBSubmission>(`/v1/business/${bizId}/kyb`),
     enabled: !!bizId,
   });
 }

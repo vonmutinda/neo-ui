@@ -549,6 +549,19 @@ export interface BusinessCardFilter {
   offset?: number;
 }
 
+export interface BusinessCardAuthorization {
+  id: string;
+  cardId: string;
+  merchantName?: string;
+  merchantCategory?: string;
+  authAmountCents: number;
+  currency: string;
+  status: string;
+  declineReason?: string;
+  authorizedAt: string;
+  createdAt: string;
+}
+
 // --- Business Settings ---
 
 export interface UpdateBusinessRequest {
@@ -781,7 +794,59 @@ export interface UpdateTaxPotRequest {
   notes?: string;
 }
 
+// --- Transaction Labels ---
+
+export type LabelSource = "manual" | "ai_auto" | "ai_confirmed";
+
+export interface TransactionLabel {
+  id: string;
+  transactionId: string;
+  categoryId?: string;
+  customLabel?: string;
+  notes?: string;
+  taggedBy?: string;
+  taxDeductible: boolean;
+  source: LabelSource;
+  aiConfidence?: number;
+  aiSuggestedCategoryId?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface LabeledTransactionFilter {
+  categoryId?: string;
+  taxDeductible?: boolean;
+  limit?: number;
+  offset?: number;
+}
+
+export interface TaxSummaryRow {
+  categoryName: string;
+  totalCents: number;
+  count: number;
+}
+
+export interface TaxPotSummaryItem {
+  taxType: TaxType;
+  dueDate?: string;
+  potId: string;
+}
+
 // --- Documents ---
+
+export interface UploadURLResponse {
+  uploadUrl: string;
+  fileKey: string;
+}
+
+export interface DocumentURLResponse {
+  url: string;
+}
+
+export interface ReviewDocumentRequest {
+  status: "accepted" | "rejected";
+  notes?: string;
+}
 
 export type DocumentStatus = "pending" | "verified" | "expired" | "rejected";
 

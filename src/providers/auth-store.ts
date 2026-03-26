@@ -72,6 +72,17 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   logout: () => {
     const s = getStorage();
+    const rt = s?.getItem(REFRESH_KEY);
+    // Notify server — fire-and-forget so local state always clears
+    if (rt) {
+      const baseUrl =
+        process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080";
+      fetch(`${baseUrl}/v1/auth/logout`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ refreshToken: rt }),
+      }).catch(() => {});
+    }
     s?.removeItem(TOKEN_KEY);
     s?.removeItem(REFRESH_KEY);
     s?.removeItem(USER_KEY);

@@ -7,6 +7,9 @@ import type {
   ImportRequest,
   ImportFilter,
   CreateImportRequest,
+  UploadURLResponse,
+  DocumentURLResponse,
+  ReviewDocumentRequest,
   PaginatedResult,
 } from "@/lib/business-types";
 
@@ -177,6 +180,62 @@ export function useImportConversion(bizId: string | null) {
     },
     onError: (err) =>
       toast.error("Conversion failed", { description: err.message }),
+  });
+}
+
+export function useDocumentUploadUrl(bizId: string | null) {
+  return useMutation<UploadURLResponse, Error, void>({
+    mutationFn: () =>
+      api.post<UploadURLResponse>(
+        `/v1/business/${bizId}/documents/upload-url`,
+        {},
+      ),
+  });
+}
+
+export function useImportDocumentUrl(
+  bizId: string | null,
+  importId: string | null,
+  docId: string | null,
+) {
+  return useQuery<DocumentURLResponse>({
+    queryKey: [
+      "business",
+      bizId,
+      "imports",
+      importId,
+      "documents",
+      docId,
+      "url",
+    ],
+    queryFn: () =>
+      api.get<DocumentURLResponse>(
+        `/v1/business/${bizId}/imports/${importId}/documents/${docId}/url`,
+      ),
+    enabled: !!bizId && !!importId && !!docId,
+  });
+}
+
+export function useReviewImportDocument(bizId: string | null) {
+  const qc = useQueryClient();
+  return useMutation<
+    { status: string },
+    Error,
+    { importId: string; docId: string; body: ReviewDocumentRequest }
+  >({
+    mutationFn: ({ importId, docId, body }) =>
+      api.patch<{ status: string }>(
+        `/v1/business/${bizId}/imports/${importId}/documents/${docId}/review`,
+        body,
+      ),
+    onSuccess: (_, { importId }) => {
+      toast.success("Document reviewed");
+      qc.invalidateQueries({
+        queryKey: ["business", bizId, "imports", importId],
+      });
+    },
+    onError: (err) =>
+      toast.error("Failed to review document", { description: err.message }),
   });
 }
 

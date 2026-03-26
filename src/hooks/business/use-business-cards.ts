@@ -5,6 +5,7 @@ import { api } from "@/lib/api-client";
 import type {
   BusinessCard,
   BusinessCardFilter,
+  BusinessCardAuthorization,
   IssueBusinessCardRequest,
   UpdateCardLimitsRequest,
   PaginatedResult,
@@ -103,5 +104,25 @@ export function useCancelCard(bizId: string | null) {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["business", bizId, "cards"] });
     },
+  });
+}
+
+export function useBusinessCardAuthorizations(
+  bizId: string | null,
+  cardId: string | null,
+  params?: { limit?: number; offset?: number },
+) {
+  const qs = new URLSearchParams();
+  if (params?.limit) qs.set("limit", String(params.limit));
+  if (params?.offset) qs.set("offset", String(params.offset));
+  const qsStr = qs.toString();
+
+  return useQuery<PaginatedResult<BusinessCardAuthorization>>({
+    queryKey: ["business", bizId, "cards", cardId, "authorizations", params],
+    queryFn: () =>
+      api.get<PaginatedResult<BusinessCardAuthorization>>(
+        `/v1/business/${bizId}/cards/${cardId}/authorizations${qsStr ? `?${qsStr}` : ""}`,
+      ),
+    enabled: !!bizId && !!cardId,
   });
 }

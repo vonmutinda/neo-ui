@@ -86,3 +86,24 @@ export function useProcessBatchPayment(bizId: string | null) {
     },
   });
 }
+
+export function useRejectBatchPayment(bizId: string | null) {
+  const qc = useQueryClient();
+
+  return useMutation<
+    { status: string },
+    Error,
+    { batchId: string; reason: string }
+  >({
+    mutationFn: ({ batchId, reason }) =>
+      api.post<{ status: string }>(
+        `/v1/business/${bizId}/batch-payments/${batchId}/reject`,
+        { reason },
+      ),
+    onSuccess: () => {
+      qc.invalidateQueries({
+        queryKey: ["business", bizId, "batch-payments"],
+      });
+    },
+  });
+}
