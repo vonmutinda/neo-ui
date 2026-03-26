@@ -13,6 +13,7 @@ import type {
   BusinessLoanStatus,
   DocumentStatus,
   TaxType,
+  ExportStatus,
 } from "./business-types";
 
 const STATUS_COLORS: Record<BusinessTransferStatus, string> = {
@@ -393,6 +394,44 @@ const PAYMENT_METHOD_LABELS: Record<ImportPaymentMethod, string> = {
 
 export function getPaymentMethodLabel(method: ImportPaymentMethod): string {
   return PAYMENT_METHOD_LABELS[method] ?? method;
+}
+
+// --- Export status helpers ---
+
+const EXPORT_STATUS_COLORS: Record<ExportStatus, string> = {
+  draft: "bg-muted text-muted-foreground",
+  submitted: "bg-primary/10 text-primary",
+  bank_reviewing: "bg-warning/10 text-warning-foreground",
+  approved: "bg-success/10 text-success-foreground",
+  shipped: "bg-primary/10 text-primary",
+  proceeds_pending: "bg-warning/10 text-warning-foreground",
+  proceeds_received: "bg-success/10 text-success-foreground",
+  surrender_pending: "bg-warning/10 text-warning-foreground",
+  completed: "bg-success/10 text-success-foreground",
+  rejected: "bg-destructive/10 text-destructive",
+  cancelled: "bg-muted text-muted-foreground",
+};
+
+export function getExportStatusColor(status: ExportStatus): string {
+  return EXPORT_STATUS_COLORS[status] ?? "bg-muted text-muted-foreground";
+}
+
+const EXPORT_STATUS_LABELS: Record<ExportStatus, string> = {
+  draft: "Draft",
+  submitted: "Submitted",
+  bank_reviewing: "Bank Review",
+  approved: "Approved",
+  shipped: "Shipped",
+  proceeds_pending: "Proceeds Pending",
+  proceeds_received: "Proceeds Received",
+  surrender_pending: "Surrender Pending",
+  completed: "Completed",
+  rejected: "Rejected",
+  cancelled: "Cancelled",
+};
+
+export function getExportStatusLabel(status: ExportStatus): string {
+  return EXPORT_STATUS_LABELS[status] ?? status;
 }
 
 // --- Business loan status helpers ---
